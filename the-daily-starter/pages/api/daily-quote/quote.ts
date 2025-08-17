@@ -1,8 +1,6 @@
-
 import { NextApiRequest, NextApiResponse } from "next";
-import { db } from "@/lib/firebase";
+import { db } from "@/lib/firebaseAdmin"; 
 import { fetchDailyQuote } from "@/lib/zenquotes";
-import { collection, doc, getDoc, setDoc } from "firebase/firestore";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Check that the request method is GET
@@ -13,25 +11,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const today = new Date().toISOString().split("T")[0]; // get today's date
 
     try {
-        const ref = doc(collection(db, "dailyQuotes"), today);
-        const snapshot = await getDoc(ref);
+
+        const ref = db.collection("dailyQuotes").doc(today);
+
+        const snapshot = await ref.get();
+
 
         // Check if the daily quote already exists for today in the db.
-        if (snapshot.exists()) {
+        if (snapshot.exists) {
             return res.status(200).json(snapshot.data());
         }
 
         // Call the ZenQuotes API to fetch a new quote.
         const quote = await fetchDailyQuote();
-        
-        // Save the new quote to the database.
-        await setDoc(ref, { ...quote, date: today });
-        
-        // Return the new quote as a JSON response.
+
+        await ref.set({ ...quote, date: today });
+
         return res.status(200).json(quote);
     } catch (err) {
         console.error("Error getting daily quote at api endpoint, " + err);
-        // Return an error response.
         return res.status(500).json({ error: "Failed to fetch daily quote" });
     }
 }
