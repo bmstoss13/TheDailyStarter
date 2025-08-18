@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase/firebase';
 import { onAuthStateChanged } from "firebase/auth";
 import AuthForm from "@/components/AuthForm";
 import { useAuth } from "@/hooks/useAuth";
