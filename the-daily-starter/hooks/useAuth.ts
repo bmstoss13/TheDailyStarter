@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase"; // <-- Correctly import from your client-side Firebase setup
+import { auth } from "@/lib/firebase/firebase"; // <-- Correctly import from your client-side Firebase setup
 
 export function useAuth(): {
     user: User | null;
