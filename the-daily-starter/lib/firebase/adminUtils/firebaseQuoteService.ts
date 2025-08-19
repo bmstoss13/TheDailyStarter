@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase/firebaseAdmin";
-import { DailyQuote } from "./firebaseInterfaces";
+import { DailyQuote } from "../firebaseInterfaces";
 import { fetchDailyQuote } from "@/lib/zenquotes";
 
 // Collections

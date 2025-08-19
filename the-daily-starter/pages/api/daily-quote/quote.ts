@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getOrCreateDailyQuoteForToday } from "@/lib/firebase/utils/firebaseService";
+import { getOrCreateDailyQuoteForToday } from "@/lib/firebase/adminUtils/firebaseQuoteService";
 
 //api endpoint for fetching today's quote from zenquotes or firebase.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
