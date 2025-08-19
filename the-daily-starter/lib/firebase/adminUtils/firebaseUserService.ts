@@ -18,7 +18,7 @@ export async function getUserProfile(uid: string): Promise<UserProfileData | nul
     }
 }
 
-export async function createProfileWithUsernameCheck(
+export async function createUserProfile(
     uid: string,
     profileData: {
         firstName: string;
