@@ -62,4 +62,4 @@ if (admin.apps.length === 0) {
 }
 
 // Export the initialized app and its services
-export { app, db, auth };
+export { app, db, auth, admin };

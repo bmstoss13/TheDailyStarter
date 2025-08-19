@@ -1,23 +1,79 @@
 import { UserProfileData, Username } from "../firebaseInterfaces";
-import { db } from "../firebaseAdmin";
+import { db, admin } from "../firebaseAdmin";
 
 const userCollection = "users";
 const usernameCollection = "username"
 
+//Fetch the individual user profile
 export async function getUserProfile(uid: string): Promise<UserProfileData | null> {
     try{
         const ref = db.collection(userCollection).doc(uid);
         const snapshot = await ref.get();
         if(snapshot.exists){
-            return { uid: snapshot.id, ...snapshot.data() } as UserProfileData;
+            console.log("Data snapshot does not exist for given uid: " + uid);
+            return null;
         }
-        return null;
+        return { uid: snapshot.id, ...snapshot.data() } as UserProfileData;
     } catch (err: any) {
         console.error("An error occurred while trying to fetch user information: " + err);
         throw new Error(err.message || "User not found.");
     }
 }
 
+//list all user profiles - useful for search
+export async function getAllUserProfiles(): Promise<UserProfileData[] | null> {
+    try{
+        const ref = db.collection(userCollection);
+        const snapshot = await ref.get();
+        if(snapshot.empty){
+            console.log("No users found for: ", userCollection);
+            return null;
+        };
+        
+        const allUsers: UserProfileData[] = []
+        snapshot.forEach(doc => {
+            allUsers.push({
+                ...doc.data() as UserProfileData,
+            })
+        })
+
+        return allUsers;
+    } catch (err: any) {
+        console.error("An error occurred while fetching all user profile data: ", err);
+        throw new Error(err.message || "No users found.");
+    }
+}
+
+//delete the user and username automatically given the uid.
+export async function deleteUserProfileAndUsername(uid: string): Promise<void> {
+    try {
+        await db.runTransaction(async (transaction) => {
+            const userRef = db.collection(userCollection).doc(uid);
+            const userDoc = await transaction.get(userRef);
+
+            if (!userDoc.exists) {
+                console.log("No user exists for the given uid: " + uid);
+                return; // nothing to delete
+            }
+
+            const userData = userDoc.data() as UserProfileData;
+            const usernameRef = db.collection(usernameCollection).doc(userData.username);
+
+            // Queue up both deletions
+            transaction.delete(userRef);
+            transaction.delete(usernameRef);
+        });
+
+        await admin.auth().deleteUser(uid);
+
+        console.log(`Successfully deleted user ${uid} and their username.`);
+    } catch (err: any) {
+        console.error("Transaction failed while deleting user with uid: " + uid, err);
+        throw new Error(err.message || "Error while deleting user profile.");
+    }
+}
+
+//create username-unique user profile by checking with username store.
 export async function createUserProfile(
     uid: string,
     profileData: {
