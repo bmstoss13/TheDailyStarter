@@ -16,7 +16,9 @@ export interface UserProfileData {
     createdAt: Date;
     email?: string | null;
     displayName?: string | null;
-    photoURL?: string | null;    
+    photoURL?: string | null;  
+    quotesAlbum?: DailyQuote[] | null; 
+    lastQuoteShown?: string | null; //store date of last quote shown. 
 }
 
 export interface Username {
@@ -34,6 +36,10 @@ export interface ShineData {
     rayCount: number;
     mediaURL?: string | null; //photo or video associated with the post
     userPhotoUrl?: string | null;
+}
+
+export interface ShineDataWithRayStatus extends ShineData {
+    hasRayed: boolean;
 }
 
 export interface RayData {

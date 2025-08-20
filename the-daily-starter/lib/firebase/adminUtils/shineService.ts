@@ -1,4 +1,4 @@
-import { ShineData, RayData } from "../interfaces";
+import { ShineData, RayData, ShineDataWithRayStatus } from "../interfaces";
 import { shineCollection, raySubcollection } from "../collectionNames";
 import { getUserProfile } from "./userService";
 import { db, admin } from "../firebaseAdmin";
@@ -73,7 +73,7 @@ export async function toggleRay (uid: string, shineId: string): Promise<boolean>
     }
 }
 
-export async function getShines(limit: number = 20, startAfterShineId?: string): Promise<ShineData[]> {
+export async function getShines(limit: number = 20, startAfterShineId?: string, uid?: string): Promise<ShineDataWithRayStatus[]> {
     try {
         let query = db.collection(shineCollection)
             .orderBy('createdAt', 'desc')
@@ -88,14 +88,23 @@ export async function getShines(limit: number = 20, startAfterShineId?: string):
         }
 
         const snapshot = await query.get();
-        const shines: ShineData[] = [];
-        snapshot.forEach(doc => {
-            shines.push({
-                id: doc.id, ...doc.data(),
-            } as ShineData);
-        })
-        console.log(`Fetched ${shines.length} shines.`);
-        return shines;
+
+        const shinesWithStatus = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+                const shine = {
+                    id: doc.id,
+                    ...doc.data() as ShineData,
+                }                
+                let hasRayed = false;
+                if(uid) {
+                    hasRayed = await hasUserRayedShine( uid, shine.id );
+                }
+
+                return { ...shine, hasRayed}
+            })
+        )
+        console.log(`Fetched ${shinesWithStatus.length} shines.`);
+        return shinesWithStatus;
     } catch (err: any){
         console.error("An error occurred while fetching shines: " + err);
         throw new Error(err.message || 'Error while getting shines.');
@@ -112,5 +121,4 @@ export async function hasUserRayedShine(uid: string, shineId: string): Promise<b
         console.error(`An error occurred while checking if user ${uid} rayed shine ${shineId}: `, err);
         throw new Error(err.message || "Error while checking user rayed the shine.");
     }
-
 }
