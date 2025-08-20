@@ -1,9 +1,7 @@
 import { db } from "@/lib/firebase/firebaseAdmin";
-import { DailyQuote } from "../firebaseInterfaces";
+import { DailyQuote } from "../interfaces";
 import { fetchDailyQuote } from "@/lib/zenquotes";
-
-// Collections
-const quotesCollection = 'dailyQuotes';
+import { quotesCollection } from "../collectionNames";
 
 // get helper for all daily quotes
 export async function getAllDailyQuotes(): Promise<DailyQuote[]> {

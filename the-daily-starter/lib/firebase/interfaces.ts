@@ -24,3 +24,18 @@ export interface Username {
     username: string;
     createdAt: Date;
 }
+
+export interface ShineData {
+    id?: string;
+    text: string;
+    username: string;
+    uid: string;
+    createdAt: Date;
+    rayCount: number;
+    mediaURL?: string; //photo or video associated with the post
+    userPhotoUrl?: string;
+}
+
+export interface RayData {
+    timestamp: Date;
+}
