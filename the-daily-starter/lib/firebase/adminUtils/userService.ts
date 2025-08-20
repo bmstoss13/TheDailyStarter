@@ -7,7 +7,7 @@ export async function getUserProfile(uid: string): Promise<UserProfileData | nul
     try{
         const ref = db.collection(userCollection).doc(uid);
         const snapshot = await ref.get();
-        if(snapshot.exists){
+        if(!snapshot.exists){
             console.log("Data snapshot does not exist for given uid: " + uid);
             return null;
         }
