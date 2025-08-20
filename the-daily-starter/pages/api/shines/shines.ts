@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if(req.method === 'GET'){
             const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
             const startAfterShineId = req.query.startAfter as string | undefined;
-            const shines = await getShines(limit, startAfterShineId);
+            const shines = await getShines(limit, startAfterShineId, requesterUid);
             return res.status(200).json(shines);
         
         //post new shine, requiring text.
