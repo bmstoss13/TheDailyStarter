@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getAllUserProfiles } from "@/lib/firebase/adminUtils/firebaseUserService";
+import { getAllUserProfiles } from "@/lib/firebase/adminUtils/userService";
 
 //fetch all profiles from firebase.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { deleteUserProfileAndUsername } from "@/lib/firebase/adminUtils/firebaseUserService";
+import { deleteUserProfileAndUsername } from "@/lib/firebase/adminUtils/userService";
 import { admin } from "@/lib/firebase/firebaseAdmin";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse){

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getAllDailyQuotes } from "@/lib/firebase/adminUtils/firebaseQuoteService";
-import { DailyQuote } from "@/lib/firebase/firebaseInterfaces";
+import { getAllDailyQuotes } from "@/lib/firebase/adminUtils/quoteService";
+import { DailyQuote } from "@/lib/firebase/interfaces";
 
 //api endpoint for fetching all daily quotes from firebase.
 export default async function handler(req: NextApiRequest, res: NextApiResponse){

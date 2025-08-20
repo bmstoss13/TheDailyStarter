@@ -1,26 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getAuth } from "firebase-admin/auth";
 import { app } from "@/lib/firebase/firebaseAdmin";
-import { createUserProfile as createProfileService } from '@/lib/firebase/adminUtils/firebaseUserService';
+import { createUserProfile as createProfileService } from '@/lib/firebase/adminUtils/userService';
+import { corsInstance, runMiddleware } from "@/lib/authorization/helper";
 
-import Cors from 'cors';
+const cors = corsInstance(['POST', 'OPTIONS']);
 
-const cors = Cors({
-    methods: ['POST', 'OPTIONS'],
-    origin: process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : ['http://sunshine.app', 'https://the-daily-starter.firebaseapp.com'],
-});
-
-function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
-    return new Promise((resolve, reject) => {
-        fn(req, res, (result: any) => {
-            if (result instanceof Error) {
-                return reject(result);
-            }
-            return resolve(result);
-        })
-    })
-}
-
+//Creating profile with authorization.
 export default async function handler (req: NextApiRequest, res: NextApiResponse){
     await runMiddleware(req, res, cors);
     if(req.method === 'OPTIONS') {

@@ -1,8 +1,6 @@
-import { UserProfileData, Username } from "../firebaseInterfaces";
+import { UserProfileData, Username } from "../interfaces";
 import { db, admin } from "../firebaseAdmin";
-
-const userCollection = "users";
-const usernameCollection = "username"
+import { userCollection, usernameCollection } from "../collectionNames";
 
 //Fetch the individual user profile
 export async function getUserProfile(uid: string): Promise<UserProfileData | null> {
