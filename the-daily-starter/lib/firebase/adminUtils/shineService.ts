@@ -17,11 +17,11 @@ export async function createShine (uid: string, text: string, mediaURL?: string)
         const newShine: Omit<ShineData, 'id'> = {
             uid: uid,
             username: userProfile.username,
-            userPhotoUrl: userProfile.photoURL || undefined,
+            userPhotoUrl: userProfile.photoURL || null,
             text: text,
             createdAt: new Date(),     
             rayCount: 0,
-            mediaURL: mediaURL || undefined
+            mediaURL: mediaURL || null
         }
 
         //Create new Shine in db
@@ -40,7 +40,7 @@ export async function createShine (uid: string, text: string, mediaURL?: string)
 export async function toggleRay (uid: string, shineId: string): Promise<boolean> {
     try{
         const shineRef = db.collection(shineCollection).doc(shineId);
-        const rayRef = db.collection(raySubcollection).doc(uid);
+        const rayRef = shineRef.collection(raySubcollection).doc(uid);
 
         return db.runTransaction(async (transaction) => {
             const shineDoc = await transaction.get(shineRef);

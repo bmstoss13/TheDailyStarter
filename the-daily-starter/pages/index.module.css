@@ -100,3 +100,90 @@
 .logoutButton:hover {
   background-color: #c82333;
 }
+
+/* index.module.css */
+
+/* Add this to your existing styles */
+.feedButton {
+  background-color: #007bff; /* Blue */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  margin-top: 20px; /* Space it from other elements */
+  transition: background-color 0.3s ease;
+  width: 100%; /* Make it full width like logout button */
+  max-width: 300px; /* Match max-width of auth form or other elements */
+}
+
+.feedButton:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Ensure your .logoutButton has similar styling for consistency if desired */
+.logoutButton {
+  background-color: #dc3545; /* Red */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  margin-top: 10px; /* Space it from feed button */
+  width: 100%;
+  max-width: 300px;
+}
+
+.logoutButton:hover {
+  background-color: #c82333;
+}
+
+/* Update contentContainer if needed to center items */
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center items horizontally */
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px; /* Adjust as needed */
+}
+
+.quoteContainer {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Add or adjust styles for loading/error containers and spinner */
+.loadingContainer, .errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* Full viewport height */
+}
+
+.loadingSpinner {
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-weight: bold;
+}

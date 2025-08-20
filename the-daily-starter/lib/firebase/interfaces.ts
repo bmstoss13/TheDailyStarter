@@ -32,8 +32,8 @@ export interface ShineData {
     uid: string;
     createdAt: Date;
     rayCount: number;
-    mediaURL?: string; //photo or video associated with the post
-    userPhotoUrl?: string;
+    mediaURL?: string | null; //photo or video associated with the post
+    userPhotoUrl?: string | null;
 }
 
 export interface RayData {

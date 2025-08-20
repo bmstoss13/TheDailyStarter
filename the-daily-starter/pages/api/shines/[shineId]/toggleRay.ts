@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: 'Shine ID is required as string' });
         };
 
-        const rayToggled = await toggleRay(shineId, requesterUid);
+        const rayToggled = await toggleRay(requesterUid, shineId);
         return res.status(201).json(rayToggled);
 
     } catch (err: any) {
