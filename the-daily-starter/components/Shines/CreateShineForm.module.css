@@ -32,7 +32,7 @@
 }
 
 .createShineContainer button {
-    background-color: #4CAF50; 
+    background-color: #f59e0b; 
     color: white;
     padding: 10px 15px;
     border: none;
@@ -43,7 +43,7 @@
 }
 
 .createShineContainer button:hover:not(:disabled) {
-    background-color: #45a049;
+    background-color: #f8b33c;
 }
 
 .createShineContainer button:disabled {

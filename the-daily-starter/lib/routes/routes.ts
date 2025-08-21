@@ -1,0 +1,1 @@
+export const searchUsers = '/api/user/search-users';

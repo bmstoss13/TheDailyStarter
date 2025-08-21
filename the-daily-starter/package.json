@@ -13,6 +13,7 @@
     "@fortawesome/free-regular-svg-icons": "^7.0.0",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
     "@fortawesome/react-fontawesome": "^0.2.5",
+    "axios": "^1.11.0",
     "cors": "^2.8.5",
     "firebase": "^12.1.0",
     "firebase-admin": "^13.4.0",

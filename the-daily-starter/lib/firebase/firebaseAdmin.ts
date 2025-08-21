@@ -7,6 +7,7 @@ import * as admin from 'firebase-admin';
 let app: admin.app.App;
 let db: admin.firestore.Firestore;
 let auth: admin.auth.Auth;
+let storage: admin.storage.Storage;
 
 // Check if any Firebase Admin app has already been initialized
 // admin.apps is an array of initialized apps. If its length is 0, no app has been initialized.
@@ -58,8 +59,9 @@ if (admin.apps.length === 0) {
   app = admin.app(); // This retrieves the [DEFAULT] app
   db = app.firestore();
   auth = app.auth();
+  storage = app.storage();
   console.log("Firebase Admin SDK already initialized.");
 }
 
 // Export the initialized app and its services
-export { app, db, auth, admin };
+export { app, db, auth, admin, storage };

@@ -1,0 +1,11 @@
+.searchbarContainer{
+    display: flex;
+}
+
+.textbox{
+    max-width: 600;
+}
+
+.suggestionsList {
+    display: flex;
+}
