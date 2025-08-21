@@ -13,11 +13,13 @@
     "@fortawesome/free-regular-svg-icons": "^7.0.0",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
     "@fortawesome/react-fontawesome": "^0.2.5",
+    "@types/formidable": "^3.4.5",
     "axios": "^1.11.0",
     "cors": "^2.8.5",
     "firebase": "^12.1.0",
     "firebase-admin": "^13.4.0",
     "firebase-tools": "^14.12.1",
+    "formidable": "^3.5.4",
     "next": "15.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0"
