@@ -14,3 +14,6 @@ export const shineCollection = "shines";
 
 //rays, functioning as likes, are a subcollection of shines.
 export const raySubcollection = "rays";
+
+//reference collection to firebase storage bucket.
+export const photoCollection = "photos";

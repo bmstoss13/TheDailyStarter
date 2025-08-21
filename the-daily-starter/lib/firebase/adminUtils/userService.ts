@@ -1,4 +1,4 @@
-import { UserProfileData, Username } from "../interfaces";
+import { UserProfileData, Username, UserSearchResult } from "../interfaces";
 import { db, admin } from "../firebaseAdmin";
 import { userCollection, usernameCollection } from "../collectionNames";
 
@@ -145,4 +145,41 @@ export async function updateUserProfile(
         console.error("An error occurred while updating user profile: " + err);
         throw new Error(err.message || "Error updating profile");
     }
+}
+
+// Fetches searched users from query with a cap of 10 for efficiency
+export async function getSearchedUsersCapped(query: string): Promise<UserSearchResult[] | null> {
+    try{
+        if(!query || query.trim() === ''){
+            return [];
+        }
+
+        const userRef = db.collection(userCollection);
+        const snapshot = await userRef
+            .where('username', '>=', query)
+            .where('username', '<=', '\uf8ff')
+            .limit(10) //limit for efficiency's sake
+            .select('uid', 'username', 'photoURL')
+            .get();
+
+        if(snapshot.empty){
+            console.log('No users found for query: ', query);
+            return [];
+        }
+
+        const searchResults: UserSearchResult[] = [];
+        snapshot.forEach(doc => {
+            const data = doc.data() as Partial<UserSearchResult>;
+            searchResults.push({
+                uid: data.uid as any, //had to solve this error somehow lol.
+                username: data.username as any,
+                photoURL: data.photoURL,                
+            })
+        })
+        return searchResults;
+    } catch (err: any) {
+        console.error(`An error occurred while fetching searched users: ${err}`);
+        throw new Error(err.message || "Error searching users.");
+    }
+
 }

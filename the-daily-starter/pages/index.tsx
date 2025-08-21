@@ -24,24 +24,27 @@ export default function Home() {
             if(!user){
                 return;
             }
-            const response = await fetch(`/api/login-flow`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json'},
-                body: JSON.stringify({ uid: user.uid })
-            })
-
-            if(!response.ok){
-                throw new Error('Login flow API call failed.');
-            }
-
-            const data = await response.json();
-            if(data.isNewQuote){
-                setQuote(data.quote);
-                setShowQuoteModal(true);
-            } else {
-                router.push('/feed/page');
-            }
             try{
+                const response = await fetch(`/api/login-flow`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json'},
+                    body: JSON.stringify({ uid: user.uid })
+                })
+
+                if(!response.ok){
+                    throw new Error('Login flow API call failed.');
+                }
+
+                const data = await response.json();
+                console.log("Data:", data);
+                if(data.isNewQuote){
+                    setQuote(data.dailyQuote);
+                    console.log("Quote:", quote);
+                    setShowQuoteModal(true);
+                } else {
+                    router.push('/feed/page');
+                }
+
                 
             } catch (err: any){
                 console.error("An error occurred while handling login flow: ", err);

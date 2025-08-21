@@ -1,4 +1,6 @@
 // document objects
+import firebase from "firebase/compat/app";
+import { admin } from "./firebaseAdmin";
 
 export interface DailyQuote {
     id?: string;
@@ -27,6 +29,13 @@ export interface Username {
     createdAt: Date;
 }
 
+//lightweight interface for search queries
+export interface UserSearchResult {
+    uid: string;
+    username: string;
+    photoURL?: string | null;
+}
+
 export interface ShineData {
     id?: string;
     text: string;
@@ -44,4 +53,12 @@ export interface ShineDataWithRayStatus extends ShineData {
 
 export interface RayData {
     timestamp: Date;
+}
+
+//photo data for reference to firebase storage bucket
+export interface PhotoData {
+    url: string;
+    filename: string;
+    uploadedBy: string;
+    createdAt: admin.firestore.FieldValue; //need to refactor everything else to get accurate time snippets.
 }

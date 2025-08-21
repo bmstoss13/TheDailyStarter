@@ -7,6 +7,7 @@ import CreateShineForm from '@/components/Shines/CreateShineForm';
 import ShineFeed from '@/components/Shines/ShineFeed';
 
 import styles from './FeedPage.module.css';
+import Navbar from '@/components/Navbar/Navbar';
 
 export default function FeedPage() {
     const { user, loading: authLoading, error: authError } = useAuth();    
@@ -41,8 +42,7 @@ export default function FeedPage() {
 
     return (
         <div className={styles.feedContainer}>
-            <h1>Shine Feed </h1>
-
+            <Navbar/>
             {user ? (
                 // Pass the handleShinePosted function to the CreateShineForm component
                 <CreateShineForm onShinePosted={handleShinePosted} />
