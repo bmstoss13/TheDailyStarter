@@ -45,6 +45,7 @@ export interface ShineData {
     rayCount: number;
     mediaURL?: string | null; //photo or video associated with the post
     userPhotoUrl?: string | null;
+    comments?: string[] | null;
 }
 
 export interface ShineDataWithRayStatus extends ShineData {

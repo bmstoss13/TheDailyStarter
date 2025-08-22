@@ -13,14 +13,29 @@
 
 .modalContent {
     background-color: #fff;
-    max-width: 600px;
+    max-width: 1000px;
+    border-radius: 8px;
+}
+
+.modalHeader {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 32px;
+    font-weight: bold;
+    align-items: center;
+    margin-top: 2rem;
+    margin-left: 2rem;
+}
+
+.sunriseIcon {
+    color: #f59e0b;
 }
 
 .quoteContainer {
-    background: #f8f9fa;
+    background: #fff6e5;
     padding: 2rem;
     border-radius: 8px;
-    margin-bottom: 2rem;
+    margin: 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -35,4 +50,35 @@
     font-style: italic;
     color: #666;
     text-align: right;
+}
+
+.closeContainer {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+}
+
+.modalCloseButton {
+    background-color: #f59e0b;
+    color: white;
+    font-weight: bold;
+    padding: 8px;
+    border-radius: 8px;
+    margin-right: 2rem;
+    margin-bottom: 2rem; 
+    justify-items: flex-end;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: 0.1s;
+}
+
+.modalCloseButton:hover {
+    cursor: pointer;
+    transform: translateY(-2px);
+    background-color: #feaf27;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modalCloseButton:active {
+    transform: translateY(1px);
+    background-color: #df9008;
 }

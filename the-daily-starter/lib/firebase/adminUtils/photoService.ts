@@ -1,11 +1,12 @@
-import { storage, db, admin } from "../firebaseAdmin";
+import { storage, db, admin, app } from "../firebaseAdmin";
 import { photoCollection } from "../collectionNames";
 import { PhotoData } from "../interfaces";
 import { photoBucket } from "../storage/bucketNames";
+import { v4 as uuidv4 } from "uuid";
 
 //helper for getting the project id
 function getProjectId(){
-    const projectId = admin.app().options.projectId;
+    const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     if(typeof projectId !== 'string') {
         return '';
     }
@@ -13,33 +14,46 @@ function getProjectId(){
 }
 
 // uploads a photo file to firebase storage and stores metadata in firestore.
-export async function uploadAndStorePhoto(uid: string, file: File): Promise<PhotoData | null> {
-    try{
-        const photoRef = storage.bucket().file(photoBucket(uid, file));
+export async function uploadAndStorePhoto(
+    uid: string, 
+    fileContent: Buffer, 
+    fileName: string, 
+    contentType: string
+): Promise<PhotoData | null> {
+    try {
+        const uniqueFileName = `${uuidv4()}_${fileName}`;
+        const photoRef = storage.bucket().file(`users/${uid}/profile-photos/${uniqueFileName}`);
 
-        const uploadResult = await photoRef.save(Buffer.from(await file.arrayBuffer()), {
+        // Upload the file to Firebase Storage
+        await photoRef.save(fileContent, {
             metadata: {
-                contentType: file.type,
+                contentType: contentType,
             },
+            public: true, // Make the file publicly accessible
         });
 
-        console.log(`Successfully uploaded photo: ${uploadResult}`);
+        // Get the public URL for the uploaded photo
+        const url = `https://storage.googleapis.com/${photoRef.bucket.name}/${photoRef.name}`;
+        
+        console.log(`Successfully uploaded photo: ${url}`);
 
-        const [url] = await photoRef.getSignedUrl({
-            action: 'read',
-            expires: '11/12/3002',
-        });
-
-        console.log(`Download URL generated: ${url}`);
-
+        // Create the PhotoData object to store in Firestore
         const photoData: PhotoData = {
             url: url,
-            fileName: file.name,
+            fileName: fileName,
             uploadedBy: uid,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         };
 
-        const docRef = await db.collection(`artifacts`).doc(getProjectId()).collection("users").doc(uid).collection(photoCollection).add(photoData);
+        // Store photo metadata in Firestore
+        const docRef = await db
+            .collection(`artifacts`)
+            .doc(getProjectId())
+            .collection("users")
+            .doc(uid)
+            .collection(photoCollection)
+            .add(photoData);
+
         console.log(`Successfully stored photo metadata in Firestore with id: ${docRef.id}`);
 
         return photoData;

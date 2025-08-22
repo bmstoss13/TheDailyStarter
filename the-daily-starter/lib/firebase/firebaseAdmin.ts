@@ -16,6 +16,7 @@ if (admin.apps.length === 0) {
     const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
     const rawPrivateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+    const bucketId = process.env.FIREBASE_STORAGE_BUCKET;
 
     // Process the private key: replace escaped newlines with actual newlines
     const privateKey = rawPrivateKey?.replace(/\\n/g, '\n');
@@ -38,13 +39,15 @@ if (admin.apps.length === 0) {
         clientEmail: clientEmail,
         privateKey: privateKey,
       }),
+      storageBucket: bucketId
     });
 
     // Get Firestore and Auth instances from the specific app instance we just initialized
     db = app.firestore();
     auth = app.auth();
+    storage = app.storage();
 
-    console.log("Firebase Admin SDK initialized successfully.");
+    console.log("Firebase Admin SDK initialized successfully. Project ID: " + projectId);
 
   } catch (error: any) {
     console.error("Firebase Admin: SDK initialization FAILED!", error.message);

@@ -45,7 +45,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if(!file){
             return res.status(400).json({ message: "No file uploaded." });
         };
-                
+        
+        const fileContent = fs.readFileSync(file.filepath);
+        // const tempFile = new File([fileContent], file.originalFilename || 'unnamed-file', { type: file.mimetype || 'application/octet-stream' });
+        
+        const photoData = await uploadAndStorePhoto(requesterUid, fileContent, file.originalFilename, file.mimetype || 'application/octet-stream');
+
+        return res.status(200).json({
+            message: 'Photo uploaded successfully',
+            photoData: photoData,
+        })
     } catch (err: any){
         console.error('API error for /api/photos/upload: ', err);
         return res.status(500).json({ error: err.message || 'Internal Server Error.' });

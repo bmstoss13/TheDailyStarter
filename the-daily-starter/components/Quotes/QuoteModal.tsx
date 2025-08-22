@@ -1,5 +1,10 @@
-import styles from './QuoteModal.module.css'
-import { WeatherSunset } from './Sun'
+"use client";
+
+import styles from './QuoteModal.module.css';
+import { WeatherSunset } from './Sun';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
+
 
 interface QuoteModalProps {
     quote: {
@@ -13,14 +18,17 @@ const QuoteModal = ({quote, onClose}: QuoteModalProps) => {
     return(
         <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
-            <h2 className={styles.modalHeader}> <WeatherSunset/> Daily Sunshine! </h2>
+            <h2 className={styles.modalHeader}> <WeatherSunset className={styles.sunriseIcon}/> Daily Sunshine! </h2>
                 <div className={styles.quoteContainer}>
-                    <p className={styles.quoteText}>{quote.q}</p>
-                    <p className={styles.quoteAuthor}>{quote.a}</p>
+                    <p className={styles.quoteText}>"{quote.q}"</p>
+                    <p className={styles.quoteAuthor}>—{quote.a}</p>
                 </div>
-                <button className={styles.modalCloseButton} onClick={onClose}>
-                    Got it!
-                </button>
+                <div className={styles.closeContainer}>
+                    <button className={styles.modalCloseButton} onClick={onClose}>
+                        Got it! <FontAwesomeIcon icon={faThumbsUp}/>
+                    </button>
+                </div>
+
             </div>
         </div>
     )
