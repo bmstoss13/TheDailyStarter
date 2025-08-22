@@ -17,7 +17,7 @@ export interface UserProfileData {
     dob: string;
     createdAt: Date;
     email?: string | null;
-    displayName?: string | null;
+    // displayName?: string | null;
     photoURL?: string | null;  
     quotesAlbum?: DailyQuote[] | null; 
     lastQuoteShown?: string | null; //store date of last quote shown. 
@@ -45,7 +45,7 @@ export interface ShineData {
     rayCount: number;
     mediaURL?: string | null; //photo or video associated with the post
     userPhotoUrl?: string | null;
-    comments?: string[] | null;
+    commentNumber?: number;
 }
 
 export interface ShineDataWithRayStatus extends ShineData {
@@ -62,4 +62,13 @@ export interface PhotoData {
     fileName: string;
     uploadedBy: string;
     createdAt: admin.firestore.FieldValue; //need to refactor everything else to get accurate time snippets.
+}
+
+export interface CommentData { 
+    uid: string;
+    shineId: string;
+    createdAt: admin.firestore.FieldValue;
+    rayCount: number;
+    username: string;
+    userPhotoUrl?: string;
 }

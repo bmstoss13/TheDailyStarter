@@ -1,16 +1,16 @@
-.shineCard {
+.commentCard {
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 15px;
     margin-bottom: 15px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
 }
 
-.shineHeader {
+.commentHeader {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
@@ -49,7 +49,7 @@
     color: #777;
 }
 
-.shineText {
+.commentText {
     color: #444;
     line-height: 1.5;
     margin-bottom: 10px;
@@ -67,7 +67,7 @@
     border-radius: 4px;
 }
 
-.shineFooter {
+.commentFooter {
     display: flex;
     justify-content: flex-end;
     align-items: center;

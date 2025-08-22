@@ -90,7 +90,7 @@ export async function getPhotosForUser(uid: string): Promise<PhotoData[]> {
     }
 }
 
-export async function getSinglePhotoForUser(uid: string): Promise<PhotoData|null> {
+export async function getFirstPhotoForUser(uid: string): Promise<PhotoData|null> {
     try{
         const photoRef = db.collection("artifacts").doc(getProjectId()).collection("users").doc(uid).collection(photoCollection);
         const snapshot = await photoRef.orderBy('createdAt', 'desc').limit(1).get();
@@ -108,4 +108,23 @@ export async function getSinglePhotoForUser(uid: string): Promise<PhotoData|null
         console.error(`An error occurred while fetching this photo for user: ${uid}`)
         throw new Error(err.message || 'Error while fetching photo for user.')
     }
+}
+
+//delete the chosen photo for the user
+/*
+param: uid of photo
+get the specific photo from the url, with url, get bucket id? and delete it
+*/
+export async function deleteSinglePhotoForUser(uid: string) {
+    try{
+        return null;
+    } catch (err: any) {
+        console.error('An error occurred while deleting ')
+        throw new Error(err.message || 'Error while deleting photo');
+    }
+
+}
+
+export async function getSinglePhotoForUser(uid: string): Promise<PhotoData|null> {
+    return null;
 }

@@ -7,6 +7,10 @@ import { signUpWithEmail, signInWithEmail, signInWithGoogle } from "@/lib/fireba
 
 import styles from "./AuthForm.module.css";
 
+// interface AuthFormProps{
+//     onSubmit: () => void
+// }
+
 //Auth form for when users want to join or sign in.
 export default function AuthForm() {
     const [email, setEmail ] = useState("");
@@ -143,7 +147,7 @@ export default function AuthForm() {
 
                 console.log("Account created and profile saved successfully!");
             }
-
+            // onSubmit();
             resetForm();
 
         } catch (err: any) {

@@ -79,6 +79,7 @@
 }
 
 .modalCloseButton:active {
+    cursor: pointer;
     transform: translateY(1px);
     background-color: #df9008;
 }

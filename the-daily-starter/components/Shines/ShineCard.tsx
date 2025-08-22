@@ -3,13 +3,16 @@
 import React, { useState } from 'react';
 import { auth } from '@/lib/firebase/firebase';
 import { ShineData } from '@/lib/firebase/interfaces';
-import Image from "next/image";
-
-import styles from './ShineCard.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faSun as faSunRegular } from '@fortawesome/free-regular-svg-icons';
+import { formatTimestamp } from '../helper';
 import profile from '@/public/png-transparent-default-avatar.png';
+import Image from "next/image";
+
+import styles from './ShineCard.module.css';
+import CommentCard from './Comments/CommentCard';
+import CommentFeed from './Comments/CommentFeed';
 
 interface ShineCardProps {
     shine: ShineData & { hasRayed?: boolean };
@@ -22,28 +25,6 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
     const [isRaying, setIsRaying] = useState(false);
     const [isOpeningComments, setIsOpeningComments] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-
-    const formatTimestamp = (timestamp: any) => { // 'any' because it could be Timestamp or Date from JSON serialization
-        let date;
-        if (timestamp && typeof timestamp.toDate === 'function') { 
-            date = timestamp.toDate();
-        } else if (timestamp instanceof Date) { 
-            date = timestamp;
-        } else if (typeof timestamp === 'object' && timestamp.hasOwnProperty('_seconds') && timestamp.hasOwnProperty('_nanoseconds')) {
-            date = new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
-        }
-        
-        if (date) {
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-        }
-        return 'Just now';
-    };
 
     const handleRayToggle = async () => {
         if (isRaying) return;
@@ -143,6 +124,7 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
             </div>
             {isOpeningComments ? (
                 <div className={styles.commentSection}>
+                    <CommentFeed/>
                 </div>
             ) : <div/>}
         </div>

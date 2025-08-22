@@ -17,3 +17,6 @@ export const raySubcollection = "rays";
 
 //reference collection to firebase storage bucket.
 export const photoCollection = "photos";
+
+//collection of comments under shine
+export const commentSubcollection = "comments";
