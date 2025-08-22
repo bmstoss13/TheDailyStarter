@@ -1,4 +1,4 @@
-import { ShineData, RayData, ShineDataWithRayStatus } from "../interfaces";
+import { ShineData, RayData, ShineDataWithRayStatus, UserProfileData } from "../interfaces";
 import { shineCollection, raySubcollection } from "../collectionNames";
 import { getUserProfile } from "./userService";
 import { db, admin } from "../firebaseAdmin";
@@ -94,12 +94,14 @@ export async function getShines(limit: number = 20, startAfterShineId?: string, 
                 const shine = {
                     id: doc.id,
                     ...doc.data() as ShineData,
-                }                
+                }
                 let hasRayed = false;
+                let userRef = null;
                 if(uid) {
                     hasRayed = await hasUserRayedShine( uid, shine.id );
+                    userRef = await getUserProfile(shine.uid);
+                    shine.userPhotoUrl = userRef?.photoURL;
                 }
-
                 return { ...shine, hasRayed}
             })
         )

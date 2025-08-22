@@ -45,6 +45,7 @@ export interface ShineData {
     rayCount: number;
     mediaURL?: string | null; //photo or video associated with the post
     userPhotoUrl?: string | null;
+    comments?: string[] | null;
 }
 
 export interface ShineDataWithRayStatus extends ShineData {
@@ -58,7 +59,7 @@ export interface RayData {
 //photo data for reference to firebase storage bucket
 export interface PhotoData {
     url: string;
-    filename: string;
+    fileName: string;
     uploadedBy: string;
     createdAt: admin.firestore.FieldValue; //need to refactor everything else to get accurate time snippets.
 }

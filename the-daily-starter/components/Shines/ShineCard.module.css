@@ -5,19 +5,28 @@
     padding: 15px;
     margin-bottom: 15px;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
-    font-family: Arial, sans-serif;
 }
 
 .shineHeader {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
+    font-size: 1.3em;
 }
 
 .userPhoto {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    object-fit: cover;
+}
+
+.userPhotoDefault {
+    color:#f59e0b;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -44,6 +53,7 @@
     color: #444;
     line-height: 1.5;
     margin-bottom: 10px;
+    font-size: 1.2em;
 }
 
 .mediaContainer {
@@ -59,7 +69,7 @@
 
 .shineFooter {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     border-top: 1px solid #eee;
     padding-top: 10px;
@@ -67,29 +77,67 @@
 }
 
 .commentButton {
-    background-color: #f0f2f5;
-    color: #555;
-    padding: 8px 12px;
+    background: none;
     border: none;
-    border-radius: 20px;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 1.2em;
     font-weight: bold;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    display: flex;
+    transition: transform 0.1s ease;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    padding: 4px 8px;
+    color: #6b7280;
+    transform-origin: center center;
+    will-change: transform;
+    /* Prevent layout shifts */
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+.commentButton:hover:not(:disabled) {
+    transform: scale(1.05);
+    color:#f59e0b;
 }
 
-.commentButton:hover:not(:disabled) {
-    background-color: #e0e2e5;
+
+.commentButton:active:not(:disabled) {
+    transform: scale(0.9);
+    transition: transform 0.1s ease;
 }
+
+.commentButton.rayed {
+    color: #f59e0b; 
+}
+
+.commentButton:disabled {
+    opacity: 0.7;
+}
+
+.commentIcon {
+    font-size: 1.2em;
+    transition: transform 0.1s ease;
+    transform-origin: center center;
+    will-change: transform;
+    backface-visibility: hidden;
+    display: inline-block;
+}
+
+/* Active state for the icon - additional shrinking effect */
+.commentButton:active:not(:disabled) .rayIcon {
+    transform: scale(0.85);
+    transition: transform 0.1s ease;
+}
+
+.commentButton:hover:not(:disabled) .rayIcon {
+    transform: scale(1.1);
+}
+
 
 .rayButton {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.9em;
+    font-size: 1.2em;
     font-weight: bold;
     transition: transform 0.1s ease;
     display: inline-flex;
@@ -106,6 +154,7 @@
 
 .rayButton:hover:not(:disabled) {
     transform: scale(1.05);
+    color:#f59e0b;
 }
 
 
@@ -143,4 +192,9 @@
 
 .rayButton.rayed .rayIcon {
     color: #f59e0b; 
+}
+
+.commentSection {
+    height: 100px;
+    background-color: #fff;
 }

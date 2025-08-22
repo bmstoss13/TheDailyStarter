@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import { auth } from '@/lib/firebase/firebase';
 import { ShineData } from '@/lib/firebase/interfaces';
+import Image from "next/image";
 
 import styles from './ShineCard.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSun } from '@fortawesome/free-solid-svg-icons';
+import { faSun, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faSun as faSunRegular } from '@fortawesome/free-regular-svg-icons';
+import profile from '@/public/png-transparent-default-avatar.png';
 
 interface ShineCardProps {
     shine: ShineData & { hasRayed?: boolean };
@@ -18,6 +20,8 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
     const [currentRayCount, setCurrentRayCount] = useState(shine.rayCount);
     const [hasUserRayed, setHasUserRayed] = useState(shine.hasRayed || false);
     const [isRaying, setIsRaying] = useState(false);
+    const [isOpeningComments, setIsOpeningComments] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const formatTimestamp = (timestamp: any) => { // 'any' because it could be Timestamp or Date from JSON serialization
         let date;
@@ -84,11 +88,25 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
         }
     };
 
+    const handleCommentOpen = async () => {
+        setIsLoading(true);
+        if(!isOpeningComments){
+            setIsOpeningComments(true);
+            setIsLoading(false);
+        } else {
+            setIsOpeningComments(false);
+            setIsLoading(false);
+        }
+
+    }
+
     return (
         <div className={styles.shineCard}>
             <div className={styles.shineHeader}>
-                {shine.userPhotoUrl && (
-                <img src={shine.userPhotoUrl} alt={shine.username} className={styles.userPhoto} />
+                {shine.userPhotoUrl ? (
+                    <img src={shine.userPhotoUrl} alt={shine.username} className={styles.userPhoto} />
+                ) : (
+                    <Image src={profile} alt="navbar logo" width="110" height="110" className={styles.userPhotoDefault}/>
                 )}
                 <div className={styles.userInfo}>
                     <span className={styles.username}>{shine.username}</span>
@@ -103,6 +121,16 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
             )}
             <div className={styles.shineFooter}>
                 <button
+                    className={styles.commentButton}
+                    onClick={handleCommentOpen}                    
+                >
+                    <FontAwesomeIcon
+                        icon={faComment} 
+                        className={styles.commentIcon}
+                    />
+
+                </button>
+                <button
                     className={`${styles.rayButton} ${hasUserRayed ? styles.rayed : ''}`}
                     onClick={handleRayToggle}
                     disabled={isRaying}
@@ -113,6 +141,10 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
                     />
                 </button>
             </div>
+            {isOpeningComments ? (
+                <div className={styles.commentSection}>
+                </div>
+            ) : <div/>}
         </div>
     );
 }

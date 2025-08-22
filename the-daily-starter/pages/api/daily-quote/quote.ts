@@ -1,3 +1,5 @@
+// api/daily-quote/quote
+
 import { NextApiRequest, NextApiResponse } from "next";
 import { getOrCreateDailyQuoteForToday } from "@/lib/firebase/adminUtils/quoteService";
 
