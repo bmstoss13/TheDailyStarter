@@ -72,7 +72,8 @@ export default function FeedPage() {
 
     if (authLoading) {
         return (
-            <div className={styles.feedContainer}>
+            <div className={styles.loadingContainer}>
+                <div className={styles.loadingSpinner} />
                 <h1>Feed</h1>
                 <p>Loading user session...</p>
             </div>
