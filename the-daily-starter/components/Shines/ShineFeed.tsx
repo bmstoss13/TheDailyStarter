@@ -1,12 +1,14 @@
+// components/Shines/ShineFeed.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { auth } from '@/lib/firebase/firebase'; // Client-side Auth
+import { User } from 'firebase/auth'; // Import the User type
 import { ShineData } from '@/lib/firebase/interfaces';
 import ShineCard from './ShineCard';
 import styles from './ShineFeed.module.css';
 
-export default function ShineFeed() {
+// Accept the user prop
+export default function ShineFeed({ user }: { user: User | null }) {
     const [shines, setShines] = useState<ShineData[]>([]);
     const [isLoadingFeed, setIsLoadingFeed] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -16,14 +18,15 @@ export default function ShineFeed() {
     const fetchShines = useCallback(async (startAfterId?: string) => {
         setIsLoadingFeed(true);
         setError(null);
+
+        // Check for user BEFORE making the API call
+        if (!user) {
+            setIsLoadingFeed(false);
+            return;
+        }
+
         try {
-            const currentUser = auth.currentUser;
-            if (!currentUser) {
-                console.warn("No current user. Fetching shines without authorization.");
-            }
-
-            const idToken = currentUser ? await currentUser.getIdToken() : undefined;
-
+            const idToken = await user.getIdToken();
             let url = `/api/shines/shines?limit=10`;
             if (startAfterId) {
                 url += `&startAfter=${startAfterId}`;
@@ -31,8 +34,8 @@ export default function ShineFeed() {
 
             const response = await fetch(url, {
                 headers: {
-                'Content-Type': 'application/json',
-                ...(idToken && { 'Authorization': `Bearer ${idToken}` }),
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
                 },
             });
 
@@ -57,27 +60,33 @@ export default function ShineFeed() {
         } finally {
             setIsLoadingFeed(false);
         }
-    }, []);
+    }, [user]); // Re-run fetchShines when the user prop changes
 
+    // Remove the onAuthStateChanged listener and use a simple useEffect
+    // This effect now triggers the initial fetch only when the user prop is available
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(() => {
-        setShines([]);
-        setLastShineId(undefined);
-        setHasMore(true);
-        fetchShines();
-        });
-
-        return () => unsubscribe();
-    }, [fetchShines]);
+        if (user) {
+            setShines([]);
+            setLastShineId(undefined);
+            setHasMore(true);
+            fetchShines();
+        } else {
+            // Clear the feed if the user logs out
+            setShines([]);
+            setLastShineId(undefined);
+            setHasMore(true);
+            setIsLoadingFeed(false);
+        }
+    }, [user, fetchShines]);
 
     const handleScroll = useCallback(() => {
         if (
             window.innerHeight + document.documentElement.scrollTop >=
-                document.documentElement.offsetHeight - 500 &&
+            document.documentElement.offsetHeight - 500 &&
             !isLoadingFeed &&
             hasMore
         ) {
-        fetchShines(lastShineId);
+            fetchShines(lastShineId);
         }
     }, [isLoadingFeed, hasMore, lastShineId, fetchShines]);
 
@@ -90,9 +99,9 @@ export default function ShineFeed() {
         (shineId: string, newRayCount: number, hasRayed: boolean) => {
             setShines((prevShines) =>
                 prevShines.map((shine) =>
-                shine.id === shineId
-                    ? { ...shine, rayCount: newRayCount, hasRayed }
-                    : shine
+                    shine.id === shineId
+                        ? { ...shine, rayCount: newRayCount, hasRayed }
+                        : shine
                 )
             );
         },
@@ -101,27 +110,27 @@ export default function ShineFeed() {
 
     return (
         <div className={styles.shineFeedContainer}>
-        {error && <p className={styles.error}>{error}</p>}
+            {error && <p className={styles.error}>{error}</p>}
 
-        <div className={styles.shineList}>
-            {shines.map((shine) => (
-            <ShineCard
-                key={shine.id}
-                shine={shine}
-                onRayToggle={handleShineCardRayToggle}
-            />
-            ))}
-        </div>
+            <div className={styles.shineList}>
+                {shines.map((shine) => (
+                    <ShineCard
+                        key={shine.id}
+                        shine={shine}
+                        onRayToggle={handleShineCardRayToggle}
+                    />
+                ))}
+            </div>
 
-        {isLoadingFeed && <p className={styles.loading}>Loading more shines...</p>}
-        {!hasMore && !isLoadingFeed && shines.length > 0 && (
-            <p className={styles.endMessage}>You've seen all the shines!</p>
-        )}
-        {shines.length === 0 && !isLoadingFeed && !error && (
-            <p className={styles.emptyMessage}>
-            No shines to display yet. Be the first to post!
-            </p>
-        )}
+            {isLoadingFeed && <p className={styles.loading}>Loading more shines...</p>}
+            {!hasMore && !isLoadingFeed && shines.length > 0 && (
+                <p className={styles.endMessage}>You've seen all the shines!</p>
+            )}
+            {shines.length === 0 && !isLoadingFeed && !error && (
+                <p className={styles.emptyMessage}>
+                    No shines to display yet. Be the first to post!
+                </p>
+            )}
         </div>
     );
 }

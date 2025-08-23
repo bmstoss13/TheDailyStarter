@@ -1,6 +1,7 @@
 import { UserProfileData, Username, UserSearchResult } from "../interfaces";
 import { db, admin } from "../firebaseAdmin";
 import { userCollection, usernameCollection } from "../collectionNames";
+import defaultProf from "@/public/png-transparent-default-avatar.png";
 
 //Fetch the individual user profile
 export async function getUserProfile(uid: string): Promise<UserProfileData | null> {
@@ -108,7 +109,7 @@ export async function createUserProfile(
             dob: profileData.dob,
             username: profileData.username,
             email: profileData.email || null,
-            displayName: profileData.displayName || null,
+            // displayName: profileData.displayName || null,
             photoURL: profileData.photoURL || null,
             createdAt: new Date(),
         };
@@ -157,7 +158,7 @@ export async function getSearchedUsersCapped(query: string): Promise<UserSearchR
         const userRef = db.collection(userCollection);
         const snapshot = await userRef
             .where('username', '>=', query)
-            .where('username', '<=', '\uf8ff')
+            .where('username', '<=', query + '\uf8ff')
             .limit(10) //limit for efficiency's sake
             .select('uid', 'username', 'photoURL')
             .get();
@@ -181,5 +182,4 @@ export async function getSearchedUsersCapped(query: string): Promise<UserSearchR
         console.error(`An error occurred while fetching searched users: ${err}`);
         throw new Error(err.message || "Error searching users.");
     }
-
 }

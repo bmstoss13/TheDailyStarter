@@ -7,7 +7,8 @@ import { db, admin } from "../firebaseAdmin";
 export async function createShine (uid: string, text: string, mediaURL?: string): Promise<ShineData|null> {
     try{
         //get user profile from user service.
-        const userProfile = await getUserProfile(uid); 
+        const userProfile = await getUserProfile(uid);
+        console.log('user profile: ' + userProfile) ;
         if(!userProfile){
             console.log(`No user found for id: ${uid}.`);
             return null;
@@ -23,6 +24,8 @@ export async function createShine (uid: string, text: string, mediaURL?: string)
             rayCount: 0,
             mediaURL: mediaURL || null
         }
+
+        console.log("user photo on shine: " + newShine.userPhotoUrl)
 
         //Create new Shine in db
         const shineRef = await db.collection(shineCollection).add(newShine);
@@ -73,7 +76,7 @@ export async function toggleRay (uid: string, shineId: string): Promise<boolean>
     }
 }
 
-export async function getShines(limit: number = 20, startAfterShineId?: string, uid?: string): Promise<ShineDataWithRayStatus[]> {
+export async function getShines(limit: number, startAfterShineId?: string, uid?: string): Promise<ShineDataWithRayStatus[]> {
     try {
         let query = db.collection(shineCollection)
             .orderBy('createdAt', 'desc')
@@ -99,8 +102,8 @@ export async function getShines(limit: number = 20, startAfterShineId?: string, 
                 let userRef = null;
                 if(uid) {
                     hasRayed = await hasUserRayedShine( uid, shine.id );
-                    userRef = await getUserProfile(shine.uid);
-                    shine.userPhotoUrl = userRef?.photoURL;
+                    // userRef = await getUserProfile(shine.uid);
+                    // shine.userPhotoUrl = userRef?.photoURL;
                 }
                 return { ...shine, hasRayed}
             })
