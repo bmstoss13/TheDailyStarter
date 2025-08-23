@@ -1,4 +1,4 @@
-// pages/feed.tsx
+// pages/feed/page.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ import QuoteModal from "@/components/Quotes/QuoteModal"; // Import the QuoteModa
 
 import styles from './FeedPage.module.css';
 import Navbar from '@/components/Navbar/Navbar';
+import { useRouter } from 'next/router';
 
 interface DailyQuoteData {
     q: string;
@@ -21,11 +22,17 @@ export default function FeedPage() {
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
 
+    const router = useRouter();
+
     // This useEffect will run when the user's auth state changes
     // It will fetch the new quote and show the modal only for new logins
     useEffect(() => {
         const fetchQuote = async () => {
+            if (authLoading) {
+                return;
+            }
             if (!user) {
+                router.push('/')
                 return;
             }
             try {
@@ -51,7 +58,7 @@ export default function FeedPage() {
         };
 
         fetchQuote();
-    }, [user]); // The dependency array ensures this effect runs when the 'user' object is available
+    }, [user, authLoading, router]); // The dependency array ensures this effect runs when the 'user' object is available
 
     // Callback function to be passed to CreateShineForm
     const handleShinePosted = () => {
@@ -88,7 +95,7 @@ export default function FeedPage() {
             {user ? (
                 <>
                     <CreateShineForm onShinePosted={handleShinePosted} />
-                    <ShineFeed key={shineFeedKey} />
+                    <ShineFeed key={shineFeedKey} user={user} />
                 </>
             ) : (
                 <div className={styles.loginPrompt}>

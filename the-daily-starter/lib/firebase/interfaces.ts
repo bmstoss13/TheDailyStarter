@@ -1,7 +1,9 @@
 // document objects
 import firebase from "firebase/compat/app";
 import { admin } from "./firebaseAdmin";
+import { FieldValue } from "firebase-admin/firestore";
 
+// Defines the structure for a user's daily quote album.
 export interface DailyQuote {
     id?: string;
     a?: string;
@@ -9,6 +11,7 @@ export interface DailyQuote {
     q?: string;
 }
 
+// Defines the core user profile data.
 export interface UserProfileData {
     uid: string;
     firstName: string;
@@ -17,25 +20,26 @@ export interface UserProfileData {
     dob: string;
     createdAt: Date;
     email?: string | null;
-    // displayName?: string | null;
-    photoURL?: string | null;  
-    quotesAlbum?: DailyQuote[] | null; 
-    lastQuoteShown?: string | null; //store date of last quote shown. 
+    photoURL?: string | null;
+    quotesAlbum?: DailyQuote[] | null;
+    lastQuoteShown?: string | null;
 }
 
+// Defines the structure for a username entry (for uniqueness checks).
 export interface Username {
     uid: string;
     username: string;
     createdAt: Date;
 }
 
-//lightweight interface for search queries
+// Lightweight interface for search queries.
 export interface UserSearchResult {
     uid: string;
     username: string;
     photoURL?: string | null;
 }
 
+// Defines the core data for a Shine post.
 export interface ShineData {
     id?: string;
     text: string;
@@ -43,32 +47,58 @@ export interface ShineData {
     uid: string;
     createdAt: Date;
     rayCount: number;
-    mediaURL?: string | null; //photo or video associated with the post
+    mediaURL?: string | null;
     userPhotoUrl?: string | null;
     commentNumber?: number;
 }
 
+// Defines a Shine post with an additional status flag for the current user.
 export interface ShineDataWithRayStatus extends ShineData {
     hasRayed: boolean;
 }
 
+// Defines a simple document for a "ray" (like).
 export interface RayData {
     timestamp: Date;
 }
 
-//photo data for reference to firebase storage bucket
+// Defines the core data for a comment or a reply.
+export interface CommentOrReplyData {
+    id?: string;
+    uid: string;
+    username: string;
+    userPhotoUrl?: string | null;
+    text: string;
+    createdAt: FieldValue;
+    rayCount: number;
+}
+
+// Defines a comment on a shine post.
+export interface CommentData extends CommentOrReplyData {
+    shineId: string;
+}
+
+// Defines a reply to a comment.
+export interface ReplyData extends CommentOrReplyData {
+    commentId: string;
+}
+
+// Defines a comment with an additional status flag for the current user.
+export interface CommentDataWithRayStatus extends CommentOrReplyData {
+    shineId: string;
+    hasRayed: boolean;
+}
+
+// Defines a reply with an additional status flag for the current user.
+export interface ReplyDataWithRayStatus extends CommentOrReplyData {
+    commentId: string;
+    hasRayed: boolean;
+}
+
+// Photo data for reference to a firebase storage bucket.
 export interface PhotoData {
     url: string;
     fileName: string;
     uploadedBy: string;
-    createdAt: admin.firestore.FieldValue; //need to refactor everything else to get accurate time snippets.
-}
-
-export interface CommentData { 
-    uid: string;
-    shineId: string;
     createdAt: admin.firestore.FieldValue;
-    rayCount: number;
-    username: string;
-    userPhotoUrl?: string;
 }

@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import AuthForm from "@/components/AuthForm/AuthForm";
 import { useAuth } from "@/hooks/useAuth";
 import styles from "./index.module.css";
+import logo from "@/public/sunshine.svg"
+import Image from "next/image";
 
 export default function Home() {
     const { user, loading: authLoading, error: authError } = useAuth();
@@ -41,7 +43,7 @@ export default function Home() {
     // If no user, show login form
     return (
         <main className={styles.mainContainer}>
-            <h1 className={styles.appHeader}>Sunshine</h1>
+            <h1 className={styles.appHeader}>Sun<Image src={logo} alt={'Sunshine logo'} className={styles.logo}/> </h1>
             {!user && (
                 <div className={styles.authContainer}>
                 <AuthForm />
