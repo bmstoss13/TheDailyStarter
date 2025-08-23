@@ -19,4 +19,6 @@ export const raySubcollection = "rays";
 export const photoCollection = "photos";
 
 //collection of comments under shine
-export const commentSubcollection = "comments";
+export const commentsSubcollection = "comments";
+
+export const repliesSubcollection = "replies";
