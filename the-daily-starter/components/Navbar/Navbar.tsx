@@ -8,7 +8,7 @@ const Navbar = () => {
     return(
         <nav className={styles.navbarContainer}>
             <div className={styles.navbarLogo}>
-                <Image src={sunshine} alt="navbar logo" width="100" height="100"/>
+                <Image src={sunshine} alt="navbar logo" width="60" height="60" className={styles.logo}/>
             </div>
             <div className={styles.navbarSearch}>
                 <SearchBar/>

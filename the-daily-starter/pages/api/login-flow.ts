@@ -24,7 +24,7 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
 
             if(userData.lastQuoteShown === today) {
                 console.log("User has seen quote. No new quote needs to be shown.");
-                res.status(200).json({ isNewQuote: false });
+                return res.status(200).json({ isNewQuote: false });
             }
 
             dailyQuote = await getOrCreateDailyQuoteForToday();
@@ -36,7 +36,7 @@ export default async function handler (req: NextApiRequest, res: NextApiResponse
             );
 
             isNewQuote = true;
-            res.status(200).json({ dailyQuote, isNewQuote });
+            return res.status(200).json({ dailyQuote, isNewQuote });
 
         }
     } catch (err: any){
