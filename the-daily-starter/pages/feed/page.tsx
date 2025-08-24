@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
+import axios from 'axios';
 
 import CreateShineForm from '@/components/Shines/CreateShineForm';
 import ShineFeed from '@/components/Shines/ShineFeed';
@@ -12,8 +13,13 @@ import Navbar from '@/components/Navbar/Navbar';
 import { useRouter } from 'next/router';
 
 interface DailyQuoteData {
-    q: string;
-    a: string;
+    Quote: string;
+    Author: string;
+}
+
+interface LoginFlowResponse {
+    dailyQuote?: DailyQuoteData
+    isNewQuote: boolean;
 }
 
 export default function FeedPage() {
@@ -28,32 +34,50 @@ export default function FeedPage() {
     // It will fetch the new quote and show the modal only for new logins
     useEffect(() => {
         const fetchQuote = async () => {
-            if (authLoading) {
-                return;
-            }
-            if (!user) {
-                router.push('/')
-                return;
-            }
-            try {
-                const response = await fetch(`/api/login-flow`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ uid: user.uid })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Login flow API call failed.');
+            if (authLoading || !user) {
+                if(!authLoading && !user) {
+                    router.push('/')
                 }
+                return;
+            }
 
-                const data = await response.json();
+            try {
+                const idToken = await user.getIdToken();
+                const response = await axios.post<LoginFlowResponse>(
+                    `http://localhost:8080/api/user/login`,
+                    {},
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${idToken}`,
+                        }
+                    }
+                );
+                // const response = await fetch(`/api/login-flow`, {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ uid: user.uid })
+                // });
+
+                // if (!response.ok) {
+                //     throw new Error('Login flow API call failed.');
+                // }
+
+                const data = response.data;
+                console.log("data: ", data)
                 if (data.isNewQuote) {
-                    setQuote(data.dailyQuote);
-                    setShowQuoteModal(true);
+                    if(data.dailyQuote){
+                        setQuote(data.dailyQuote);
+                        setShowQuoteModal(true);
+                    }
                 }
 
             } catch (err: any) {
-                console.error("Failed to fetch new quote:", err);
+                if(axios.isAxiosError(err)){
+                    console.error("Failed to fetch new quote:", err.response?.data || err.message)
+                } else {
+                    console.error("Failed to fetch new quote:", err);
+                }
             }
         };
 

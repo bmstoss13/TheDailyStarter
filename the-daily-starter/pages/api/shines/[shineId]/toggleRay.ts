@@ -1,3 +1,5 @@
+// api/shines/[shineId]/toggleRay
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { corsInstance, runMiddleware, tokenAuthorization } from "@/lib/authorization/helper";
 import { toggleRay } from "@/lib/firebase/adminUtils/shineService";
