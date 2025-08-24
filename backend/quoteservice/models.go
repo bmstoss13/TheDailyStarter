@@ -1,7 +1,6 @@
 package quoteservice
 
 type DailyQuote struct {
-	ID     string `firestore:"id"`
 	Author string `firestore:"a"`
 	Quote  string `firestore:"q"`
 	Date   string `firestore:"date"`

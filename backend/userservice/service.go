@@ -220,3 +220,20 @@ func (s *Service) GetSearchedUsersCapped(ctx context.Context, query string) ([]U
 	}
 	return searchResults, nil
 }
+
+func (s *Service) UpdateLastQuoteShown(ctx context.Context, uid, date string) error {
+	docRef := s.firestoreClient.Collection(userCollection).Doc(uid)
+
+	_, err := docRef.Update(ctx, []firestore.Update{
+		{
+			Path:  "lastQuoteShown",
+			Value: date,
+		},
+	})
+
+	if err != nil {
+		log.Printf("An error occurred while updating the last quote shown on user %s: %v", uid, err)
+	}
+
+	return nil
+}

@@ -10,14 +10,16 @@ import (
 	"time"
 
 	firebaseService "services/firebase"
+	LoginEndpoint "services/loginservice/enpdoint"
 	quoteService "services/quoteservice"
 	QuoteEndpoint "services/quoteservice/endpoint"
 	"services/userservice"
 	UserEndpoint "services/userservice/endpoint"
-	helpers "services/utils"
+	helpers "services/utils" // You will still need the TokenAuthorizer from here
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors" // Import the cors library
 )
 
 func main() {
@@ -38,42 +40,31 @@ func main() {
 	quoteSvc := quoteService.NewService(clients)
 	userSvc := userservice.NewService(clients)
 
-	// Create a new Chi router.
 	r := chi.NewRouter()
 
-	// Apply global CORS middleware for all routes.
-	r.Use(helpers.CorsMiddleware([]string{
-		http.MethodGet,
-		http.MethodPost,
-		http.MethodDelete,
-		http.MethodOptions,
-	}))
+	// Configure the CORS middleware from the external library
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000"}, // Allow your Next.js app
+		AllowedMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	})
 
-	// Define a public route.
+	// Wrap your router with the CORS middleware
+	handler := c.Handler(r)
+
+	// Define your routes on the router 'r'
 	r.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello from Go backend"))
 	})
 
-	// Grouping related endpoints under a common path
 	r.Route("/api", func(r chi.Router) {
+		r.Get("/quote/today", QuoteEndpoint.QuoteHandler(quoteSvc))
+		r.Get("/quotes/all", QuoteEndpoint.AllQuotesHandler(quoteSvc))
+		r.Get("/users/search", UserEndpoint.SearchUsersHandler(userSvc))
+		r.Post("/user/create", UserEndpoint.CreateProfileHandler(userSvc))
 
-		// Public API routes
-		r.Route("/", func(r chi.Router) {
-			// Public quote endpoints
-			r.Get("/quote/today", QuoteEndpoint.QuoteHandler(quoteSvc))
-			r.Get("/quotes/all", QuoteEndpoint.AllQuotesHandler(quoteSvc))
-
-			// Public user endpoint
-			r.Get("/users/search", UserEndpoint.SearchUsersHandler(userSvc))
-		})
-
-		// Private API routes (requires a valid token)
-		r.Route("/", func(r chi.Router) {
-			// Apply the token authorization middleware to all routes in this group
-			r.Use(helpers.TokenAuthorizer(clients.Auth))
-
-			// User profile endpoints
-			r.Post("/user/create", UserEndpoint.CreateProfileHandler(userSvc))
+		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
+			r.Post("/user/login", LoginEndpoint.LoginFlowHandler(userSvc, quoteSvc))
 			r.Delete("/user/delete", UserEndpoint.DeleteUserHandler(userSvc))
 		})
 	})
@@ -83,9 +74,9 @@ func main() {
 		port = "8080"
 	}
 
-	server := &http.Server{Addr: ":" + port, Handler: r} // Use the chi router
+	// Use the wrapped handler instead of the raw router
+	server := &http.Server{Addr: ":" + port, Handler: handler}
 
-	// ... rest of your graceful shutdown logic remains the same
 	go func() {
 		log.Printf("Server listening on port %s", port)
 		if serveErr := server.ListenAndServe(); serveErr != nil && serveErr != http.ErrServerClosed {
