@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/signal"
 	firebaseService "services/firebase"
+	quoteService "services/quoteservice"
+	QuoteEndpoint "services/quoteservice/endpoint"
 	"syscall"
 	"time"
 
@@ -14,6 +16,8 @@ import (
 )
 
 func main() {
+
+	chosenPort := "PORT"
 
 	envErr := godotenv.Load()
 	if envErr != nil {
@@ -33,11 +37,17 @@ func main() {
 		}
 	}()
 
+	quoteSvc := quoteService.NewService(clients)
+
 	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello from Go backend"))
 	})
 
-	port := os.Getenv("PORT")
+	http.HandleFunc("/api/quote", QuoteEndpoint.QuoteHandler(quoteSvc))
+
+	http.HandleFunc("/api/all-quotes", QuoteEndpoint.AllQuotesHandler(quoteSvc))
+
+	port := os.Getenv(chosenPort)
 	if port == "" {
 		port = "8080"
 	}
