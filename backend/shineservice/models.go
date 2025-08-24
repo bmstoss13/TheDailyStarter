@@ -14,7 +14,9 @@ type ShineData struct {
 	CommentNumber uint32    `firebase:"commentNumber"`
 }
 
+//extends ShineData with ray status
 type ShineDataWithRayStatus struct {
+	ShineData
 	HasRayed bool `firebase:"hasRayed"`
 }
 
@@ -26,3 +28,11 @@ const (
 	ShineCollection  = "shines"
 	RaySubcollection = "rays"
 )
+
+type ShineError struct {
+	Message string
+}
+
+func (e *ShineError) Error() string {
+	return e.Message
+}

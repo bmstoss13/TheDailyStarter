@@ -141,7 +141,7 @@ func (s *Service) DeleteUserProfileAndUsername(ctx context.Context, uid string) 
 
 		var userData UserProfileData
 		if err := userDoc.DataTo(&userData); err != nil {
-			return fmt.Errorf("failed to conver user data for deletion: %w", err)
+			return fmt.Errorf("failed to convert user data for deletion: %w", err)
 		}
 
 		usernameRef := s.firestoreClient.Collection(usernameCollection).Doc(strings.ToLower(userData.Username))
@@ -236,4 +236,21 @@ func (s *Service) UpdateLastQuoteShown(ctx context.Context, uid, date string) er
 	}
 
 	return nil
+}
+
+func (s *Service) IsAdmin(ctx context.Context, uid string) (bool, error) {
+	userRef := s.firestoreClient.Collection(userCollection).Doc(uid)
+	doc, err := userRef.Get(ctx)
+	if err != nil {
+		log.Printf("An error occurred while checking if user is admin: %v", err)
+		return false, fmt.Errorf("failed to get user document: %w", err)
+	}
+
+	//retrieved data, now got to unmarshal it to get the admin status.
+	var userProfile UserProfileData
+	if err := doc.DataTo(&userProfile); err != nil {
+		log.Printf("Failed to unmarshal user profile data: %v", err)
+		return false, fmt.Errorf("failed to parse user data: %w", err)
+	}
+	return userProfile.IsAdmin, nil
 }

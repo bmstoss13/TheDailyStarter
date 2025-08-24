@@ -13,6 +13,8 @@ import (
 	LoginEndpoint "services/loginservice/enpdoint"
 	quoteService "services/quoteservice"
 	QuoteEndpoint "services/quoteservice/endpoint"
+	"services/shineservice"
+	ShinesEndpoint "services/shineservice/endpoint"
 	"services/userservice"
 	UserEndpoint "services/userservice/endpoint"
 	helpers "services/utils" // You will still need the TokenAuthorizer from here
@@ -39,6 +41,7 @@ func main() {
 
 	quoteSvc := quoteService.NewService(clients)
 	userSvc := userservice.NewService(clients)
+	shineSvc := shineservice.NewService(clients, userSvc)
 
 	r := chi.NewRouter()
 
@@ -66,6 +69,17 @@ func main() {
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
 			r.Post("/user/login", LoginEndpoint.LoginFlowHandler(userSvc, quoteSvc))
 			r.Delete("/user/delete", UserEndpoint.DeleteUserHandler(userSvc))
+
+			//endpoint for GET and POST shines
+			r.Handle("/shines", ShinesEndpoint.ShineHandler(shineSvc))
+
+			//endpoint to delete shine
+			r.Delete("/shines/{shineId}", ShinesEndpoint.DeleteShineHandler(shineSvc))
+
+			r.Patch("/shines/{shineId}", ShinesEndpoint.UpdateShineHandler(shineSvc))
+
+			//SMACK that like button.
+			r.Post("/shines/{shineId}", ShinesEndpoint.ToggleRayHandler(shineSvc))
 		})
 	})
 

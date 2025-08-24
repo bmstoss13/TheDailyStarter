@@ -12,7 +12,6 @@ import (
 
 func LoginFlowHandler(userSvc *userservice.Service, quoteSvc *quoteservice.Service) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Print("Hit the endpoint!")
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 			return
