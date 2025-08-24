@@ -47,7 +47,6 @@ func (s *Service) GetAllDailyQuotes(ctx context.Context) ([]DailyQuote, error) {
 			continue
 		}
 
-		quote.ID = doc.Ref.ID
 		quotes = append(quotes, quote)
 	}
 	if len(quotes) == 0 {
@@ -70,7 +69,6 @@ func (s *Service) GetOrCreateDailyQuoteForToday(ctx context.Context) (*DailyQuot
 			log.Printf("Error converting document to daily quote: %v", err)
 			return nil, fmt.Errorf("failed to parse existing quote")
 		}
-		quote.ID = snapshot.Ref.ID
 		return &quote, nil
 	}
 
@@ -94,6 +92,5 @@ func (s *Service) GetOrCreateDailyQuoteForToday(ctx context.Context) (*DailyQuot
 		return nil, fmt.Errorf("failed to store the daily quote for today")
 	}
 
-	quoteToStore.ID = today
 	return &quoteToStore, nil
 }

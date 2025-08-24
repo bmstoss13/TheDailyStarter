@@ -16,6 +16,7 @@ type UserProfileData struct {
 	LastQuoteShown string    `firestore:"lastQuoteShown,omitempty"`
 	QuotesAlbum    string    `firestore:"quotesAlbum,omitempty"`
 	RayCount       string    `firestore:"rayCount"`
+	IsAdmin        bool      `firestore:"isAdmin"`
 }
 
 type Username struct {
