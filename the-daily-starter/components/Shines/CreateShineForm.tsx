@@ -88,9 +88,6 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
                     onChange={(e) => setMediaURL(e.target.value)}
                     disabled={isLoading}
                 />
-                
-                {error && <p className={styles.error}>{error}</p>}
-                {success && <p className={styles.success}>{success}</p>}
 
                 <button type="submit" disabled={isLoading}>
                     {isLoading ? 'Posting...' : 'Post Shine'}
