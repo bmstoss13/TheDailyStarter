@@ -18,6 +18,22 @@ const Navbar = () => {
             console.error("Logout failed: ", err);
         }
     }
+
+    const handleViewProfile = () => {
+        try{
+            router.push('/profile/page')
+        } catch (err: any) {
+            console.error("Unable to view profiel: ", err)
+        }
+    }
+
+    const handleViewFeed = () => {
+        try{
+            router.push('/feed/page')
+        } catch (err: any) {
+            console.error("Could not view feed: ", err)
+        }
+    }
     return(
         <nav className={styles.navbarContainer}>
             <div className={styles.navbarLogo}>
@@ -27,7 +43,15 @@ const Navbar = () => {
                 <SearchBar/>
             </div>
             <div>
-                Profile
+                <button onClick={handleViewFeed}>
+                    Feed
+                </button>
+            </div>
+            <div>
+                <button onClick={handleViewProfile}>
+                    Profile
+                </button>
+
             </div>
             <div>
                 Checklist

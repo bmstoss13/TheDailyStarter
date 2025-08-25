@@ -1,16 +1,16 @@
 // pages/feed/page.tsx
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from "@/hooks/useAuth";
 import axios from 'axios';
 
 import CreateShineForm from '@/components/Shines/CreateShineForm';
 import ShineFeed from '@/components/Shines/ShineFeed';
-import QuoteModal from "@/components/Quotes/QuoteModal"; // Import the QuoteModal component
+import QuoteModal from "@/components/Quotes/QuoteModal";
 
 import styles from './FeedPage.module.css';
 import Navbar from '@/components/Navbar/Navbar';
 import { useRouter } from 'next/router';
+import { useAuthContext } from '@/hooks/authProvider';
 
 interface DailyQuoteData {
     Quote: string;
@@ -23,15 +23,13 @@ interface LoginFlowResponse {
 }
 
 export default function FeedPage() {
-    const { user, loading: authLoading, error: authError } = useAuth();
+    const { user, loading: authLoading, error: authError } = useAuthContext();
     const [shineFeedKey, setShineFeedKey] = useState(0);
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
 
     const router = useRouter();
 
-    // This useEffect will run when the user's auth state changes
-    // It will fetch the new quote and show the modal only for new logins
     useEffect(() => {
         const fetchQuote = async () => {
             if (authLoading || !user) {
@@ -53,15 +51,6 @@ export default function FeedPage() {
                         }
                     }
                 );
-                // const response = await fetch(`/api/login-flow`, {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ uid: user.uid })
-                // });
-
-                // if (!response.ok) {
-                //     throw new Error('Login flow API call failed.');
-                // }
 
                 const data = response.data;
                 console.log("data: ", data)
@@ -82,14 +71,12 @@ export default function FeedPage() {
         };
 
         fetchQuote();
-    }, [user, authLoading, router]); // The dependency array ensures this effect runs when the 'user' object is available
+    }, [user, authLoading, router]);
 
-    // Callback function to be passed to CreateShineForm
     const handleShinePosted = () => {
         setShineFeedKey(prevKey => prevKey + 1);
     };
-    
-    // Function to close the modal
+
     const handleCloseModal = () => {
         setShowQuoteModal(false);
     };
@@ -127,7 +114,6 @@ export default function FeedPage() {
                     <p>Log in to share your shines!</p>
                 </div>
             )}
-            {/* Conditionally render the QuoteModal */}
             {showQuoteModal && quote && (
                 <QuoteModal quote={quote} onClose={handleCloseModal} />
             )}

@@ -32,6 +32,12 @@ const SettingsModal = ({ shine, currentUser, onClose, onDelete }: SettingsModalP
                     >
                         <p className={styles.deleteText}>Delete</p>
                     </button>
+                    <button className={styles.cancelButton}>
+                        <p>Edit</p>
+                    </button>
+                    <button className={styles.cancelButton}>
+                        <p>Archive</p>
+                    </button>
                     <button className={styles.cancelButton} onClick={onClose}>
                         <p>Cancel</p>
                     </button>

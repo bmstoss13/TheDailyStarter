@@ -3,13 +3,13 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import AuthForm from "@/components/AuthForm/AuthForm";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuthContext } from "@/hooks/authProvider";
 import styles from "./index.module.css";
 import logo from "@/public/sunshine.svg"
 import Image from "next/image";
 
 export default function Home() {
-    const { user, loading: authLoading, error: authError } = useAuth();
+    const { user, loading: authLoading, error: authError } = useAuthContext();
     const router = useRouter();
 
     useEffect(() => {
