@@ -48,28 +48,12 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
                 }
             })
 
-            // const response = await fetch('/api/shines/shines', {
-            //     method: "POST",
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${idToken}`, 
-            //     },
-            //     body: JSON.stringify({
-            //         text: shineText.trim(),
-            //         mediaURL: mediaURL.trim() || undefined,
-                    
-            //     }),
-            // });
-
             const data = await response.data;
-            console.log("data: ", data)
-            
-            //Clear the form.
+
             setShineText('');
             setMediaURL('');
             setSuccess('Shine posted successfully!');
             onShinePosted(); //Parent! Refresh!
-
 
         } catch (err: any){
             if(axios.isAxiosError(err) && err.response){

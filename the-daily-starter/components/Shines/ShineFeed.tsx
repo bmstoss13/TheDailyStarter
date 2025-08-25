@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { ShineData } from '@/lib/firebase/interfaces';
+import { CurrentUserModalData, ShineData, UserProfileData } from '@/lib/firebase/interfaces';
 import ShineCard from './ShineCard';
+import SettingsModal from '@/components/Shines/Settings/SettingsModal';
 import axios from 'axios';
 import styles from './ShineFeed.module.css';
+
 
 export default function ShineFeed({ user }: { user: User | null }) {
     const [shines, setShines] = useState<ShineData[]>([]);
@@ -13,6 +15,10 @@ export default function ShineFeed({ user }: { user: User | null }) {
     const [error, setError] = useState<string | null>(null);
     const [lastShineId, setLastShineId] = useState<string | undefined>(undefined);
     const [hasMore, setHasMore] = useState(true);
+    
+    // State for the settings modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedShine, setSelectedShine] = useState<ShineData | null>(null);
 
     const fetchShines = useCallback(async (startAfterId?: string) => {
         setIsLoadingFeed(true);
@@ -58,7 +64,6 @@ export default function ShineFeed({ user }: { user: User | null }) {
         }
     }, [user]);
 
-    // NEW FUNCTION for handling ray toggles
     const handleToggleRay = useCallback(async (shineId: string) => {
         if (!user) {
             setError('You must be logged in to ray a shine.');
@@ -95,6 +100,39 @@ export default function ShineFeed({ user }: { user: User | null }) {
         }
     }, [user]);
 
+    // NEW FUNCTIONS for modal management
+    const handleSettingsClick = useCallback((shine: ShineData) => {
+        setSelectedShine(shine);
+        setIsModalOpen(true);
+    }, []);
+
+    const handleCloseModal = useCallback(() => {
+        setIsModalOpen(false);
+        setSelectedShine(null);
+    }, []);
+
+    const handleDeleteShine = useCallback(async () => {
+        if (!selectedShine || !user) return;
+        
+        try {
+            const idToken = await user.getIdToken();
+            const url = `http://localhost:8080/api/shines/${selectedShine.id}`;
+
+            await axios.delete(url, {
+                headers: { 'Authorization': `Bearer ${idToken}` },
+            });
+
+            // Update state to remove the deleted shine
+            setShines(prevShines => prevShines.filter(s => s.id !== selectedShine.id));
+
+        } catch (err) {
+            console.error("Failed to delete shine:", err);
+            setError("Could not delete shine.");
+        } finally {
+            handleCloseModal();
+        }
+    }, [selectedShine, user, handleCloseModal]);
+    
     useEffect(() => {
         if (user) {
             setShines([]);
@@ -125,6 +163,14 @@ export default function ShineFeed({ user }: { user: User | null }) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
+    if(!user){
+        return 
+    }
+    const currentUserProfile: CurrentUserModalData = {
+        uid: user?.uid,
+        displayName: user?.displayName
+    }
+
     return (
         <div className={styles.shineFeedContainer}>
             {error && <p className={styles.error}>{error}</p>}
@@ -134,8 +180,8 @@ export default function ShineFeed({ user }: { user: User | null }) {
                     <ShineCard
                         key={shine.id}
                         shine={shine}
-                        // UPDATED PROP
                         onRayToggle={handleToggleRay}
+                        onSettingsClick={handleSettingsClick}
                     />
                 ))}
             </div>
@@ -148,6 +194,16 @@ export default function ShineFeed({ user }: { user: User | null }) {
                 <p className={styles.emptyMessage}>
                     No shines to display yet. Be the first to post!
                 </p>
+            )}
+
+            {/* Conditionally render the modal */}
+            {isModalOpen && selectedShine && user && (
+                <SettingsModal
+                    shine={selectedShine}
+                    currentUser={currentUserProfile}
+                    onClose={handleCloseModal}
+                    onDelete={handleDeleteShine}
+                />
             )}
         </div>
     );
