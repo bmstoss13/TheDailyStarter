@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import { auth } from '@/lib/firebase/firebase';
 import { ShineData } from '@/lib/firebase/interfaces';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faComment } from '@fortawesome/free-solid-svg-icons';
@@ -13,7 +12,6 @@ import Image from "next/image";
 
 import styles from './ShineCard.module.css';
 
-import SettingsModal from './Settings/SettingsModal'
 import CommentCard from './Comments/CommentCard';
 import CommentFeed from './Comments/CommentFeed';
 

@@ -5,30 +5,30 @@ import (
 )
 
 type UserProfileData struct {
-	UID            string    `firestore:"uid"`
-	FirstName      string    `firestore:"firstName"`
-	LastName       string    `firestore:"lastName"`
-	Username       string    `firestore:"username"`
-	DOB            string    `firestore:"dob"`
-	CreatedAt      time.Time `firestore:"createdAt"`
-	Email          string    `firestore:"email,omitempty"`
-	PhotoURL       string    `firestore:"photoURL,omitempty"`
-	LastQuoteShown string    `firestore:"lastQuoteShown,omitempty"`
-	QuotesAlbum    string    `firestore:"quotesAlbum,omitempty"`
-	RayCount       string    `firestore:"rayCount"`
-	IsAdmin        bool      `firestore:"isAdmin"`
+	UID            string    `firestore:"uid" json:"uid"`
+	FirstName      string    `firestore:"firstName" json:"firstName"`
+	LastName       string    `firestore:"lastName" json:"lastName"`
+	Username       string    `firestore:"username" json:"username"`
+	DOB            string    `firestore:"dob" json:"dob"`
+	CreatedAt      time.Time `firestore:"createdAt" json:"createdAt"`
+	Email          string    `firestore:"email,omitempty" json:"email,omitempty"`
+	PhotoURL       string    `firestore:"photoURL,omitempty" json:"photoURL,omitempty"`
+	LastQuoteShown string    `firestore:"lastQuoteShown,omitempty" json:"lastQuoteShown,omitempty"`
+	QuotesAlbum    string    `firestore:"quotesAlbum,omitempty" json:"quotesAlbum,omitempty"`
+	RayCount       string    `firestore:"rayCount" json:"rayCount"`
+	IsAdmin        bool      `firestore:"isAdmin" json:"isAdmin"`
 }
 
 type Username struct {
-	UID       string    `firestore:"uid"`
-	Username  string    `firestore:"username"`
-	CreatedAt time.Time `firestore:"createdAt"`
+	UID       string    `firestore:"uid" json:"uid"`
+	Username  string    `firestore:"username" json:"username"`
+	CreatedAt time.Time `firestore:"createdAt" json:"createdAt"`
 }
 
 type UserSearchResult struct {
-	UID      string `firestore:"uid"`
-	Username string `firestore:"username"`
-	PhotoURL string `firestore:"photoURL,omitempty"`
+	UID      string `firestore:"uid" json:"uid"`
+	Username string `firestore:"username" json:"username"`
+	PhotoURL string `firestore:"photoURL,omitempty" json:"photoURL,omitempty"`
 }
 
 const (

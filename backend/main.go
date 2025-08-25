@@ -69,6 +69,7 @@ func main() {
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
 			r.Post("/user/login", LoginEndpoint.LoginFlowHandler(userSvc, quoteSvc))
 			r.Delete("/user/delete", UserEndpoint.DeleteUserHandler(userSvc))
+			r.Get("/users/{uid}", UserEndpoint.UserProfileHandler(userSvc))
 
 			//endpoint for GET and POST shines
 			r.Handle("/shines", ShinesEndpoint.ShineHandler(shineSvc))
