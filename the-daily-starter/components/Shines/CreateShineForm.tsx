@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { auth } from "@/lib/firebase/firebase";
+import axios from "axios";
+
 import styles from "./CreateShineForm.module.css";
 
 interface CreateShineFormProps {
@@ -16,7 +18,7 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
     const [success, setSuccess] = useState<string | null>(null);
 
     const handleSubmit = async(e: React.FormEvent) => {
-        e.preventDefault;
+        e.preventDefault();
         setError(null);
         setSuccess(null);
         setIsLoading(true);
@@ -34,36 +36,34 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
             };
 
             const idToken = await currentUser.getIdToken();
+            const url = `http://localhost:8080/api/shines`;
 
-            const response = await fetch('/api/shines/shines', {
-                method: "POST",
+            const response = await axios.post(url, {
+                text: shineText.trim(),
+                mediaURL: mediaURL.trim() || undefined,
+            }, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}`, 
-                },
-                body: JSON.stringify({
-                    text: shineText.trim(),
-                    mediaURL: mediaURL.trim() || undefined,
-                    
-                }),
-            });
+                    'Authorization': `Bearer ${idToken}`
+                }
+            })
 
-            const data = await response.json();
+            const data = await response.data;
 
-            if(!response.ok){
-                throw new Error (data.error || data.message || "Failed to post shine.");
-            }
-            
-            //Clear the form.
             setShineText('');
             setMediaURL('');
             setSuccess('Shine posted successfully!');
             onShinePosted(); //Parent! Refresh!
 
-
         } catch (err: any){
-            console.error("An error occurred while posting shine: ", err);
-            setError(err.message || "An unexpected error occurred while posting form");
+            if(axios.isAxiosError(err) && err.response){
+                const errorData = err.response.data;
+                console.error("An error occurred while posting shine: ", err.response);
+                setError(errorData.message || errorData.error || "Failed to post shine.");
+            } else {
+                console.error("An unexpected error occurred: ", err);
+                setError(err.message || "An unexpected error occurred while posting form");
+            }
         } finally {
             setIsLoading(false);
         }

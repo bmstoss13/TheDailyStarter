@@ -102,3 +102,8 @@ export interface PhotoData {
     uploadedBy: string;
     createdAt: admin.firestore.FieldValue;
 }
+
+export interface CurrentUserModalData {
+    uid: string;
+    displayName: string | null;
+}

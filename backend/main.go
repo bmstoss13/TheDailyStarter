@@ -79,7 +79,7 @@ func main() {
 			r.Patch("/shines/{shineId}", ShinesEndpoint.UpdateShineHandler(shineSvc))
 
 			//SMACK that like button.
-			r.Post("/shines/{shineId}", ShinesEndpoint.ToggleRayHandler(shineSvc))
+			r.Post("/shines/{shineId}/toggleRay", ShinesEndpoint.ToggleRayHandler(shineSvc))
 		})
 	})
 

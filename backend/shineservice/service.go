@@ -10,6 +10,8 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type Service struct {
@@ -31,23 +33,35 @@ func (s *Service) CreateShine(ctx context.Context, uid string, text string, medi
 		return nil, fmt.Errorf("no user found for id: %s: %w", uid, err)
 	}
 
-	newShine := ShineData{
-		UID:          uid,
-		Username:     userProfile.Username,
-		UserPhotoURL: userProfile.PhotoURL,
-		Text:         text,
-		CreatedAt:    time.Now(),
-		RayCount:     0,
-		MediaURL:     mediaURL,
+	newShineData := map[string]interface{}{
+		"uid":           uid,
+		"username":      userProfile.Username,
+		"userPhotoURL":  userProfile.PhotoURL,
+		"text":          text,
+		"createdAt":     time.Now(),
+		"rayCount":      0,
+		"mediaURL":      mediaURL,
+		"commentNumber": 0,
 	}
 
-	shineRef, _, err := s.firestoreClient.Collection(ShineCollection).Add(ctx, newShine)
+	shineRef, _, err := s.firestoreClient.Collection(ShineCollection).Add(ctx, newShineData)
 	if err != nil {
 		log.Printf("An error occurred while creating shine: %v", err)
 		return nil, fmt.Errorf("error while creating shine: %w", err)
 	}
 
-	newShine.ID = shineRef.ID
+	newShine := ShineData{
+		ID:            shineRef.ID,
+		UID:           uid,
+		Username:      userProfile.Username,
+		UserPhotoURL:  userProfile.PhotoURL,
+		Text:          text,
+		CreatedAt:     time.Now(),
+		RayCount:      0,
+		MediaURL:      mediaURL,
+		CommentNumber: 0,
+	}
+
 	log.Printf("New shine, %s, added by %s to collection", shineRef.ID, uid)
 	return &newShine, nil
 }
@@ -81,6 +95,7 @@ func (s *Service) GetShines(ctx context.Context, limit int, startAfterShineId st
 			return nil, fmt.Errorf("failed to unmarshal shine data: %w", err)
 		}
 		shine.ID = doc.Ref.ID
+		fmt.Print(shine.CreatedAt)
 
 		hasRayed := false
 		if uid != "" {
@@ -186,40 +201,55 @@ func (s *Service) UpdateShine(ctx context.Context, uid string, shineId string, u
 
 func (s *Service) ToggleRay(ctx context.Context, uid string, shineId string) (bool, error) {
 	shineRef := s.firestoreClient.Collection(ShineCollection).Doc(shineId)
-	rayRef := s.firestoreClient.Collection(RaySubcollection).Doc(uid)
+	rayRef := shineRef.Collection(RaySubcollection).Doc(uid)
 
 	rayAdded := false
 	err := s.firestoreClient.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		shineDoc, err := tx.Get(shineRef)
 		if err != nil || !shineDoc.Exists() {
+			if status.Code(err) == codes.NotFound {
+				return fmt.Errorf("shine does not exist")
+			}
 			return fmt.Errorf("shine does not exist: %w", err)
 		}
 
 		rayDoc, err := tx.Get(rayRef)
-		if err != nil {
+		if err != nil && status.Code(err) != codes.NotFound {
 			return fmt.Errorf("failed to get ray document: %w", err)
 		}
 
 		if rayDoc.Exists() {
-			tx.Delete(rayRef)
-			tx.Update(shineRef, []firestore.Update{
+			// A ray already exists; delete it and decrement the count.
+			if err := tx.Delete(rayRef); err != nil {
+				return fmt.Errorf("failed to delete ray document: %w", err)
+			}
+			if err := tx.Update(shineRef, []firestore.Update{
 				{Path: "rayCount", Value: firestore.Increment(-1)},
-			})
+			}); err != nil {
+				return fmt.Errorf("failed to decrement ray count: %w", err)
+			}
 			rayAdded = false
-
 		} else {
-			tx.Set(rayRef, RayData{Timestamp: time.Now()})
-			tx.Update(shineRef, []firestore.Update{
+			// No ray exists; create it and increment the count.
+			if err := tx.Set(rayRef, RayData{Timestamp: time.Now()}); err != nil {
+				return fmt.Errorf("failed to set ray document: %w", err)
+			}
+			if err := tx.Update(shineRef, []firestore.Update{
 				{Path: "rayCount", Value: firestore.Increment(1)},
-			})
+			}); err != nil {
+				return fmt.Errorf("failed to increment ray count: %w", err)
+			}
 			rayAdded = true
 		}
+
 		return nil
 	})
+
 	if err != nil {
 		log.Printf("An error occurred while toggling ray: %v", err)
 		return false, fmt.Errorf("error toggling ray: %w", err)
 	}
+
 	return rayAdded, nil
 }
 
@@ -227,6 +257,9 @@ func (s *Service) HasUserRayedShine(ctx context.Context, uid string, shineId str
 	rayRef := s.firestoreClient.Collection(ShineCollection).Doc(shineId).Collection(RaySubcollection).Doc(uid)
 	rayDoc, err := rayRef.Get(ctx)
 	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return false, nil
+		}
 		return false, fmt.Errorf("error while checking if user %s rayed shine: %v", uid, err)
 	}
 	return rayDoc.Exists(), nil
