@@ -1,13 +1,12 @@
-// components/Shines/ShineFeed.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { User } from 'firebase/auth'; // Import the User type
+import { User } from 'firebase/auth';
 import { ShineData } from '@/lib/firebase/interfaces';
 import ShineCard from './ShineCard';
+import axios from 'axios';
 import styles from './ShineFeed.module.css';
 
-// Accept the user prop
 export default function ShineFeed({ user }: { user: User | null }) {
     const [shines, setShines] = useState<ShineData[]>([]);
     const [isLoadingFeed, setIsLoadingFeed] = useState(true);
@@ -19,7 +18,6 @@ export default function ShineFeed({ user }: { user: User | null }) {
         setIsLoadingFeed(true);
         setError(null);
 
-        // Check for user BEFORE making the API call
         if (!user) {
             setIsLoadingFeed(false);
             return;
@@ -27,25 +25,18 @@ export default function ShineFeed({ user }: { user: User | null }) {
 
         try {
             const idToken = await user.getIdToken();
-            let url = `/api/shines/shines?limit=10`;
-            if (startAfterId) {
-                url += `&startAfter=${startAfterId}`;
-            }
-
-            const response = await fetch(url, {
+            const response = await axios.get(`http://localhost:8080/api/shines`, {
+                params: {
+                    limit: 10,
+                    startAfter: startAfterId,
+                },
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}`,
-                },
+                    'Authorization': `Bearer ${idToken}`
+                }
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || data.message || 'Failed to fetch shines.');
-            }
-
-            // Deduplicate by ID
+            const data = response.data;
             setShines((prevShines) => {
                 const all = [...prevShines, ...data];
                 const unique = Array.from(new Map(all.map((s) => [s.id, s])).values());
@@ -55,15 +46,55 @@ export default function ShineFeed({ user }: { user: User | null }) {
             setLastShineId(data.length > 0 ? data[data.length - 1].id : undefined);
             setHasMore(data.length === 10);
         } catch (err: any) {
-            console.error("Error fetching shines:", err);
-            setError(err.message || "Could not load shines.");
+            if (axios.isAxiosError(err)) {
+                console.error("Error fetching shines:", err.response?.data || err.message);
+                setError(err.response?.data?.error || err.response?.data?.message || 'Failed to fetch shines.');
+            } else {
+                console.error("Error fetching shines:", err);
+                setError(err.message || 'Could not load shines.');
+            }
         } finally {
             setIsLoadingFeed(false);
         }
-    }, [user]); // Re-run fetchShines when the user prop changes
+    }, [user]);
 
-    // Remove the onAuthStateChanged listener and use a simple useEffect
-    // This effect now triggers the initial fetch only when the user prop is available
+    // NEW FUNCTION for handling ray toggles
+    const handleToggleRay = useCallback(async (shineId: string) => {
+        if (!user) {
+            setError('You must be logged in to ray a shine.');
+            return;
+        }
+
+        try {
+            const idToken = await user.getIdToken();
+            const url = `http://localhost:8080/api/shines/${shineId}/toggleRay`;
+
+            const response = await axios.post(url, null, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            });
+
+            const rayToggled = response.data;
+
+            setShines((prevShines) =>
+                prevShines.map((shine) => {
+                    if (shine.id === shineId) {
+                        return {
+                            ...shine,
+                            hasRayed: rayToggled,
+                            rayCount: rayToggled ? shine.rayCount + 1 : shine.rayCount - 1,
+                        };
+                    }
+                    return shine;
+                })
+            );
+        } catch (err: any) {
+            console.error("Failed to toggle ray:", err);
+            setError("Could not toggle ray.");
+        }
+    }, [user]);
+
     useEffect(() => {
         if (user) {
             setShines([]);
@@ -71,7 +102,6 @@ export default function ShineFeed({ user }: { user: User | null }) {
             setHasMore(true);
             fetchShines();
         } else {
-            // Clear the feed if the user logs out
             setShines([]);
             setLastShineId(undefined);
             setHasMore(true);
@@ -95,19 +125,6 @@ export default function ShineFeed({ user }: { user: User | null }) {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
-    const handleShineCardRayToggle = useCallback(
-        (shineId: string, newRayCount: number, hasRayed: boolean) => {
-            setShines((prevShines) =>
-                prevShines.map((shine) =>
-                    shine.id === shineId
-                        ? { ...shine, rayCount: newRayCount, hasRayed }
-                        : shine
-                )
-            );
-        },
-        []
-    );
-
     return (
         <div className={styles.shineFeedContainer}>
             {error && <p className={styles.error}>{error}</p>}
@@ -117,7 +134,8 @@ export default function ShineFeed({ user }: { user: User | null }) {
                     <ShineCard
                         key={shine.id}
                         shine={shine}
-                        onRayToggle={handleShineCardRayToggle}
+                        // UPDATED PROP
+                        onRayToggle={handleToggleRay}
                     />
                 ))}
             </div>

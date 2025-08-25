@@ -16,12 +16,10 @@ import CommentFeed from './Comments/CommentFeed';
 
 interface ShineCardProps {
     shine: ShineData & { hasRayed?: boolean };
-    onRayToggle: (shineId: string, newRayCount: number, hasRayed: boolean) => void;
+    onRayToggle: (shineId: string) => void;
 }
 
 export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
-    const [currentRayCount, setCurrentRayCount] = useState(shine.rayCount);
-    const [hasUserRayed, setHasUserRayed] = useState(shine.hasRayed || false);
     const [isRaying, setIsRaying] = useState(false);
     const [isOpeningComments, setIsOpeningComments] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -29,104 +27,68 @@ export default function ShineCard({ shine, onRayToggle }: ShineCardProps) {
     const handleRayToggle = async () => {
         if (isRaying) return;
         setIsRaying(true);
-
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-            alert("You must be logged in to Ray a shine.");
-            setIsRaying(false);
-            return;
-        }
-
-        const idToken = await currentUser.getIdToken();
-
-        const newRayCount = hasUserRayed ? currentRayCount - 1 : currentRayCount + 1;
-        setHasUserRayed(!hasUserRayed);
-        setCurrentRayCount(newRayCount);
-
-        try {
-        const response = await fetch(`/api/shines/${shine.id}/toggleRay`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${idToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            setHasUserRayed(!hasUserRayed);
-            setCurrentRayCount(currentRayCount);
-            const errorData = await response.json();
-            throw new Error(errorData.error || errorData.message || 'Failed to toggle Ray.');
-        }
-
-        onRayToggle(shine.id!, newRayCount, !hasUserRayed); 
-
-        } catch (err: any) {
-            console.error("Error toggling Ray:", err);
-            alert(`Error: ${err.message}`);
-        } finally {
-            setIsRaying(false);
-        }
+        onRayToggle(shine.id!);
+        setIsRaying(false);
     };
 
     const handleCommentOpen = async () => {
         setIsLoading(true);
-        if(!isOpeningComments){
+        if (!isOpeningComments) {
             setIsOpeningComments(true);
             setIsLoading(false);
         } else {
             setIsOpeningComments(false);
             setIsLoading(false);
         }
-
     }
 
+    const createdAtDate = new Date(shine.createdAt);
     return (
         <div className={styles.shineCard}>
             <div className={styles.shineHeader}>
                 {shine.userPhotoUrl ? (
                     <img src={shine.userPhotoUrl} alt={shine.username} className={styles.userPhoto} />
                 ) : (
-                    <Image src={profile} alt="navbar logo" width="110" height="110" className={styles.userPhotoDefault}/>
+                    <Image src={profile} alt="user avatar" width={110} height={110} className={styles.userPhotoDefault} />
                 )}
                 <div className={styles.userInfo}>
                     <span className={styles.username}>{shine.username}</span>
-                    <span className={styles.timestamp}>{formatTimestamp(shine.createdAt)}</span>
+                    <span className={styles.timestamp}>{formatTimestamp(createdAtDate)}</span>
                 </div>
             </div>
             <p className={styles.shineText}>{shine.text}</p>
             {shine.mediaURL && (
                 <div className={styles.mediaContainer}>
-                <img src={shine.mediaURL} alt="Shine media" className={styles.media} />
+                    <img src={shine.mediaURL} alt="Shine media" className={styles.media} />
                 </div>
             )}
             <div className={styles.shineFooter}>
                 <button
                     className={styles.commentButton}
-                    onClick={handleCommentOpen}                    
+                    onClick={handleCommentOpen}
                 >
                     <FontAwesomeIcon
-                        icon={faComment} 
+                        icon={faComment}
                         className={styles.commentIcon}
                     />
-
                 </button>
                 <button
-                    className={`${styles.rayButton} ${hasUserRayed ? styles.rayed : ''}`}
+                    className={`${styles.rayButton} ${shine.hasRayed ? styles.rayed : ''}`}
                     onClick={handleRayToggle}
                     disabled={isRaying}
                 >
                     <FontAwesomeIcon
-                        icon={hasUserRayed ? faSun : faSunRegular}
-                        className={styles.rayIcon}                    
+                        icon={shine.hasRayed ? faSun : faSunRegular}
+                        className={styles.rayIcon}
                     />
                 </button>
+                <span>{shine.rayCount}</span>
             </div>
-            {isOpeningComments ? (
+            {isOpeningComments && (
                 <div className={styles.commentSection}>
-                    <CommentFeed/>
+                    <CommentFeed />
                 </div>
-            ) : <div/>}
+            )}
         </div>
     );
 }
