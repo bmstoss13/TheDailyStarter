@@ -37,27 +37,26 @@ const Navbar = () => {
     return(
         <nav className={styles.navbarContainer}>
             <div className={styles.navbarLogo}>
-                <Image src={sunshine} alt="navbar logo" width="60" height="60" className={styles.logo}/>
+                <img src="/logo2.png" alt="navbar logo" width="60" height="60" className={styles.logo}/>
             </div>
             <div className={styles.navbarSearch}>
                 <SearchBar/>
             </div>
-            <div>
-                <button onClick={handleViewFeed}>
+            <div >
+                <button onClick={handleViewFeed} className={styles.navbarItem}>
                     Feed
                 </button>
             </div>
             <div>
-                <button onClick={handleViewProfile}>
+                <button onClick={handleViewProfile} className={styles.navbarItem}>
                     Profile
                 </button>
-
             </div>
-            <div>
+            <div className={styles.navbarItem}>
                 Checklist
             </div>
-            <div  className={styles.logout}>
-                <button onClick={handleLogout}>
+            <div className={styles.logout}>
+                <button onClick={handleLogout} className={styles.navbarItem}>
                     Logout
                 </button>
             </div>

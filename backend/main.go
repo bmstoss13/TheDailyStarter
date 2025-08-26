@@ -11,23 +11,28 @@ import (
 
 	firebaseService "services/firebase"
 	LoginEndpoint "services/loginservice/enpdoint"
+	"services/photoservice"
 	quoteService "services/quoteservice"
 	QuoteEndpoint "services/quoteservice/endpoint"
 	"services/shineservice"
 	ShinesEndpoint "services/shineservice/endpoint"
 	"services/userservice"
 	UserEndpoint "services/userservice/endpoint"
-	helpers "services/utils" // You will still need the TokenAuthorizer from here
+	helpers "services/utils"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
-	"github.com/rs/cors" // Import the cors library
+	"github.com/rs/cors"
 )
 
 func main() {
 	envErr := godotenv.Load()
 	if envErr != nil {
 		log.Fatalf("Failed to load environment variables")
+	}
+
+	if photoservice.GetProjectId() == "" {
+		log.Fatalf("FIREBASE_ADMIN_PROJECT_ID environment variable is not set. This is required for the photo service.")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -42,20 +47,18 @@ func main() {
 	quoteSvc := quoteService.NewService(clients)
 	userSvc := userservice.NewService(clients)
 	shineSvc := shineservice.NewService(clients, userSvc)
+	photoSvc := photoservice.NewService(clients.Firestore, clients.Storage)
 
 	r := chi.NewRouter()
 
-	// Configure the CORS middleware from the external library
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"}, // Allow your Next.js app
+		AllowedOrigins: []string{"http://localhost:3000"},
 		AllowedMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Content-Type", "Authorization"},
 	})
 
-	// Wrap your router with the CORS middleware
 	handler := c.Handler(r)
 
-	// Define your routes on the router 'r'
 	r.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello from Go backend"))
 	})
@@ -64,22 +67,15 @@ func main() {
 		r.Get("/quote/today", QuoteEndpoint.QuoteHandler(quoteSvc))
 		r.Get("/quotes/all", QuoteEndpoint.AllQuotesHandler(quoteSvc))
 		r.Get("/users/search", UserEndpoint.SearchUsersHandler(userSvc))
-		r.Post("/user/create", UserEndpoint.CreateProfileHandler(userSvc))
+		r.Post("/user/create", UserEndpoint.CreateProfileHandler(userSvc, photoSvc))
 
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
 			r.Post("/user/login", LoginEndpoint.LoginFlowHandler(userSvc, quoteSvc))
 			r.Delete("/user/delete", UserEndpoint.DeleteUserHandler(userSvc))
 			r.Get("/users/{uid}", UserEndpoint.UserProfileHandler(userSvc))
-
-			//endpoint for GET and POST shines
 			r.Handle("/shines", ShinesEndpoint.ShineHandler(shineSvc))
-
-			//endpoint to delete shine
 			r.Delete("/shines/{shineId}", ShinesEndpoint.DeleteShineHandler(shineSvc))
-
 			r.Patch("/shines/{shineId}", ShinesEndpoint.UpdateShineHandler(shineSvc))
-
-			//SMACK that like button.
 			r.Post("/shines/{shineId}/toggleRay", ShinesEndpoint.ToggleRayHandler(shineSvc))
 		})
 	})
@@ -89,7 +85,6 @@ func main() {
 		port = "8080"
 	}
 
-	// Use the wrapped handler instead of the raw router
 	server := &http.Server{Addr: ":" + port, Handler: handler}
 
 	go func() {

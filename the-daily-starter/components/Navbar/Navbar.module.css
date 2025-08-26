@@ -15,7 +15,19 @@
     border-radius: 8px;
 }
 
+.navbarItem {
+    color: var(--iconColor)
+}
+
+.navbarItem:hover{
+    cursor:pointer
+}
+
 .logout{
     margin-left: auto;
     margin-right: 10px;
+}
+
+.logout:hover{
+    cursor:pointer
 }
