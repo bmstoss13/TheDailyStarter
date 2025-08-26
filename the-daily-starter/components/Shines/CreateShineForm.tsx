@@ -5,9 +5,10 @@ import { auth } from "@/lib/firebase/firebase";
 import axios from "axios";
 
 import styles from "./CreateShineForm.module.css";
+import { ShineData } from "@/lib/firebase/interfaces";
 
 interface CreateShineFormProps {
-    onShinePosted: () => void //set callback to notify parent aka refresh feed.
+    onShinePosted: (newShine: ShineData) => void //set callback to notify parent aka refresh feed.
 }
 
 export default function CreateShineForm({ onShinePosted }: CreateShineFormProps){
@@ -48,12 +49,12 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
                 }
             })
 
-            const data = await response.data;
+            const data:ShineData = await response.data;
 
             setShineText('');
             setMediaURL('');
             setSuccess('Shine posted successfully!');
-            onShinePosted(); //Parent! Refresh!
+            onShinePosted(data); //Parent! Refresh!
 
         } catch (err: any){
             if(axios.isAxiosError(err) && err.response){
