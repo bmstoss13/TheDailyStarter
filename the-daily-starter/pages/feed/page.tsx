@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { User } from 'firebase/auth';
 
@@ -37,7 +37,8 @@ export default function FeedPage() {
     const [hasMore, setHasMore] = useState(true);
     
     // NEW: Add a state variable to track the initial data fetch
-    const [hasInitialFetched, setHasInitialFetched] = useState(false);
+    // const [hasInitialFetched, setHasInitialFetched] = useState(false);
+    const hasInitialFetched = useRef(false)
 
     // This function will always perform a network request
     const fetchShinesFromBackend = useCallback(async (startAfterId?: string) => {
@@ -94,7 +95,7 @@ export default function FeedPage() {
 
     // This effect runs once on mount to check the cache and then perform the first fetch.
     useEffect(() => {
-        if (!user || hasInitialFetched) {
+        if (!user || hasInitialFetched.current) {
             return;
         }
 
@@ -107,15 +108,15 @@ export default function FeedPage() {
             setLastShineId(lastId);
             setHasMore(true);
             setIsLoadingFeed(false);
-            setHasInitialFetched(true); // Mark as fetched
+            hasInitialFetched.current = true // Mark as fetched
         } else {
             console.log("Cache is empty or stale, fetching from backend.");
             // If no cache, perform the initial fetch from the backend
             fetchShinesFromBackend(undefined);
-            setHasInitialFetched(true); // Mark as fetched
+            hasInitialFetched.current = true; // Mark as fetched
         }
         
-    }, [user, hasInitialFetched, fetchShinesFromBackend]);
+    }, [user, fetchShinesFromBackend]);
 
 
     // Infinite scroll handler
@@ -142,6 +143,27 @@ export default function FeedPage() {
             const updatedShines = [newShine, ...prevShines];
             saveShineFeedToCache(updatedShines); 
             return updatedShines;
+        });
+    };
+
+    const handleShineUpdated = (updatedShine: ShineData) => {
+        setShines(prevShines => {
+            const updatedList = prevShines.map(shine => {
+                if (shine.id === updatedShine.id) {
+                    return updatedShine;
+                }
+                return shine;
+            });
+            saveShineFeedToCache(updatedList);
+            return updatedList;
+        });
+    };
+
+    const handleShineDeleted = (shineId: string) => {
+        setShines(prevShines => {
+            const updatedList = prevShines.filter(shine => shine.id !== shineId);
+            saveShineFeedToCache(updatedList);
+            return updatedList;
         });
     };
 
@@ -211,6 +233,8 @@ export default function FeedPage() {
                         isLoadingFeed={isLoadingFeed}
                         error={error}
                         hasMore={hasMore}
+                        onShineUpdated={handleShineUpdated}
+                        onShineDeleted={handleShineDeleted}
                     />
                 </>
             ) : (

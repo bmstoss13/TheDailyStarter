@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShineData } from '@/lib/firebase/interfaces';
+import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faSun as faSunRegular } from '@fortawesome/free-regular-svg-icons';
@@ -16,22 +16,17 @@ import CommentCard from './Comments/CommentCard';
 import CommentFeed from './Comments/CommentFeed';
 
 interface ShineCardProps {
-    shine: ShineData & { hasRayed?: boolean };
+    shine: ShineDataWithRayStatus; // Updated type to match the data being passed
     onRayToggle: (shineId: string) => void;
-    onSettingsClick: (shine: ShineData) => void;
+    onSettingsClick: (shine: ShineDataWithRayStatus) => void; // Updated type
 }
 
 export default function ShineCard({ shine, onRayToggle, onSettingsClick }: ShineCardProps) {
-    const [isRaying, setIsRaying] = useState(false);
     const [isOpeningComments, setIsOpeningComments] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-
     const handleRayToggle = async () => {
-        if (isRaying) return;
-        setIsRaying(true);
-        onRayToggle(shine.id!);
-        setIsRaying(false);
+        onRayToggle(shine.id!)
     };
 
     const handleCommentOpen = async () => {
@@ -88,7 +83,6 @@ export default function ShineCard({ shine, onRayToggle, onSettingsClick }: Shine
                 <button
                     className={`${styles.rayButton} ${shine.hasRayed ? styles.rayed : ''}`}
                     onClick={handleRayToggle}
-                    disabled={isRaying}
                 >
                     <FontAwesomeIcon
                         icon={shine.hasRayed ? faSun : faSunRegular}

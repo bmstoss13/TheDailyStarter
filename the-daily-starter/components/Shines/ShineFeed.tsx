@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { CurrentUserModalData, ShineData } from '@/lib/firebase/interfaces';
+import { CurrentUserModalData, ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import ShineCard from './ShineCard';
 import SettingsModal from '@/components/Shines/Settings/SettingsModal';
 import axios from 'axios';
@@ -10,15 +10,19 @@ import styles from './ShineFeed.module.css';
 
 interface ShineFeedProps {
     user: User | null;
-    shines: ShineData[];
+    shines: ShineDataWithRayStatus[]; // Corrected type to match parent component
     isLoadingFeed: boolean;
     error: string | null;
     hasMore: boolean;
+    // The component now accepts these handler props
+    onShineUpdated: (shine: ShineDataWithRayStatus) => void;
+    onShineDeleted: (shineId: string) => void;
 }
 
-export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore }: ShineFeedProps) {
+export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted }: ShineFeedProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedShine, setSelectedShine] = useState<ShineData | null>(null);
+    // State now uses the correct type
+    const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
 
     const handleToggleRay = useCallback(async (shineId: string) => {
         if (!user) {
@@ -35,35 +39,26 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore 
                 },
             });
 
-            // The backend returns true/false whether a ray was added or removed.
-            const rayToggled = response.data;
-
-            // Update the shine list to reflect the change.
-            // This is a direct state update, which is more efficient.
-            // Note: If you want this to be reflected globally, you would need to lift this state
-            // to the FeedPage component and pass this handler down as a prop.
-            // For now, it updates the component's local state.
-            const newShines = shines.map((shine) => {
-                if (shine.id === shineId) {
-                    return {
-                        ...shine,
-                        hasRayed: rayToggled,
-                        rayCount: rayToggled ? shine.rayCount + 1 : shine.rayCount - 1,
-                    };
+            const hasRayed = response.data;
+            console.log("has rayed:" + hasRayed);
+            const originalShine = shines.find(s => s.id === shineId);
+            if(originalShine) {
+                const newRayCount = hasRayed ? originalShine.rayCount + 1 : originalShine.rayCount - 1
+                console.log("new ray count: " + newRayCount);
+                const updatedShine: ShineDataWithRayStatus = {
+                    ...originalShine,
+                    rayCount: newRayCount,
+                    hasRayed: hasRayed,
                 }
-                return shine;
-            });
-            // Since the state is managed in FeedPage, this component can't update it directly.
-            // This part of the code needs to be adjusted. Let's assume the FeedPage
-            // will pass an update function down.
-            // For this version, we will handle the update in the parent.
+                onShineUpdated(updatedShine);
+            }
+
         } catch (err) {
             console.error("Failed to toggle ray:", err);
         }
-    }, [user, shines]);
+    }, [user, onShineUpdated]);
 
-    // NEW FUNCTIONS for modal management
-    const handleSettingsClick = useCallback((shine: ShineData) => {
+    const handleSettingsClick = useCallback((shine: ShineDataWithRayStatus) => {
         setSelectedShine(shine);
         setIsModalOpen(true);
     }, []);
@@ -84,19 +79,15 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore 
                 headers: { 'Authorization': `Bearer ${idToken}` },
             });
 
-            // Note: In the final solution, the parent component (FeedPage) will handle the state update.
-            // This is just a placeholder to show the logic.
-            // The parent component should pass a onDelete prop to handle this.
-            console.log("Shine deleted successfully, parent component should handle state update.");
+            onShineDeleted(selectedShine.id ? selectedShine.id : '');
 
         } catch (err) {
             console.error("Failed to delete shine:", err);
         } finally {
             handleCloseModal();
         }
-    }, [selectedShine, user, handleCloseModal]);
+    }, [selectedShine, user, handleCloseModal, onShineDeleted]);
     
-    // Your component now renders based on the props it receives.
     if (!user) {
         return null;
     }
@@ -142,4 +133,3 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore 
         </div>
     );
 }
-
