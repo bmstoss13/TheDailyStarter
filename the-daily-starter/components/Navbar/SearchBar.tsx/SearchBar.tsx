@@ -77,8 +77,8 @@ useEffect(() => {
             <div 
                 className={`${styles.searchbarContainer} ${isActive ? styles.active : ''}`}
                 onClick={() => setIsActive(true)}
-                >
-                <FontAwesomeIcon icon={faSearch} />
+            >
+                <FontAwesomeIcon icon={faSearch} className={`${styles.searchIcon} ${isActive ? styles.active : ''}`}/>
                 <input 
                     type="text"
                     className={`${styles.textbox} ${isActive ? styles.active : ''}`}

@@ -11,7 +11,7 @@ import QuoteModal from "@/components/Quotes/QuoteModal";
 import styles from './FeedPage.module.css';
 import Navbar from '@/components/Navbar/Navbar';
 import { useAuthContext } from '@/hooks/authProvider';
-import { ShineData } from '@/lib/firebase/interfaces';
+import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { saveShineFeedToCache, loadShineFeedFromCache } from '@/hooks/feedCache';
 
 interface DailyQuoteData {
@@ -30,17 +30,22 @@ export default function FeedPage() {
     const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
     
     // STATE FOR SHINE FEED
-    const [shines, setShines] = useState<ShineData[]>([]);
+    // The state now directly holds the type that the backend returns.
+    const [shines, setShines] = useState<ShineDataWithRayStatus[]>([]);
     const [isLoadingFeed, setIsLoadingFeed] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastShineId, setLastShineId] = useState<string | undefined>(undefined);
     const [hasMore, setHasMore] = useState(true);
     
-    // NEW: Add a state variable to track the initial data fetch
-    // const [hasInitialFetched, setHasInitialFetched] = useState(false);
-    const hasInitialFetched = useRef(false)
+    const hasInitialFetched = useRef(false);
 
-    // This function will always perform a network request
+    const processShinesData = useCallback((data: ShineData[]): ShineDataWithRayStatus[] => {
+        return data.map(shine => ({
+            ...shine,
+            hasRayed: false 
+        }));
+    }, []);
+
     const fetchShinesFromBackend = useCallback(async (startAfterId?: string) => {
         setIsLoadingFeed(true);
         setError(null);
@@ -52,7 +57,7 @@ export default function FeedPage() {
 
         try {
             const idToken = await user.getIdToken();
-            const response = await axios.get(`http://localhost:8080/api/shines`, {
+            const response = await axios.get<ShineDataWithRayStatus[]>(`http://localhost:8080/api/shines`, {
                 params: {
                     limit: 10,
                     startAfter: startAfterId,
@@ -63,13 +68,15 @@ export default function FeedPage() {
                 }
             });
 
-            const data: ShineData[] = response.data;
+            const data: ShineDataWithRayStatus[] = response.data;
+            console.log("fetched data: " + data )
+            
             setShines(prevShines => {
-                const newShines = startAfterId ? [...prevShines, ...data] : data;
+                const newShines: ShineDataWithRayStatus[] = startAfterId ? [...prevShines, ...data] : data;
                 
                 const unique = Array.from(new Map(
                     newShines
-                        .filter((s): s is ShineData & { id: string } => typeof s.id === 'string')
+                        .filter((s): s is ShineDataWithRayStatus & { id: string } => typeof s.id === 'string')
                         .map(s => [s.id, s])
                 ).values());
                 
@@ -93,7 +100,6 @@ export default function FeedPage() {
         }
     }, [user]);
 
-    // This effect runs once on mount to check the cache and then perform the first fetch.
     useEffect(() => {
         if (!user || hasInitialFetched.current) {
             return;
@@ -103,23 +109,22 @@ export default function FeedPage() {
         
         if (cachedShines && cachedShines.length > 0) {
             console.log("Loading shines from cache.");
-            setShines(cachedShines);
+            const processedCachedShines = processShinesData(cachedShines);
+            setShines(processedCachedShines);
             const lastId = cachedShines[cachedShines.length - 1].id;
             setLastShineId(lastId);
             setHasMore(true);
             setIsLoadingFeed(false);
-            hasInitialFetched.current = true // Mark as fetched
+            hasInitialFetched.current = true;
+
         } else {
             console.log("Cache is empty or stale, fetching from backend.");
-            // If no cache, perform the initial fetch from the backend
             fetchShinesFromBackend(undefined);
-            hasInitialFetched.current = true; // Mark as fetched
+            hasInitialFetched.current = true;
         }
         
-    }, [user, fetchShinesFromBackend]);
+    }, [user, fetchShinesFromBackend, processShinesData]);
 
-
-    // Infinite scroll handler
     const handleScroll = useCallback(() => {
         if (
             window.innerHeight + document.documentElement.scrollTop >=
@@ -131,14 +136,12 @@ export default function FeedPage() {
         }
     }, [isLoadingFeed, hasMore, lastShineId, fetchShinesFromBackend]);
 
-    // Add and remove scroll event listener
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
-    // Handler for new shines posted from the CreateShineForm
-    const handleShinePosted = (newShine: ShineData) => {
+    const handleShinePosted = (newShine: ShineDataWithRayStatus) => {
         setShines(prevShines => {
             const updatedShines = [newShine, ...prevShines];
             saveShineFeedToCache(updatedShines); 
@@ -146,7 +149,7 @@ export default function FeedPage() {
         });
     };
 
-    const handleShineUpdated = (updatedShine: ShineData) => {
+    const handleShineUpdated = (updatedShine: ShineDataWithRayStatus) => {
         setShines(prevShines => {
             const updatedList = prevShines.map(shine => {
                 if (shine.id === updatedShine.id) {

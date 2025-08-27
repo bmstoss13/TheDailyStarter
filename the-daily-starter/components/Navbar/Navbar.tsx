@@ -1,14 +1,20 @@
 import { useState } from "react";
 import styles from './Navbar.module.css';
-import Image from "next/image";
-import sunshine from '@/public/logo2.png'
 import SearchBar from "./SearchBar.tsx/SearchBar";
 import { signOutUser } from "@/lib/firebase/clientUtils/authService";
 import { useRouter } from "next/router";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouse, faUser, faListAlt } from "@fortawesome/free-regular-svg-icons";
+import { faHouse as faHouseSolid, faUser as faUserSolid, faListAlt as faListSolid } from "@fortawesome/free-solid-svg-icons";
+
+import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+
 const Navbar = () => {
+    // No need for local state like `isClicked`
     
     const router = useRouter();
+    const currentPath = router.pathname; // Get the current path
 
     const handleLogout = async() => {
         try{
@@ -20,20 +26,15 @@ const Navbar = () => {
     }
 
     const handleViewProfile = () => {
-        try{
-            router.push('/profile/page')
-        } catch (err: any) {
-            console.error("Unable to view profiel: ", err)
-        }
+        router.push('/profile/page')
     }
 
     const handleViewFeed = () => {
-        try{
-            router.push('/feed/page')
-        } catch (err: any) {
-            console.error("Could not view feed: ", err)
-        }
+        router.push('/feed/page')
     }
+
+    const isActive = (path: string) => currentPath === path;
+
     return(
         <nav className={styles.navbarContainer}>
             <div className={styles.navbarLogo}>
@@ -42,25 +43,39 @@ const Navbar = () => {
             <div className={styles.navbarSearch}>
                 <SearchBar/>
             </div>
-            <div >
-                <button onClick={handleViewFeed} className={styles.navbarItem}>
-                    Feed
+            <div>
+                <button onClick={handleViewFeed} className={`${styles.navbarItem} ${isActive('/feed/page') ? styles.active : ''}`}>
+                    {isActive('/feed/page') ? (
+                        <FontAwesomeIcon icon={faHouseSolid}/>
+                    ) : (
+                        <FontAwesomeIcon icon={faHouse}/>
+                    )}
                 </button>
             </div>
             <div>
-                <button onClick={handleViewProfile} className={styles.navbarItem}>
-                    Profile
+                <button onClick={handleViewProfile} className={`${styles.navbarItem} ${isActive('/profile/page') ? styles.active : ''}`}>
+                    {isActive('/profile/page') ? (
+                        <FontAwesomeIcon icon={faUserSolid}/>
+                    ) : (
+                        <FontAwesomeIcon icon={faUser}/>
+                    )}
                 </button>
             </div>
-            <div className={styles.navbarItem}>
-                Checklist
+            <div>
+                {/* Check for the list page's path */}
+                <button onClick={() => router.push('/list/page')} className={`${styles.navbarItem} ${isActive('/list/page') ? styles.active : ''}`}>
+                    {isActive('/list/page') ? (
+                        <FontAwesomeIcon icon={faListSolid}/>
+                    ) : (
+                        <FontAwesomeIcon icon={faListAlt}/>
+                    )}
+                </button>
             </div>
             <div className={styles.logout}>
                 <button onClick={handleLogout} className={styles.navbarItem}>
-                    Logout
+                    <FontAwesomeIcon icon={faArrowRightFromBracket}/>
                 </button>
             </div>
-
         </nav>
     )
 }

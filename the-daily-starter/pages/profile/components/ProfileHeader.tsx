@@ -2,7 +2,7 @@ import { lazy, useState } from "react";
 
 import { UserProfileData } from "@/lib/firebase/interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { faGear, faPencil } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 
 import styles from './ProfileHeader.module.css'
@@ -11,9 +11,10 @@ import styles from './ProfileHeader.module.css'
 interface UserProfileProps {
     userProfile: UserProfileData;
     onSettingsClick: (user: UserProfileData) => void;
+    onEditClick: (user: UserProfileData) => void;
 }
 
-const ProfileHeader = ({userProfile, onSettingsClick}: UserProfileProps) => {
+const ProfileHeader = ({userProfile, onSettingsClick, onEditClick}: UserProfileProps) => {
 
 
     return(
@@ -27,10 +28,19 @@ const ProfileHeader = ({userProfile, onSettingsClick}: UserProfileProps) => {
                         <div className={styles.profileUsername}>
                             <h2>{userProfile.username}</h2>
                         </div>
-                        <div className={styles.settingsGear}>
-                            <button>
-                                <FontAwesomeIcon icon={faGear} onClick={() => onSettingsClick(userProfile)} />
-                            </button>
+                            <div className={styles.rightTools}>
+                                <div className={styles.settingsGear}>
+                                    <button>
+                                        <FontAwesomeIcon icon={faPencil} onClick={() => onEditClick(userProfile)} />
+                                    </button>
+                                </div>
+
+                                <div className={styles.settingsGear}>
+                                    <button>
+                                        <FontAwesomeIcon icon={faGear} onClick={() => onSettingsClick(userProfile)} />
+                                    </button>
+                                </div>
+
                         </div>
                     </div>
                     <div className={styles.firstLastName}>

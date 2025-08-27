@@ -1,0 +1,215 @@
+.editFormContainer {
+    width: 100%;
+    max-width: 800px;
+    background-color: #ffffff;
+    border: 1px solid var(--tertiary);
+    border-radius: 8px;
+    box-shadow: var(--cardShadow) !important;
+    display: flex;
+    flex-direction: column;
+    margin: 10px;
+    padding: 10px;
+    height: 85vh;
+    overflow-y: auto;
+}
+
+.editHeaderWrapper{
+    display:flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+.backToProfile{
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    width: 80px;
+    color: var(--iconColor);
+}
+
+.backToProfile:hover {
+    color: var(--primary);
+    cursor: pointer;
+    transform: translateY(-2);
+}
+
+.editProfileHeaderContainer h2{
+    font-weight: bold;
+    font-size: 1.4em;
+}
+
+.imageRow {
+    padding: 6px;
+    background-color: rgb(240, 240, 240);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profilePictureWrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.profilePicture {
+    border: 2px solid var(--tertiary);
+    border-radius: 100%;
+    width: 100px;
+    height: 100px;
+    object-fit: cover !important;
+}
+
+.changeButton {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.4;
+    transition: all 0.2s ease;
+}
+
+.profilePictureWrapper:hover .changeButton {
+    opacity: 0.9;
+}
+
+.changeButton button {
+    background: white;
+    padding: 6px;
+    border: 2px solid var(--tertiary);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.infoContainer {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.nameRow{
+    font-weight: bold;
+    font-size: 1.4em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary)
+}
+
+.pronouns{
+    font-weight: 400;
+    color: rgb(102, 102, 102);
+}
+
+.nameRow button {
+    font-size: 0.9em;
+    margin-left: auto;
+    margin-right: 15px;
+    color: var(--iconColor);
+    transition: all 0.2s ease;
+}
+
+.nameRow button:hover{
+    cursor: pointer;
+    color: var(--primary);
+    transform: translateY(-2);
+}
+
+.usernameRow {
+    margin-top: 20px;
+    gap: 6px;
+    border-radius: 4px;
+}
+
+.usernameRow input{
+    border: 1px solid var(--tertiary);
+    border-radius: 8px;
+    margin-top: 10px;
+    padding-left: 4px;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.usernameRow input:hover{
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.usernameRow input:focus {
+    outline: none;
+    border: 2px solid var(--primary);
+}
+
+.username{
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.bio{
+    margin-top: 20px;
+}
+.bio h2{
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.bio input{
+    width: 100%;
+    margin-top: 10px;    
+    padding-bottom: 60px;
+    padding-left: 4px;  
+    padding-right: 4px;
+    border: 1px solid var(--tertiary);
+    border-radius: 8px;;
+    box-sizing: border-box; 
+    transition: all 0.2s ease;
+}
+
+.bio input:hover{
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.bio input:focus {
+    outline: none;
+    border: 2px solid var(--primary);
+}
+
+.saveEdits {
+    align-items: baseline;
+    justify-content: baseline;
+    margin-top: auto;
+    margin-left: auto;
+    color: var(--iconColor);
+}
+
+.saveEdits button {
+    padding: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+    border: 2px solid var(--tertiary);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+
+}
+
+.saveEdits button:hover {
+    cursor: pointer;
+    color: white;
+    background-color: var(--primary);
+    transform: translateY(-2px)
+}
+
+@media (max-width: 800){
+    .editFormContainer{
+        width: 97%;
+    }
+
+    .nameRow input{
+        max-width: 100px;
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+    }
+}

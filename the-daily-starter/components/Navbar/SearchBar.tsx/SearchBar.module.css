@@ -19,9 +19,22 @@
 }
 
 .searchbarContainer.active {
-  width: 400px;
+  width: 280px;
   cursor: text;
   padding-left: 6px;
+}
+
+.searchIcon {
+  color: var(--iconColor);
+  transition: all 0.2 ease;
+}
+
+.searchIcon:hover{
+  color: var(--primary);
+}
+
+.searchIcon.active {
+  color: var(--primary)
 }
 
 .textbox {
@@ -75,10 +88,23 @@
 }
 
 .userPhoto {
-  border-radius: 50%;
+  border-radius: 100%;
+  width: 50px;
+  height: 50px;
 }
 
 .noResults, .loading {
   padding: 10px;
   color: #666;
+}
+@media (max-width: 800px){
+  .searchbarContainer{
+    height: 40px;
+  }
+  .searchbarContainer.active {
+    width: 200px;
+    cursor: text;
+    padding-left: 6px;
+
+  }
 }
