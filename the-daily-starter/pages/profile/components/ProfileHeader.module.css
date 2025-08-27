@@ -16,6 +16,8 @@
 .profilePicture{
     border: 2px solid var(--tertiary);
     border-radius: 100%;
+    width: 150px;
+    height: 150px;
 }
 
 .profilePicture:hover{
@@ -40,21 +42,29 @@
     font-size: 1.35em;
 }
 
-.settingsGear{
+.rightTools {
+    display: flex;
     margin-left: auto;
+    gap: 10px;
+}
+
+.settingsGear{
     color: var(--iconColor);
     font-size: 1.1em;
-    transition: all 0.1s ease;
+
 }
 
-.settingsGear :hover{
-    cursor: pointer;
-    transform: translateY(-1);
-    
+.settingsGear button {
+    transition: all 0.2s ease;
 }
 
-.settingsGear :active {
-    transform: translateY(0);
+.settingsGear button:hover{
+    cursor:pointer !important;
+    transform: translateY(-2px);    
+}
+
+.settingsGear button:active {
+    transform: translateY(0px);
     color: var(--iconColorHover)
 }
 
@@ -97,7 +107,7 @@
     font-weight: 300;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
 
     .profileHeaderContainer{
         width:97%;
@@ -105,7 +115,6 @@
 
     .rightContainer {
         margin-left: 0; 
-        margin-top: 10px;
     }
     
     .publicStatsContainer {

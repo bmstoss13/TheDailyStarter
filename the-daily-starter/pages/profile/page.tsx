@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 import { useAuthContext } from "@/hooks/authProvider";
 import { useProfile } from "@/hooks/useProfile";
@@ -8,11 +9,15 @@ import Navbar from "@/components/Navbar/Navbar";
 import ProfileHeader from './components/ProfileHeader'
 import ProfileBody from "./components/ProfileBody";
 import ProfileSettingsModal from "./components/settings/ProfileSettings";
+import EditModal from "./components/edit/EditModal";
 
 export default function ProfilePage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
     const  { userProfile, loadingProfile, errorProfile } = useProfile();
     const [ isClickingSettings, setIsClickingSettings ] = useState(false)
+    const [ isClickingEdit, setIsClickingEdit ] = useState(false)
+
+    const router = useRouter();
 
     if(authLoading || loadingProfile){
         return <p> Loading profile... </p>
@@ -26,6 +31,18 @@ export default function ProfilePage() {
         return <p> Please login to view this profile. </p>
     }
 
+    const handleClickingEdit = () => {
+        if(isClickingSettings){
+            setIsClickingSettings(false);
+        }
+        // setIsClickingEdit(true);
+        try{
+            router.push('/profile/edit/page')
+        } catch (err: any) {
+            console.error("An error occurred while navigating to the edit page");
+        }
+    }
+
     const handleClickingSettings = () => {
         setIsClickingSettings(true);
         console.log(`is clicking settings: ${isClickingSettings}`);
@@ -35,8 +52,12 @@ export default function ProfilePage() {
         return;
     }
 
-    const handleCloseModal = () => {
+    const handleCloseSettingsModal = () => {
         setIsClickingSettings(false);
+    }
+
+    const handleCloseEditModal = () => {
+        setIsClickingEdit(false);
     }
 
 
@@ -45,7 +66,7 @@ export default function ProfilePage() {
             <Navbar/>
             <div>
                 <div className={styles.profileLayout}>
-                    <ProfileHeader userProfile={userProfile} onSettingsClick={handleClickingSettings}/>
+                    <ProfileHeader userProfile={userProfile} onSettingsClick={handleClickingSettings} onEditClick={handleClickingEdit}/>
                     <ProfileBody userProfile={userProfile}/>              
                 </div>
                 <div className={styles.sideMenu}>
@@ -55,8 +76,16 @@ export default function ProfilePage() {
             {isClickingSettings && (
                 <ProfileSettingsModal
                     currentUser={userProfile}
-                    onClose={handleCloseModal}
+                    onEdit={handleClickingEdit}
+                    onClose={handleCloseSettingsModal}
                     onDelete={handleDeleteUser}
+                />
+            )}
+
+            {isClickingEdit && (
+                <EditModal
+                    currentUser={userProfile}
+                    onClose={handleCloseEditModal}
                 />
             )}
         </div>
