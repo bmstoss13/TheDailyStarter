@@ -37,7 +37,7 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
             };
 
             const idToken = await currentUser.getIdToken();
-            const url = `http://localhost:8080/api/shines`;
+            const url = `http://localhost:8080/v1/shines`;
 
             const response = await axios.post(url, {
                 text: shineText.trim(),

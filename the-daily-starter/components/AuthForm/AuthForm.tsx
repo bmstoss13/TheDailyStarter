@@ -122,6 +122,8 @@ export default function AuthForm() {
 
                 const idToken = await user.getIdToken();
 
+                console.log("id token: " + idToken);
+
                 const formData = new FormData();
                 formData.append('firstName', firstName);
                 formData.append('lastName', lastName);
@@ -135,7 +137,15 @@ export default function AuthForm() {
 
                 console.log("form data: ", formData);
 
-                const response = await fetch('/api/user/create-profile', {
+                // const response = await fetch('/api/user/create-profile', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Authorization': `Bearer ${idToken}`, 
+                //     },
+                //     body: formData,
+                // });
+
+                const response = await fetch(`http://localhost:8080/v1/user/create`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${idToken}`, 

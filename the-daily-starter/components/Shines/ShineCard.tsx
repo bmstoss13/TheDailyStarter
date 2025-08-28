@@ -25,6 +25,8 @@ export default function ShineCard({ shine, onRayToggle, onSettingsClick }: Shine
     const [isOpeningComments, setIsOpeningComments] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
+    console.log("has rayed? " + shine.hasRayed)
+
     const handleRayToggle = async () => {
         onRayToggle(shine.id!)
     };

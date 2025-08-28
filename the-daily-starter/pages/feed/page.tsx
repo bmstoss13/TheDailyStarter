@@ -28,9 +28,6 @@ export default function FeedPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
-    
-    // STATE FOR SHINE FEED
-    // The state now directly holds the type that the backend returns.
     const [shines, setShines] = useState<ShineDataWithRayStatus[]>([]);
     const [isLoadingFeed, setIsLoadingFeed] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -39,10 +36,10 @@ export default function FeedPage() {
     
     const hasInitialFetched = useRef(false);
 
-    const processShinesData = useCallback((data: ShineData[]): ShineDataWithRayStatus[] => {
+    const processShinesData = useCallback((data: ShineDataWithRayStatus[]): ShineDataWithRayStatus[] => {
         return data.map(shine => ({
             ...shine,
-            hasRayed: false 
+            hasRayed: shine.hasRayed ?? false 
         }));
     }, []);
 
@@ -57,7 +54,7 @@ export default function FeedPage() {
 
         try {
             const idToken = await user.getIdToken();
-            const response = await axios.get<ShineDataWithRayStatus[]>(`http://localhost:8080/api/shines`, {
+            const response = await axios.get<ShineDataWithRayStatus[]>(`http://localhost:8080/v1/shines`, {
                 params: {
                     limit: 10,
                     startAfter: startAfterId,
@@ -150,9 +147,11 @@ export default function FeedPage() {
     };
 
     const handleShineUpdated = (updatedShine: ShineDataWithRayStatus) => {
+        
         setShines(prevShines => {
             const updatedList = prevShines.map(shine => {
                 if (shine.id === updatedShine.id) {
+                    console.log("update shine: " + updatedShine.hasRayed)
                     return updatedShine;
                 }
                 return shine;
@@ -174,7 +173,7 @@ export default function FeedPage() {
         try {
             const idToken = await user.getIdToken();
             const response = await axios.post<LoginFlowResponse>(
-                `http://localhost:8080/api/user/login`,
+                `http://localhost:8080/v1/user/login`,
                 {},
                 {
                     headers: {

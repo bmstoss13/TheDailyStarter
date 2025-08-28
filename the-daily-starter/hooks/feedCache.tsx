@@ -1,14 +1,14 @@
-import { ShineData } from "@/lib/firebase/interfaces";
+import { ShineData, ShineDataWithRayStatus } from "@/lib/firebase/interfaces";
 
 const cacheKey = process.env.SHINE_FEED_CACHE_KEY || 'shine-feed-cache';
 
 interface ShineCache {
-    data: ShineData[];
+    data: ShineDataWithRayStatus[];
     timestamp: number;
 }
 
 //Saves shine data to the browser's sessionStorage
-export const saveShineFeedToCache = (shines: ShineData[]) => {
+export const saveShineFeedToCache = (shines: ShineDataWithRayStatus[]) => {
     try {
         const cache: ShineCache = {
             data: shines,
@@ -21,7 +21,7 @@ export const saveShineFeedToCache = (shines: ShineData[]) => {
     }
 };
 
-export const loadShineFeedFromCache = (): ShineData[] | null => {
+export const loadShineFeedFromCache = (): ShineDataWithRayStatus[] | null => {
     console.log("load cache key: " + cacheKey)
     const cachedData = sessionStorage.getItem(cacheKey);
     if (!cachedData){

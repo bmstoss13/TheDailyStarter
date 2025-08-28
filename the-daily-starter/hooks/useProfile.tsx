@@ -31,7 +31,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
             const idToken = await user.getIdToken();
-            const response = await axios.get(`http://localhost:8080/api/users/${user.uid}`, {
+            const response = await axios.get(`http://localhost:8080/v1/users/${user.uid}`, {
                 headers: { Authorization: `Bearer ${idToken}` }
             });
             setUserProfile(response.data);
