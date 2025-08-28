@@ -23,6 +23,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
+
+	SupabaseLoginEndpoint "services/supabase/loginservice/endpoint"
+	SupabasePhotos "services/supabase/photoservice"
+	SupabaseQuotes "services/supabase/quoteservice"
+	SupabaseQuoteEndpoint "services/supabase/quoteservice/endpoint"
+	SupabaseUsers "services/supabase/userservice"
+	SupabaseUserEndpoint "services/supabase/userservice/endpoint"
 )
 
 func main() {
@@ -49,6 +56,10 @@ func main() {
 	shineSvc := shineservice.NewService(clients, userSvc)
 	photoSvc := photoservice.NewService(clients.Firestore, clients.Storage)
 
+	supabaseQuoteSvc := SupabaseQuotes.NewSupabaseService(clients.DB)
+	supabaseUserSvc := SupabaseUsers.NewSupabaseService(clients.DB, clients)
+	supabasePhotoSvc := SupabasePhotos.NewSupabaseService(clients.DB, clients.Storage)
+
 	r := chi.NewRouter()
 
 	c := cors.New(cors.Options{
@@ -61,6 +72,16 @@ func main() {
 
 	r.Get("/hello", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello from Go backend"))
+	})
+
+	r.Route("/v1", func(r chi.Router) {
+		r.Get("/quote/today", SupabaseQuoteEndpoint.SupabaseQuoteHandler(supabaseQuoteSvc))
+		r.Get("/quotes/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
+
+		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
+			r.Post("/user/create", SupabaseUserEndpoint.ProfileHandler(supabaseUserSvc, supabasePhotoSvc))
+			r.Post("/user/login", SupabaseLoginEndpoint.LoginHandler(supabaseUserSvc, supabaseQuoteSvc))
+		})
 	})
 
 	r.Route("/api", func(r chi.Router) {
