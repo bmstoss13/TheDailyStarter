@@ -6,9 +6,9 @@ import { FieldValue } from "firebase-admin/firestore";
 // Defines the structure for a user's daily quote album.
 export interface DailyQuote {
     id?: string;
-    a?: string;
-    date: string;
-    q?: string;
+    author?: string;
+    createdAt: string;
+    quote?: string;
 }
 
 // Defines the core user profile data.

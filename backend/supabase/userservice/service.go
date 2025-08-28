@@ -195,6 +195,7 @@ func (s *SupabaseService) GetSearchedUsersFromSupabase(ctx context.Context, quer
 
 func (s *SupabaseService) UpdateLastQuoteAndAlbumSupabase(ctx context.Context, uid, date string) error {
 	var user UserProfileData
+	log.Printf("User's id: %s", uid)
 
 	err := s.dbClient.Model(&user).
 		Where("uid = ?", uid).
@@ -207,15 +208,16 @@ func (s *SupabaseService) UpdateLastQuoteAndAlbumSupabase(ctx context.Context, u
 		return fmt.Errorf("failed to fetch user profile: %w", err)
 	}
 
-	user.QuotesAlbum = append(user.QuotesAlbum, date)
+	// user.QuotesAlbum = append(user.QuotesAlbum, date)
 
 	_, err = s.dbClient.Model(&user).
-		Set("lastQuoteShown = ?", date).
-		Set("quotesAlbum = ?", user.QuotesAlbum).
+		Set(`"lastQuoteShown" = ?`, date).
+		Set(`"quotesAlbum" = array_append("quotesAlbum", ?)`, date).
 		Where("uid = ?", uid).
 		Update()
 
 	if err != nil {
+		log.Printf("failed to update user's profile with the last quote shown: %v", err)
 		return fmt.Errorf("failed to update user's profile with the last quote shown")
 	}
 

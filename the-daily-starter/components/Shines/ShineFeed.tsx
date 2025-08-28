@@ -10,18 +10,16 @@ import styles from './ShineFeed.module.css';
 
 interface ShineFeedProps {
     user: User | null;
-    shines: ShineDataWithRayStatus[]; // Corrected type to match parent component
+    shines: ShineDataWithRayStatus[];
     isLoadingFeed: boolean;
     error: string | null;
     hasMore: boolean;
-    // The component now accepts these handler props
     onShineUpdated: (shine: ShineDataWithRayStatus) => void;
     onShineDeleted: (shineId: string) => void;
 }
 
 export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted }: ShineFeedProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // State now uses the correct type
     const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
 
     const handleToggleRay = useCallback(async (shineId: string) => {
@@ -31,7 +29,8 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
 
         try {
             const idToken = await user.getIdToken();
-            const url = `http://localhost:8080/api/shines/${shineId}/toggleRay`;
+            console.log("id token: " + idToken)
+            const url = `http://localhost:8080/v1/shines/${shineId}/toggleRay`;
 
             const response = await axios.post(url, null, {
                 headers: {
@@ -40,7 +39,6 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
             });
 
             const hasRayed = response.data;
-            console.log("has rayed:" + hasRayed);
             const originalShine = shines.find(s => s.id === shineId);
             if(originalShine) {
                 const newRayCount = hasRayed ? originalShine.rayCount + 1 : originalShine.rayCount - 1
@@ -73,7 +71,7 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
         
         try {
             const idToken = await user.getIdToken();
-            const url = `http://localhost:8080/api/shines/${selectedShine.id}`;
+            const url = `http://localhost:8080/v1/shines/${selectedShine.id}`;
 
             await axios.delete(url, {
                 headers: { 'Authorization': `Bearer ${idToken}` },

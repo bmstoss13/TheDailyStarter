@@ -16,7 +16,7 @@ type UserProfileData struct {
 	Email          string    `pg:"email" json:"email,omitempty"`
 	PhotoURL       string    `pg:"photoURL" json:"photoURL,omitempty"`
 	LastQuoteShown string    `pg:"lastQuoteShown" json:"lastQuoteShown,omitempty"`
-	QuotesAlbum    []string  `pg:"quotesAlbum" json:"quotesAlbum,omitempty"`
+	QuotesAlbum    []string  `pg:"quotesAlbum,array" json:"quotesAlbum,omitempty"`
 	RayCount       int       `pg:"rayCount" json:"rayCount"`
 	IsAdmin        bool      `pg:"isAdmin" json:"isAdmin"`
 }
@@ -54,3 +54,5 @@ var (
 	ErrUserProfileExists = &UserError{Message: "User profile already exists for this ID. Cannot create new one."}
 	ErrUserNotFound      = &UserError{Message: "User not found."}
 )
+
+const UserProfileTableName = "users"

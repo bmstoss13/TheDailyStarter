@@ -7,6 +7,7 @@ import (
 	SupabaseLogin "services/supabase/loginservice"
 	SupabaseQuotes "services/supabase/quoteservice"
 	SupabaseUsers "services/supabase/userservice"
+	sharedCtx "services/utils/context"
 	"time"
 )
 
@@ -17,7 +18,7 @@ func LoginHandler(userSvc *SupabaseUsers.SupabaseService, quoteSvc *SupabaseQuot
 			return
 		}
 
-		uid, ok := r.Context().Value("uid").(string)
+		uid, ok := r.Context().Value(sharedCtx.UIDKey).(string)
 		if !ok || uid == "" {
 			http.Error(w, "Unauthorized access. User ID required.", http.StatusUnauthorized)
 			return

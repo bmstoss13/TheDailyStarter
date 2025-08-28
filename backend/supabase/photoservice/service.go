@@ -60,7 +60,7 @@ func (s *SupabaseService) UploadAndStorePhotoSupabase(ctx context.Context, uid s
 		CreatedAt:  time.Now(),
 	}
 
-	_, err = s.dbClient.Model(&photo).Insert()
+	_, err = s.dbClient.Model(photo).Insert()
 	if err != nil {
 		return nil, fmt.Errorf("error storing photo metadata in Supabase: %w", err)
 	}
