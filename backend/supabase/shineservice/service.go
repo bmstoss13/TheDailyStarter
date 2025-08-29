@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
-
 	SupabaseUsers "services/supabase/userservice" // Assuming this package contains your ShineData struct
+	"time"
 
 	"github.com/go-pg/pg/v10"
 	// Your shared context keys
@@ -28,8 +27,11 @@ func NewService(db *pg.DB, userSvc *SupabaseUsers.SupabaseService) *Service {
 
 // CreateShine creates a new shine record in the Supabase 'shines' table.
 func (s *Service) CreateShine(ctx context.Context, uid string, text string, mediaURL string) (*ShineData, error) {
-	// The new ShineData struct uses a separate users table, so we don't need
-	// to fetch the user profile here. We only need the UID.
+
+	if mediaURL == "" {
+		log.Printf("No media url detected in post.")
+	}
+
 	newShine := &ShineData{
 		Text:          text,
 		UID:           uid, // This corresponds to the user_id foreign key
@@ -39,8 +41,6 @@ func (s *Service) CreateShine(ctx context.Context, uid string, text string, medi
 		CommentNumber: 0,
 	}
 
-	// Insert the new shine into the database. The 'returning' clause
-	// ensures the new ID and other generated fields are populated.
 	_, err := s.db.WithContext(ctx).Model(newShine).Returning("*").Insert()
 	if err != nil {
 		log.Printf("An error occurred while creating shine: %v", err)
@@ -55,19 +55,13 @@ func (s *Service) CreateShine(ctx context.Context, uid string, text string, medi
 func (s *Service) GetShines(ctx context.Context, limit int, startAfterShineId string, uid string) ([]ShineDataWithRayStatus, error) {
 	// We now select into the final struct directly, as the query will populate all fields.
 	var shines []ShineDataWithRayStatus
-	log.Printf("uid: %v" + uid)
 
 	query := s.db.WithContext(ctx).Model((*ShineData)(nil)).
 		TableExpr("shines AS shineData").
 		ColumnExpr("shineData.*").
 		ColumnExpr(`UserProfileData.username AS username, UserProfileData."photoURL" AS "userPhotoUrl"`).
-		// This join retrieves the user's data for each shine.
 		Join("LEFT JOIN ? AS UserProfileData ON UserProfileData.uid = shineData.uid", pg.Ident(SupabaseUsers.UserProfileTableName)).
-		// This new join is the key! It joins the rays table and checks for a ray
-		// made by the *current user* (uid).
 		Join(`LEFT JOIN ? AS RayData ON RayData."shineId" = shineData.id AND RayData.uid = ?`, pg.Ident(RayTable), uid).
-		// This ColumnExpr checks if a ray was found for the current user.
-		// If rayData.uid is not NULL, a matching ray was found, and 'hasRayed' will be true.
 		ColumnExpr(`RayData.uid IS NOT NULL AS "hasRayed"`).
 		OrderExpr(`shineData."createdAt" DESC`)
 

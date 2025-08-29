@@ -6,6 +6,9 @@ import axios from "axios";
 
 import styles from "./CreateShineForm.module.css";
 import { ShineData, ShineDataWithRayStatus, UserProfileData } from "@/lib/firebase/interfaces";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCamera, faStar, faX } from "@fortawesome/free-solid-svg-icons";
+import PhotoUpload from "./PhotoUpload";
 
 interface CreateShineFormProps {
     onShinePosted: (newShine: ShineDataWithRayStatus) => void //set callback to notify parent aka refresh feed.
@@ -16,6 +19,7 @@ interface CreateShineFormProps {
 export default function CreateShineForm({ onShinePosted, onClose, userProfile }: CreateShineFormProps){
     const [shineText, setShineText] = useState('');
     const [mediaURL, setMediaURL] = useState('');
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
@@ -80,33 +84,70 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
             onClose();
         }
     }
+
+    const handlePhotoUpload = () => {
+        setIsUploadingPhoto(true);
+        
+    }
+
+    const handlePhotoClose = () => {
+        setIsUploadingPhoto(false);
+    }
     return (
         <div className={styles.shineModalOverlay}>
-            <div className={styles.createShineContainer}>
-                <h3>What's Shining Today?</h3>
-                <form onSubmit={handleSubmit}>
-                    <textarea
-                        placeholder="Share your shine here..."
-                        value={shineText}
-                        onChange={(e) => setShineText(e.target.value)}
-                        rows={4}
-                        required
-                        disabled={isLoading}
-                    ></textarea>
-                    {/* Optional: Add input for media URL (or actual file upload later) */}
-                    <input
-                    type="url"
-                        placeholder="Optional: Image or video URL"
-                        value={mediaURL}
-                        onChange={(e) => setMediaURL(e.target.value)}
-                        disabled={isLoading}
-                    />
+            {isUploadingPhoto ? (
+                <PhotoUpload 
+                    onClose={handlePhotoClose} 
+                    onSubmit={(url) => {
+                        setMediaURL(url);
+                        setIsUploadingPhoto(false)
+                    }}
+                    userProfile={userProfile}
+                />
+            ):(
+                <div className={styles.createShineContainer}>
+                    <div className={styles.createShineHeader}>
+                        <div className={styles.titleHeader}> 
+                            <FontAwesomeIcon icon={faStar} className={styles.starIcon}/>
+                            <h3>What's Shining Today?</h3>
+                        </div>
+                        <div className={styles.exitButtonContainer}> 
+                            <FontAwesomeIcon icon={faX} className={styles.exitCreatePost}/>
+                        </div>
 
-                    <button type="submit" disabled={isLoading}>
-                        {isLoading ? 'Posting...' : 'Post Shine'}
-                    </button>
-                </form>
-            </div>
+
+                    </div>
+                    <div className={styles.createShineBody}>
+                        <form onSubmit={handleSubmit}>
+                            <textarea
+                                placeholder="Share your shine/win here..."
+                                value={shineText}
+                                onChange={(e) => setShineText(e.target.value)}
+                                rows={4}
+                                required
+                                disabled={isLoading}
+                            ></textarea>
+                            <div className={styles.photoContainerShine}>
+                                <img src={mediaURL} className={styles.uploadedPhotoPost}/>
+                            </div>
+                            <div className={styles.submissionsFooter}>
+                                <div className={styles.photoUpload}>
+                                    <button onClick={handlePhotoUpload}>
+                                        <FontAwesomeIcon icon={faCamera} />
+                                    </button>
+                                </div>
+                                <div className={styles.shinePost}>
+                                    <button type="submit" disabled={isLoading || shineText === ''}>
+                                        {isLoading ? 'Posting...' : 'Post!'}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            )}
+
         </div>
     );
 }

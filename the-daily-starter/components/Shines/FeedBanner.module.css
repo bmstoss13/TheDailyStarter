@@ -10,11 +10,12 @@
     margin: 10px auto 0 auto;
     width: 100%;
     max-width: 800px;
+    min-height: 180px;
     position: relative;
     overflow: hidden;
+    align-content: center;
 }
 
-/* ⭐ Twinkling stars */
 .feedBannerContainer::before {
     content: "";
     position: absolute;
@@ -24,7 +25,7 @@
     opacity: 0.45;
     animation: twinkle 7s linear infinite;
     border-radius: inherit;
-    pointer-events: none; /* ✅ keeps everything clickable */
+    pointer-events: none; 
     z-index: 0;
 }
 

@@ -1,0 +1,162 @@
+/* .photoUploadModalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+} */
+
+.photoUploadContainer {
+    background-color: #fff;
+    border: solid 1px rgb(233, 233, 233);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);    
+    margin-top: 10px;
+    width: 96vw;
+    max-width: 800px;
+    
+    margin-left: auto;
+    margin-right: auto;
+
+}
+
+.photoUploadHeader{
+    padding: 15px;
+    display: flex;
+    border-bottom: 1px solid #ccc
+}
+
+.photoUploadHeader h3{
+    font-size: 1.4em;
+}
+
+.photoUploadHeader button{
+    color: var(--iconColor);
+    margin-left: auto;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+.photoUploadHeader button:hover{
+    color: black;
+}
+
+.photoUploadBody{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    max-height: 80vh;
+    min-height: 60vh;
+    overflow-y: auto;
+}
+
+.preview img{
+    max-width: 350px;
+}
+
+.photoInput{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    gap: 20px;
+}
+
+.photoInput button{
+    color: var(--iconColor);
+    border: 2px dashed var(--iconColor);
+    border-radius: 6px;
+    width: 200px;
+    padding: 30px;
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.photoInput button:hover{
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: scale(1.1);
+}
+
+.cameraContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    gap: 12px;
+}
+
+.cameraFeed {
+    margin-top: 40px;;
+    width: 100%;
+    max-width: 600px;
+    border-radius: 12px;
+    background: black;
+}
+
+.captureButton {
+    background: var(--primary);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.captureButton:hover {
+    background: var(--primaryHover);
+}
+
+.photoFooter{
+    width: 100%;
+    display: flex;
+    margin-top: auto;
+}
+
+.usePhoto{ 
+    margin-left: auto;
+}
+
+.usePhoto button{
+    background-color: var(--primary); 
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: transform 0.1s ease;
+}
+
+.usePhoto button:hover:not(:disabled) {
+    background-color: #f8b33c;
+    transform: translateY(-2px);
+}
+
+.usePhoto button:active:not(:disabled) {
+    background-color: #dc8f0a;
+    transform: translateY(1px);
+}
+
+.usePhoto button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+@media (max-width: 800px) {
+    .photoUploadContainer{
+        width: 95.6vw;
+    }
+}
