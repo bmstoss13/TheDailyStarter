@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	SupabaseUsers "services/supabase/userservice"
+	sharedCtx "services/utils/context"
 	"strings"
 	"time"
 )
@@ -18,6 +19,7 @@ func SearchUsersHandler(svc *SupabaseUsers.SupabaseService) http.HandlerFunc {
 		}
 
 		query := r.URL.Query().Get("q")
+		log.Printf("query: %v", query)
 
 		if strings.TrimSpace(query) == "" {
 			w.Header().Set("Content-Type", "application/json")
@@ -29,7 +31,16 @@ func SearchUsersHandler(svc *SupabaseUsers.SupabaseService) http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
 
-		searchResults, err := svc.GetSearchedUsersFromSupabase(ctx, query)
+		uid, ok := r.Context().Value(sharedCtx.UIDKey).(string)
+		if !ok || uid == "" {
+			log.Printf("an error occurred while verifying uid: %v", uid)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		log.Printf("uid: %v", uid)
+
+		searchResults, err := svc.GetSearchedUsersFromSupabase(ctx, query, uid)
 		if err != nil {
 			log.Printf("Error searching users: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

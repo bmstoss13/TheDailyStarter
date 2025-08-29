@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { User } from 'firebase/auth';
-import { CurrentUserModalData, ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
+import { CurrentUserModalData, ShineData, ShineDataWithRayStatus, UserProfileData } from '@/lib/firebase/interfaces';
 import ShineCard from './ShineCard';
 import SettingsModal from '@/components/Shines/Settings/SettingsModal';
 import axios from 'axios';
@@ -14,11 +14,12 @@ interface ShineFeedProps {
     isLoadingFeed: boolean;
     error: string | null;
     hasMore: boolean;
+    userProfile: UserProfileData;
     onShineUpdated: (shine: ShineDataWithRayStatus) => void;
     onShineDeleted: (shineId: string) => void;
 }
 
-export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted }: ShineFeedProps) {
+export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted, userProfile }: ShineFeedProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
 
@@ -106,6 +107,7 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
                         shine={shine}
                         onRayToggle={handleToggleRay}
                         onSettingsClick={handleSettingsClick}
+                        userProfile={userProfile}
                     />
                 ))}
             </div>

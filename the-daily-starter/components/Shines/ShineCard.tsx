@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
+import { ShineData, ShineDataWithRayStatus, UserProfileData } from '@/lib/firebase/interfaces';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faSun as faSunRegular } from '@fortawesome/free-regular-svg-icons';
@@ -19,9 +19,10 @@ interface ShineCardProps {
     shine: ShineDataWithRayStatus; // Updated type to match the data being passed
     onRayToggle: (shineId: string) => void;
     onSettingsClick: (shine: ShineDataWithRayStatus) => void; // Updated type
+    userProfile: UserProfileData;
 }
 
-export default function ShineCard({ shine, onRayToggle, onSettingsClick }: ShineCardProps) {
+export default function ShineCard({ shine, onRayToggle, onSettingsClick, userProfile }: ShineCardProps) {
     const [isOpeningComments, setIsOpeningComments] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 

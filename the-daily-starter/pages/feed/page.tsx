@@ -13,6 +13,8 @@ import Navbar from '@/components/Navbar/Navbar';
 import { useAuthContext } from '@/hooks/authProvider';
 import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { saveShineFeedToCache, loadShineFeedFromCache } from '@/hooks/feedCache';
+import FeedBanner from '@/components/Shines/FeedBanner';
+import { useProfile } from '@/hooks/useProfile';
 
 interface DailyQuoteData {
     Quote: string;
@@ -26,6 +28,7 @@ interface LoginFlowResponse {
 
 export default function FeedPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
+    const { userProfile, loadingProfile, errorProfile} = useProfile()
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
     const [shines, setShines] = useState<ShineDataWithRayStatus[]>([]);
@@ -33,6 +36,7 @@ export default function FeedPage() {
     const [error, setError] = useState<string | null>(null);
     const [lastShineId, setLastShineId] = useState<string | undefined>(undefined);
     const [hasMore, setHasMore] = useState(true);
+    const [isFormModal, setIsFormModal] = useState(false);
     
     const hasInitialFetched = useRef(false);
 
@@ -198,12 +202,21 @@ export default function FeedPage() {
             fetchQuote(user);
         }
     }, [user, authLoading]);
+    
 
     const handleCloseModal = () => {
         setShowQuoteModal(false);
     };
 
-    if (authLoading) {
+    const handleOpenFormModal = () => {
+        setIsFormModal(true)
+    }
+
+    const handleCloseFormModal = () => {
+        setIsFormModal(false);
+    }
+
+    if (authLoading || loadingProfile) {
         return (
             <div className={styles.loadingContainer}>
                 <div className={styles.loadingSpinner} />
@@ -213,22 +226,29 @@ export default function FeedPage() {
         );
     }
 
-    if (authError) {
+    if (authError || errorProfile) {
         return (
             <div className={styles.feedContainer}>
                 <h1>Feed</h1>
-                <p className={styles.errorMessage}>Error loading user session: {authError.message}</p>
+                <p className={styles.errorMessage}>Error loading user session</p>
                 <p>Please try refreshing the page or logging in again.</p>
             </div>
         );
     }
 
+
+
     return (
         <div className={styles.feedContainer}>
-            <Navbar/>
-            {user ? (
+
+            {user && userProfile ? (
                 <>
-                    <CreateShineForm onShinePosted={handleShinePosted} />
+                 <Navbar userProfile={user}/>
+                <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} />
+                {isFormModal && (
+                    <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile}/>
+                )}
+
                     <ShineFeed
                         user={user}
                         shines={shines}
@@ -237,6 +257,7 @@ export default function FeedPage() {
                         hasMore={hasMore}
                         onShineUpdated={handleShineUpdated}
                         onShineDeleted={handleShineDeleted}
+                        userProfile={userProfile}
                     />
                 </>
             ) : (

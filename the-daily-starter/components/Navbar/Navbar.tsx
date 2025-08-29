@@ -9,8 +9,13 @@ import { faHouse, faUser, faListAlt } from "@fortawesome/free-regular-svg-icons"
 import { faHouse as faHouseSolid, faUser as faUserSolid, faListAlt as faListSolid } from "@fortawesome/free-solid-svg-icons";
 
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { User } from "firebase/auth";
 
-const Navbar = () => {
+interface NavbarProps{
+    userProfile: User
+}
+
+const Navbar = ({userProfile}: NavbarProps) => {
     // No need for local state like `isClicked`
     
     const router = useRouter();
@@ -41,7 +46,7 @@ const Navbar = () => {
                 <img src="/logo2.png" alt="navbar logo" width="60" height="60" className={styles.logo}/>
             </div>
             <div className={styles.navbarSearch}>
-                <SearchBar/>
+                <SearchBar userProfile={userProfile}/>
             </div>
             <div>
                 <button onClick={handleViewFeed} className={`${styles.navbarItem} ${isActive('/feed/page') ? styles.active : ''}`}>
