@@ -59,8 +59,8 @@ const ProfileHeader = ({userProfile, onSettingsClick, onEditClick}: UserProfileP
                             <p className={styles.statText}>Shines</p>
                         </div>
                         <div className={styles.publicStats}>
-                            <p className={styles.stat}>8</p>
-                            <p className={styles.statText}>Rays</p>
+                            <p className={styles.stat}>{userProfile.rayCount}</p>
+                            <p className={styles.statText}>{userProfile.rayCount === 1 ? "Ray" : "Rays"}</p>
                         </div>
                     </div>
                 </div>

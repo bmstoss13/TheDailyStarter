@@ -80,9 +80,9 @@ func main() {
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/quote/today", SupabaseQuoteEndpoint.SupabaseQuoteHandler(supabaseQuoteSvc))
 		r.Get("/quotes/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
-		r.Get("/users/search", SupabaseUserEndpoint.SearchUsersHandler(supabaseUserSvc))
 
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
+			r.Get("/users/search", SupabaseUserEndpoint.SearchUsersHandler(supabaseUserSvc))
 			r.Post("/user/create", SupabaseUserEndpoint.ProfileHandler(supabaseUserSvc, supabasePhotoSvc))
 			r.Post("/user/login", SupabaseLoginEndpoint.LoginHandler(supabaseUserSvc, supabaseQuoteSvc))
 			r.Get("/users/{uid}", SupabaseUserEndpoint.UserProfileHandler(supabaseUserSvc))

@@ -5,13 +5,15 @@ import { auth } from "@/lib/firebase/firebase";
 import axios from "axios";
 
 import styles from "./CreateShineForm.module.css";
-import { ShineData, ShineDataWithRayStatus } from "@/lib/firebase/interfaces";
+import { ShineData, ShineDataWithRayStatus, UserProfileData } from "@/lib/firebase/interfaces";
 
 interface CreateShineFormProps {
     onShinePosted: (newShine: ShineDataWithRayStatus) => void //set callback to notify parent aka refresh feed.
+    onClose: () => void
+    userProfile: UserProfileData
 }
 
-export default function CreateShineForm({ onShinePosted }: CreateShineFormProps){
+export default function CreateShineForm({ onShinePosted, onClose, userProfile }: CreateShineFormProps){
     const [shineText, setShineText] = useState('');
     const [mediaURL, setMediaURL] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +34,7 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
         
         try{
             const currentUser = auth.currentUser;
+            console.log("current user: " + currentUser)
             if(!currentUser) {
                 throw new Error ("You must be logged in to post a shine.");
             };
@@ -51,10 +54,17 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
 
             const data:ShineDataWithRayStatus = await response.data;
 
+            const hydratedShine: ShineDataWithRayStatus = {
+                ...data,
+                username: userProfile.username, // if you have this stored
+                userPhotoUrl: userProfile.photoURL,
+            };
+
+
             setShineText('');
             setMediaURL('');
             setSuccess('Shine posted successfully!');
-            onShinePosted(data); //Parent! Refresh!
+            onShinePosted(hydratedShine); //Parent! Refresh!
 
         } catch (err: any){
             if(axios.isAxiosError(err) && err.response){
@@ -67,33 +77,36 @@ export default function CreateShineForm({ onShinePosted }: CreateShineFormProps)
             }
         } finally {
             setIsLoading(false);
+            onClose();
         }
     }
     return (
-        <div className={styles.createShineContainer}>
-            <h3>What's Shining Today?</h3>
-            <form onSubmit={handleSubmit}>
-                <textarea
-                    placeholder="Share your shine here..."
-                    value={shineText}
-                    onChange={(e) => setShineText(e.target.value)}
-                    rows={4}
-                    required
-                    disabled={isLoading}
-                ></textarea>
-                {/* Optional: Add input for media URL (or actual file upload later) */}
-                <input
-                type="url"
-                    placeholder="Optional: Image or video URL"
-                    value={mediaURL}
-                    onChange={(e) => setMediaURL(e.target.value)}
-                    disabled={isLoading}
-                />
+        <div className={styles.shineModalOverlay}>
+            <div className={styles.createShineContainer}>
+                <h3>What's Shining Today?</h3>
+                <form onSubmit={handleSubmit}>
+                    <textarea
+                        placeholder="Share your shine here..."
+                        value={shineText}
+                        onChange={(e) => setShineText(e.target.value)}
+                        rows={4}
+                        required
+                        disabled={isLoading}
+                    ></textarea>
+                    {/* Optional: Add input for media URL (or actual file upload later) */}
+                    <input
+                    type="url"
+                        placeholder="Optional: Image or video URL"
+                        value={mediaURL}
+                        onChange={(e) => setMediaURL(e.target.value)}
+                        disabled={isLoading}
+                    />
 
-                <button type="submit" disabled={isLoading}>
-                    {isLoading ? 'Posting...' : 'Post Shine'}
-                </button>
-            </form>
+                    <button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Posting...' : 'Post Shine'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

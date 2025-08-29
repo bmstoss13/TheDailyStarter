@@ -1,1 +1,1 @@
-export const searchUsers = '/api/user/search-users';
+export const searchUsers = 'http://localhost:8080/v1/users/search';

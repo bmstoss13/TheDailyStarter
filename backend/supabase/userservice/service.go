@@ -169,14 +169,15 @@ func (s *SupabaseService) UpdateUserProfileSupabase(ctx context.Context, uid str
 	return nil
 }
 
-func (s *SupabaseService) GetSearchedUsersFromSupabase(ctx context.Context, query string) ([]UserSearchResult, error) {
+func (s *SupabaseService) GetSearchedUsersFromSupabase(ctx context.Context, query string, userId string) ([]UserSearchResult, error) {
 	if strings.TrimSpace(query) == "" {
 		return []UserSearchResult{}, nil
 	}
 
 	var searchResults []UserSearchResult
-	err := s.dbClient.Model(&UserSearchResult{}).
+	err := s.dbClient.Model(&searchResults).
 		Where("username ILIKE ?", fmt.Sprintf("%%%s%%", query)).
+		Where("uid != ?", userId).
 		Limit(10).
 		Select()
 

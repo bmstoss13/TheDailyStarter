@@ -23,6 +23,7 @@ export interface UserProfileData {
     photoURL?: string | null;
     quotesAlbum?: DailyQuote[] | null;
     lastQuoteShown?: string | null;
+    rayCount?: number;
 }
 
 // Defines the structure for a username entry (for uniqueness checks).

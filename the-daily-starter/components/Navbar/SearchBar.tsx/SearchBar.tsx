@@ -7,8 +7,13 @@ import { searchUsers } from '@/lib/routes/routes';
 import { UserSearchResult } from '@/lib/firebase/interfaces';
 import defaultProf from '@/public/png-transparent-default-avatar.png'
 import Image from 'next/image';
+import { getAuth, User } from "firebase/auth";
 
-const SearchBar = () => {
+interface SearchBarProps{
+    userProfile: User
+}
+
+const SearchBar = ({userProfile}: SearchBarProps) => {
     const [value, setValue] = useState('');
     const [suggestions, setSuggestions] = useState<UserSearchResult[]>([]);
     const [debouncedValue, setDebouncedValue] = useState('');
@@ -36,9 +41,25 @@ const SearchBar = () => {
         const fetchData = async() => {
             setIsLoading(true);
             try{
+                // const auth = getAuth();
+                // const user = auth.currentUser;
+                // if (!user) {
+                //     console.warn("No logged-in user, skipping search.");
+                //     setSuggestions([])
+                //     return
+                // }
+
+                const token = await userProfile.getIdToken();
+                console.log("token", token);
                 const query = debouncedValue.toLowerCase();
+                console.log("query: ", query);
                 const { data } = await axios.get(
-                    `${searchUsers}?q=${debouncedValue}`
+                    `${searchUsers}?q=${query}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        }
+                    }
                 );
 
                 if(Array.isArray(data)){

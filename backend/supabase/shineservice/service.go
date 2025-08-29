@@ -172,6 +172,14 @@ func (s *Service) ToggleRay(ctx context.Context, uid string, shineId string) (bo
 			return fmt.Errorf("failed to check for existing ray: %w", err)
 		}
 
+		var shine ShineData
+		shineErr := tx.Model(&shine).Where("id = ?", shineId).Select()
+		if shineErr != nil {
+			return fmt.Errorf("failed to fetch shine owner: %w", err)
+		}
+
+		posterUID := shine.UID
+
 		if err == pg.ErrNoRows {
 			// No ray exists, so create one and increment the rayCount.
 			newRay := &RayData{
@@ -179,6 +187,7 @@ func (s *Service) ToggleRay(ctx context.Context, uid string, shineId string) (bo
 				ShineID:   shineId,
 				CreatedAt: time.Now(),
 			}
+
 			_, insertErr := tx.Model(newRay).Insert()
 			if insertErr != nil {
 				return fmt.Errorf("failed to insert new ray: %w", insertErr)
@@ -186,6 +195,11 @@ func (s *Service) ToggleRay(ctx context.Context, uid string, shineId string) (bo
 			_, updateErr := tx.Model(&ShineData{}).Where("id = ?", shineId).Set(`"rayCount" = "rayCount" + 1`).Update()
 			if updateErr != nil {
 				return fmt.Errorf("failed to increment ray count: %w", updateErr)
+			}
+			_, err := tx.Model(&SupabaseUsers.UserProfileData{}).Where("uid = ?", posterUID).Set(`"rayCount" = "rayCount" + 1`).Update()
+			if err != nil {
+				log.Printf("failed to increment ray count for user, %s: %v", posterUID, err)
+				return fmt.Errorf("failed to increment ray count for user, %s: %v", posterUID, err)
 			}
 			rayAdded = true
 		} else {
@@ -197,6 +211,11 @@ func (s *Service) ToggleRay(ctx context.Context, uid string, shineId string) (bo
 			_, updateErr := tx.Model(&ShineData{}).Where("id = ?", shineId).Set(`"rayCount" = "rayCount" - 1`).Update()
 			if updateErr != nil {
 				return fmt.Errorf("failed to decrement ray count: %w", updateErr)
+			}
+			_, err := tx.Model(&SupabaseUsers.UserProfileData{}).Where("uid = ?", posterUID).Set(`"rayCount" = "rayCount" - 1`).Update()
+			if err != nil {
+				log.Printf("failed to decrement ray count for user, %s: %v", posterUID, err)
+				return fmt.Errorf("failed to decrement ray count for user, %s: %v", posterUID, err)
 			}
 			rayAdded = false
 		}
