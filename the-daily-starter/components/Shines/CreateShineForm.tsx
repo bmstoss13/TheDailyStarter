@@ -21,6 +21,8 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
     const [mediaURL, setMediaURL] = useState('');
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [mediaFile, setMediaFile] = useState<File | null>(null);
+    const [mediaPreview, setMediaPreview] = useState('')
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
@@ -46,12 +48,14 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
             const idToken = await currentUser.getIdToken();
             const url = `http://localhost:8080/v1/shines`;
 
-            const response = await axios.post(url, {
-                text: shineText.trim(),
-                mediaURL: mediaURL.trim() || undefined,
-            }, {
+            const formData = new FormData();
+            formData.append("text", shineText.trim())
+            if (mediaFile) {
+                formData.append("photo", mediaFile)
+            }
+
+            const response = await axios.post(url, formData, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${idToken}`
                 }
             })
@@ -98,8 +102,9 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
             {isUploadingPhoto ? (
                 <PhotoUpload 
                     onClose={handlePhotoClose} 
-                    onSubmit={(url) => {
-                        setMediaURL(url);
+                    onSubmit={(file) => {
+                        setMediaFile(file);
+                        setMediaPreview(URL.createObjectURL(file));
                         setIsUploadingPhoto(false)
                     }}
                     userProfile={userProfile}
@@ -112,7 +117,10 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
                             <h3>What's Shining Today?</h3>
                         </div>
                         <div className={styles.exitButtonContainer}> 
-                            <FontAwesomeIcon icon={faX} className={styles.exitCreatePost}/>
+                            <button  className={styles.exitCreatePost} onClick={onClose}>
+                                <FontAwesomeIcon icon={faX}/>
+                            </button>
+
                         </div>
 
 
@@ -128,7 +136,10 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
                                 disabled={isLoading}
                             ></textarea>
                             <div className={styles.photoContainerShine}>
-                                <img src={mediaURL} className={styles.uploadedPhotoPost}/>
+                                {mediaPreview && (
+                                    <img src={mediaPreview} className={styles.uploadedPhotoPost}/>
+                                )}
+
                             </div>
                             <div className={styles.submissionsFooter}>
                                 <div className={styles.photoUpload}>

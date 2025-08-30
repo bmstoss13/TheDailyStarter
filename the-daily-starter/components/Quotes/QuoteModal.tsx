@@ -8,8 +8,8 @@ import { faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 interface QuoteModalProps {
     quote: {
-        Quote: string,
-        Author: string
+        quote: string,
+        author: string
     },
     onClose: () => void;
 }
@@ -20,8 +20,8 @@ const QuoteModal = ({quote, onClose}: QuoteModalProps) => {
             <div className={styles.modalContent}>
             <h2 className={styles.modalHeader}> <WeatherSunset className={styles.sunriseIcon}/> Daily Sunshine! </h2>
                 <div className={styles.quoteContainer}>
-                    <p className={styles.quoteText}>"{quote.Quote}"</p>
-                    <p className={styles.quoteAuthor}>—{quote.Author}</p>
+                    <p className={styles.quoteText}>"{quote.quote}"</p>
+                    <p className={styles.quoteAuthor}>—{quote.author}</p>
                 </div>
                 <div className={styles.closeContainer}>
                     <button className={styles.modalCloseButton} onClick={onClose}>

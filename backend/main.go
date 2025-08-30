@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	BannerService "services/bannerAPI"
+	BannerEndpoint "services/bannerAPI/endpoint"
 	firebaseService "services/firebase"
 	LoginEndpoint "services/loginservice/enpdoint"
 	"services/photoservice"
@@ -62,6 +64,7 @@ func main() {
 	supabaseUserSvc := SupabaseUsers.NewSupabaseService(clients.DB, clients)
 	supabasePhotoSvc := SupabasePhotos.NewSupabaseService(clients.DB, clients.Storage)
 	supabaseShineSvc := SupabaseShines.NewService(clients.DB, supabaseUserSvc)
+	bannerSvc := BannerService.NewService(supabaseUserSvc)
 
 	r := chi.NewRouter()
 
@@ -80,6 +83,7 @@ func main() {
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/quote/today", SupabaseQuoteEndpoint.SupabaseQuoteHandler(supabaseQuoteSvc))
 		r.Get("/quotes/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
+		r.Get("/banner/message", BannerEndpoint.BannerHandler(bannerSvc))
 
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
 			r.Get("/users/search", SupabaseUserEndpoint.SearchUsersHandler(supabaseUserSvc))
@@ -87,7 +91,7 @@ func main() {
 			r.Post("/user/login", SupabaseLoginEndpoint.LoginHandler(supabaseUserSvc, supabaseQuoteSvc))
 			r.Get("/users/{uid}", SupabaseUserEndpoint.UserProfileHandler(supabaseUserSvc))
 			r.Delete("/user/delete", SupabaseUserEndpoint.DeleteUserHandler(supabaseUserSvc))
-			r.Handle("/shines", SupabaseShinesEndpoint.ShineHandler(supabaseShineSvc))
+			r.Handle("/shines", SupabaseShinesEndpoint.ShineHandler(supabaseShineSvc, supabasePhotoSvc))
 			r.Patch("/shines/{shineId}", SupabaseShinesEndpoint.UpdateShineHandler(supabaseShineSvc))
 			r.Post("/shines/{shineId}/toggleRay", SupabaseShinesEndpoint.ToggleRayHandler(supabaseShineSvc))
 			r.Delete("/shines/{shineId}", SupabaseShinesEndpoint.DeleteShineHandler(supabaseShineSvc))

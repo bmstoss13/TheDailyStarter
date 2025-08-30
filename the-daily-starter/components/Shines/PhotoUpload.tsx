@@ -6,7 +6,7 @@ import { UserProfileData } from '@/lib/firebase/interfaces';
 
 interface PhotoUploadProps {
     onClose: () => void;
-    onSubmit: (url: string) => void;
+    onSubmit: (file: File) => void;
     userProfile: UserProfileData;
 }
 
@@ -82,7 +82,7 @@ const PhotoUpload = ({onClose, onSubmit, userProfile}: PhotoUploadProps) => {
 
     const handleSubmit = () => {
         if (file && preview) {
-            onSubmit(preview!);
+            onSubmit(file);
         } 
     }
 
