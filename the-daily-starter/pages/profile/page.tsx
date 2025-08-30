@@ -35,7 +35,6 @@ export default function ProfilePage() {
         if(isClickingSettings){
             setIsClickingSettings(false);
         }
-        // setIsClickingEdit(true);
         try{
             router.push('/profile/edit/page')
         } catch (err: any) {
@@ -63,7 +62,7 @@ export default function ProfilePage() {
 
     return(
         <div>
-            <Navbar/>
+            <Navbar userProfile={user}/>
             <div>
                 <div className={styles.profileLayout}>
                     <ProfileHeader userProfile={userProfile} onSettingsClick={handleClickingSettings} onEditClick={handleClickingEdit}/>

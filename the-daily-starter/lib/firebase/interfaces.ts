@@ -108,3 +108,7 @@ export interface CurrentUserModalData {
     uid: string;
     displayName: string | null;
 }
+
+export interface BannerData {
+    message: string;
+}

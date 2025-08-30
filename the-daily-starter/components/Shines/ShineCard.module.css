@@ -63,12 +63,16 @@
 }
 
 .mediaContainer {
+    display: flex;
     margin-top: 10px;
     text-align: center;
+    justify-content: center;
+    align-items: center;
 }
 
 .media {
-    max-width: 100%;
+    width: 100%;
+    max-width: 40vw;
     height: auto;
     border-radius: 4px;
 }

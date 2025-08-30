@@ -43,7 +43,7 @@ const Navbar = ({userProfile}: NavbarProps) => {
     return(
         <nav className={styles.navbarContainer}>
             <div className={styles.navbarLogo}>
-                <img src="/logo2.png" alt="navbar logo" width="60" height="60" className={styles.logo}/>
+                <img src="/logo3.png" alt="navbar logo" width="60" height="60" className={styles.logo}/>
             </div>
             <div className={styles.navbarSearch}>
                 <SearchBar userProfile={userProfile}/>

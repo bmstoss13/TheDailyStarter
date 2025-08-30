@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+import { getJsonApi } from '@/lib/routes/routes';
 import { User } from 'firebase/auth';
 
 import CreateShineForm from '@/components/Shines/CreateShineForm';
@@ -11,20 +12,22 @@ import QuoteModal from "@/components/Quotes/QuoteModal";
 import styles from './FeedPage.module.css';
 import Navbar from '@/components/Navbar/Navbar';
 import { useAuthContext } from '@/hooks/authProvider';
-import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
+import { ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { saveShineFeedToCache, loadShineFeedFromCache } from '@/hooks/feedCache';
 import FeedBanner from '@/components/Shines/FeedBanner';
 import { useProfile } from '@/hooks/useProfile';
 
 interface DailyQuoteData {
-    Quote: string;
-    Author: string;
+    quote: string;
+    author: string;
 }
 
 interface LoginFlowResponse {
     dailyQuote?: DailyQuoteData;
     isNewQuote: boolean;
 }
+
+const api = getJsonApi();
 
 export default function FeedPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
@@ -37,64 +40,46 @@ export default function FeedPage() {
     const [lastShineId, setLastShineId] = useState<string | undefined>(undefined);
     const [hasMore, setHasMore] = useState(true);
     const [isFormModal, setIsFormModal] = useState(false);
+    const [bannerMessage, setBannerMessage] = useState('');
     
     const hasInitialFetched = useRef(false);
 
-    const processShinesData = useCallback((data: ShineDataWithRayStatus[]): ShineDataWithRayStatus[] => {
-        return data.map(shine => ({
-            ...shine,
-            hasRayed: shine.hasRayed ?? false 
-        }));
-    }, []);
+    const fetchShines = useCallback(async (startAfterId?: string) => {
+        if (!user) return;
 
-    const fetchShinesFromBackend = useCallback(async (startAfterId?: string) => {
         setIsLoadingFeed(true);
         setError(null);
 
-        if (!user) {
-            setIsLoadingFeed(false);
-            return;
-        }
-
         try {
             const idToken = await user.getIdToken();
-            const response = await axios.get<ShineDataWithRayStatus[]>(`http://localhost:8080/v1/shines`, {
+            const { data } = await api.get<ShineDataWithRayStatus[]>(`/v1/shines`, {
                 params: {
                     limit: 10,
                     startAfter: startAfterId,
                 },
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${idToken}`
                 }
             });
 
-            const data: ShineDataWithRayStatus[] = response.data;
-            console.log("fetched data: " + data )
-            
-            setShines(prevShines => {
-                const newShines: ShineDataWithRayStatus[] = startAfterId ? [...prevShines, ...data] : data;
-                
-                const unique = Array.from(new Map(
-                    newShines
-                        .filter((s): s is ShineDataWithRayStatus & { id: string } => typeof s.id === 'string')
-                        .map(s => [s.id, s])
-                ).values());
-                
+            setShines((prev) => {
+                const combined = startAfterId ? [...prev, ...data] : data;
+                const unique = Array.from(new Map(combined.map((s) => [s.id, s])).values());
                 saveShineFeedToCache(unique);
                 return unique;
-            });
+            })
 
-            setLastShineId(data.length > 0 ? data[data.length - 1].id : undefined);
+            // setLastShineId(data.length > 0 ? data[data.length - 1].id : undefined);
+            setLastShineId(data.at(-1)?.id);
             setHasMore(data.length === 10);
             
-        } catch (err: any) {
+        } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
                 console.error("Error fetching shines:", err.response?.data || err.message);
                 setError(err.response?.data?.error || err.response?.data?.message || 'Failed to fetch shines.');
             } else {
-                console.error("Error fetching shines:", err);
-                setError(err.message || 'Could not load shines.');
+                console.error("Unknown error:", err);
+                setError('Could not load shines.');
             }
         } finally {
             setIsLoadingFeed(false);
@@ -102,72 +87,54 @@ export default function FeedPage() {
     }, [user]);
 
     useEffect(() => {
-        if (!user || hasInitialFetched.current) {
-            return;
-        }
+        if (!user || hasInitialFetched.current) return;
 
-        const cachedShines = loadShineFeedFromCache();
-        
-        if (cachedShines && cachedShines.length > 0) {
-            console.log("Loading shines from cache.");
-            const processedCachedShines = processShinesData(cachedShines);
-            setShines(processedCachedShines);
-            const lastId = cachedShines[cachedShines.length - 1].id;
-            setLastShineId(lastId);
+        const cachedShines = loadShineFeedFromCache();        
+        if (cachedShines?.length) {
+            setShines(cachedShines); 
+            // const lastId = cachedShines[cachedShines.length - 1].id;
+            setLastShineId(cachedShines.at(-1)?.id); //was lastId
             setHasMore(true);
             setIsLoadingFeed(false);
-            hasInitialFetched.current = true;
-
         } else {
-            console.log("Cache is empty or stale, fetching from backend.");
-            fetchShinesFromBackend(undefined);
-            hasInitialFetched.current = true;
+            fetchShines(undefined);
+
         }
+        hasInitialFetched.current = true;
         
-    }, [user, fetchShinesFromBackend, processShinesData]);
+    }, [user, fetchShines]);
 
-    const handleScroll = useCallback(() => {
-        if (
-            window.innerHeight + document.documentElement.scrollTop >=
-            document.documentElement.offsetHeight - 500 &&
-            !isLoadingFeed &&
-            hasMore
-        ) {
-            fetchShinesFromBackend(lastShineId);
-        }
-    }, [isLoadingFeed, hasMore, lastShineId, fetchShinesFromBackend]);
-
+    const sentinelRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [handleScroll]);
+        if(!sentinelRef.current || !hasMore || isLoadingFeed) return;
+        const observer = new IntersectionObserver((entries) => {
+            if(entries[0].isIntersecting) fetchShines(lastShineId);
+        });
+
+        observer.observe(sentinelRef.current);
+        return () => observer.disconnect();
+    }, [lastShineId, hasMore, isLoadingFeed, fetchShines]);
 
     const handleShinePosted = (newShine: ShineDataWithRayStatus) => {
-        setShines(prevShines => {
-            const updatedShines = [newShine, ...prevShines];
-            saveShineFeedToCache(updatedShines); 
-            return updatedShines;
+        setShines((prev) => {
+            const updated = [newShine, ...prev];
+            saveShineFeedToCache(updated);
+            return updated;
         });
-    };
+    }
 
-    const handleShineUpdated = (updatedShine: ShineDataWithRayStatus) => {
+    const handleShineUpdated = (updated: ShineDataWithRayStatus) => {
         
-        setShines(prevShines => {
-            const updatedList = prevShines.map(shine => {
-                if (shine.id === updatedShine.id) {
-                    console.log("update shine: " + updatedShine.hasRayed)
-                    return updatedShine;
-                }
-                return shine;
-            });
+        setShines((prev) => {
+            const updatedList = prev.map((s) => (s.id === updated.id ? updated : s));
             saveShineFeedToCache(updatedList);
             return updatedList;
         });
     };
 
-    const handleShineDeleted = (shineId: string) => {
-        setShines(prevShines => {
-            const updatedList = prevShines.filter(shine => shine.id !== shineId);
+    const handleShineDeleted = (id: string) => {
+        setShines((prev) => {
+            const updatedList = prev.filter(shine => shine.id !== id);
             saveShineFeedToCache(updatedList);
             return updatedList;
         });
@@ -176,18 +143,18 @@ export default function FeedPage() {
     const fetchQuote = async (user: User) => {
         try {
             const idToken = await user.getIdToken();
-            const response = await axios.post<LoginFlowResponse>(
-                `http://localhost:8080/v1/user/login`,
+            const { data } = await api.post<LoginFlowResponse>(
+                `/v1/user/login`,
                 {},
                 {
                     headers: {
-                        'Content-Type': 'application/json',
+                        // 'Content-Type': 'application/json',
                         'Authorization': `Bearer ${idToken}`,
                     }
                 }
             );
 
-            const data = response.data;
+            // const data = response.data;
             if (data.isNewQuote && data.dailyQuote) {
                 setQuote(data.dailyQuote);
                 setShowQuoteModal(true);
@@ -197,9 +164,16 @@ export default function FeedPage() {
         }
     };
 
+    const fetchBannerMessage = async() => {
+        const { data } = await api.get(`/v1/banner/message`)
+        setBannerMessage(data.message)
+
+    }
+
     useEffect(() => {
         if (user && !authLoading) {
             fetchQuote(user);
+            fetchBannerMessage();
         }
     }, [user, authLoading]);
     
@@ -244,7 +218,7 @@ export default function FeedPage() {
             {user && userProfile ? (
                 <>
                  <Navbar userProfile={user}/>
-                <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} />
+                <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} bannerMessage={bannerMessage} />
                 {isFormModal && (
                     <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile}/>
                 )}
@@ -259,6 +233,9 @@ export default function FeedPage() {
                         onShineDeleted={handleShineDeleted}
                         userProfile={userProfile}
                     />
+
+                    <div ref={sentinelRef} style={{ height: "1px" }} />
+
                 </>
             ) : (
                 <div className={styles.loginPrompt}>
