@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { auth } from "@/lib/firebase/firebase";
-import { CommentDataWithRayStatus, ShineData, ShineDataWithRayStatus, UserProfileData } from '@/lib/firebase/interfaces';
+import { ShineDataWithRayStatus, UserProfileData } from '@/lib/firebase/interfaces';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faComment } from '@fortawesome/free-solid-svg-icons';
 import { faSun as faSunRegular } from '@fortawesome/free-regular-svg-icons';
@@ -13,19 +12,13 @@ import Image from "next/image";
 
 import styles from './ShineCard.module.css';
 
-import CommentCard from './Comments/CommentCard';
-import CommentFeed from './Comments/CommentFeed';
-import { getJsonApi } from '@/lib/routes/routes';
-
 interface ShineCardProps {
-    shine: ShineDataWithRayStatus; // Updated type to match the data being passed
+    shine: ShineDataWithRayStatus; 
     onRayToggle: (shineId: string) => void;
-    onSettingsClick: (shine: ShineDataWithRayStatus) => void; // Updated type
+    onSettingsClick: (shine: ShineDataWithRayStatus) => void; 
     onCommentsClick: (shine: ShineDataWithRayStatus) => void;
     userProfile: UserProfileData;
 }
-
-const api = getJsonApi();
 
 export default function ShineCard({ shine, onRayToggle, onSettingsClick, onCommentsClick, userProfile }: ShineCardProps) {
 

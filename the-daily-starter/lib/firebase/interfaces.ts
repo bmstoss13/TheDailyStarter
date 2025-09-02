@@ -70,8 +70,9 @@ export interface CommentOrReplyData {
     username: string;
     userPhotoUrl?: string | null;
     text: string;
-    createdAt: FieldValue;
+    createdAt: Date;
     rayCount: number;
+    replyCount: number;
 }
 
 // Defines a comment on a shine post.
