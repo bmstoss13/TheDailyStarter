@@ -53,7 +53,6 @@ func (s *Service) CreateShine(ctx context.Context, uid string, text string, medi
 
 // GetShines fetches shines with pagination, joins user data, and checks for ray status.
 func (s *Service) GetShines(ctx context.Context, limit int, startAfterShineId string, uid string) ([]ShineDataWithRayStatus, error) {
-	// We now select into the final struct directly, as the query will populate all fields.
 	var shines []ShineDataWithRayStatus
 
 	query := s.db.WithContext(ctx).Model((*ShineData)(nil)).
@@ -66,8 +65,7 @@ func (s *Service) GetShines(ctx context.Context, limit int, startAfterShineId st
 		OrderExpr(`shineData."createdAt" DESC`)
 
 	if startAfterShineId != "" {
-		// To handle pagination with go-pg, we fetch the document we want to start after,
-		// then create a composite WHERE clause to correctly page results.
+
 		var startAfterShine ShineData
 		err := s.db.Model(&startAfterShine).Where("id = ?", startAfterShineId).Select()
 		if err != nil {
