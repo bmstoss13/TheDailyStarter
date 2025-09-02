@@ -1,42 +1,34 @@
-"use client";
+import { CommentDataWithRayStatus } from "@/lib/firebase/interfaces"
+import styles from "./CommentFeed.module.css"
+import CommentCard from "./CommentCard";
 
-import { useState, useCallback } from 'react';
+interface CommentFeedProps{
+    comments: CommentDataWithRayStatus[];
+}
 
-import CommentCard from './CommentCard';
+const CommentFeed = ({comments}: CommentFeedProps) => {
+    const handleRayToggle = () => {
 
-import styles from './CommentFeed.module.css';
-import { CommentData } from '@/lib/firebase/interfaces';
+    }
 
-export default function CommentFeed() {
-    const [comments, setComments] = useState<CommentData|[]>([]);
-
-
-    // const handleCommentCardRayToggle = useCallback(
-    //     (shineId: string, newRayCount: number, hasRayed: boolean) => {
-    //         setComments((prevShines) =>
-    //             prevShines.map((comment) =>
-    //             comment.id === shineId
-    //                 ? { ...comment, rayCount: newRayCount, hasRayed }
-    //                 : comment
-    //             )
-    //         );
-    //     },
-    //     []
-    // );
-
+    if (!comments || comments.length === 0) {
+        return (
+            <div className={styles.noCommentsMessage}>
+                No comments yet. Be the first!
+            </div>
+        )
+    }
     return (
-        <div>
-            <div className={styles.commentList}>
-                <h1>Comment Placeholder</h1>
-                {/* {comments.map((comment) => (
+        <div className={styles.commentListContainer}>
+            {comments.map((comment) => (
                 <CommentCard
                     key={comment.id}
                     comment={comment}
-                    onRayToggle={handleCommentCardRayToggle}
+                    onRayToggle={handleRayToggle}
                 />
-                ))} */}
-            </div>
-
+            ))}
         </div>
     )
 }
+
+export default CommentFeed

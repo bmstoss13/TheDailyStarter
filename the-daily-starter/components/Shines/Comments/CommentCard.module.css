@@ -1,20 +1,34 @@
 .commentCard {
     background-color: #fff;
+    border: 1px solid var(--tertiary);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-    margin-bottom: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
     width: 100%;
     max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
+    display: flex;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.commentCard:hover {
+    cursor: pointer;
+    border: 1px solid var(--secondary);
+}
+
+.commentCardBody{
+    display: flex;
+    flex-direction: column;
 }
 
 .commentHeader {
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     margin-bottom: 10px;
-    font-size: 1.3em;
+    font-size: 0.9em;
 }
 
 .userPhoto {
@@ -45,15 +59,14 @@
 }
 
 .timestamp {
-    font-size: 0.8em;
+    font-size: 0.7em !important;
     color: #777;
 }
 
 .commentText {
     color: #444;
     line-height: 1.5;
-    margin-bottom: 10px;
-    font-size: 1.2em;
+    font-size: 0.9em;
 }
 
 .mediaContainer {
@@ -172,7 +185,7 @@
 }
 
 .rayIcon {
-    font-size: 1.2em;
+    font-size: 0.9em;
     transition: transform 0.1s ease;
     transform-origin: center center;
     will-change: transform;
@@ -197,4 +210,24 @@
 .commentSection {
     height: 100px;
     background-color: #fff;
+}
+
+.commentCardButtons {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    gap: 8px;
+}
+
+.commentCardStats {
+    position: absolute;
+    top:10px;
+    right:14px;
+    display: flex;
+    gap: 14px;
+}
+
+.commentCardStats p{
+    color: gray;
+    font-size: 0.7em;
 }

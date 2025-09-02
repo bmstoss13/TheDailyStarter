@@ -64,7 +64,7 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
 
             const hydratedShine: ShineDataWithRayStatus = {
                 ...data,
-                username: userProfile.username, // if you have this stored
+                username: userProfile.username,
                 userPhotoUrl: userProfile.photoURL,
             };
 

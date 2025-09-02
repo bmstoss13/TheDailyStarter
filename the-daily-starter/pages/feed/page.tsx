@@ -12,10 +12,12 @@ import QuoteModal from "@/components/Quotes/QuoteModal";
 import styles from './FeedPage.module.css';
 import Navbar from '@/components/Navbar/Navbar';
 import { useAuthContext } from '@/hooks/authProvider';
-import { ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
+import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { saveShineFeedToCache, loadShineFeedFromCache } from '@/hooks/feedCache';
 import FeedBanner from '@/components/Shines/FeedBanner';
 import { useProfile } from '@/hooks/useProfile';
+import CommentFeed from '@/components/Shines/Comments/CommentFeedModal';
+import CommentFeedModal from '@/components/Shines/Comments/CommentFeedModal';
 
 interface DailyQuoteData {
     quote: string;
@@ -39,10 +41,23 @@ export default function FeedPage() {
     const [error, setError] = useState<string | null>(null);
     const [lastShineId, setLastShineId] = useState<string | undefined>(undefined);
     const [hasMore, setHasMore] = useState(true);
-    const [isFormModal, setIsFormModal] = useState(false);
+    const [isFormModal, setIsFormModal] = useState<boolean>(false);
     const [bannerMessage, setBannerMessage] = useState('');
+    const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
     
     const hasInitialFetched = useRef(false);
+
+    useEffect(() => {
+        if (selectedShine || showQuoteModal || isFormModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+
+    }, [selectedShine, showQuoteModal, isFormModal]);
 
     const fetchShines = useCallback(async (startAfterId?: string) => {
         if (!user) return;
@@ -190,6 +205,15 @@ export default function FeedPage() {
         setIsFormModal(false);
     }
 
+    const handleOpenComments = (shine: ShineDataWithRayStatus) => {
+
+        setSelectedShine(shine);
+    }
+
+    const handleCloseCommentModal = () => {
+        setSelectedShine(null);
+    }
+
     if (authLoading || loadingProfile) {
         return (
             <div className={styles.loadingContainer}>
@@ -231,6 +255,7 @@ export default function FeedPage() {
                         hasMore={hasMore}
                         onShineUpdated={handleShineUpdated}
                         onShineDeleted={handleShineDeleted}
+                        onCommentsClick={handleOpenComments}
                         userProfile={userProfile}
                     />
 
@@ -244,6 +269,15 @@ export default function FeedPage() {
             )}
             {showQuoteModal && quote && (
                 <QuoteModal quote={quote} onClose={handleCloseModal} />
+            )}
+
+            {selectedShine && userProfile && (
+                <CommentFeedModal
+                    shine={selectedShine}
+                    userProfile={userProfile}
+                    onClose={handleCloseCommentModal}
+
+                />
             )}
         </div>
     );
