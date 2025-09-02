@@ -17,9 +17,10 @@ interface ShineFeedProps {
     userProfile: UserProfileData;
     onShineUpdated: (shine: ShineDataWithRayStatus) => void;
     onShineDeleted: (shineId: string) => void;
+    onCommentsClick: (shine: ShineDataWithRayStatus) => void;
 }
 
-export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted, userProfile }: ShineFeedProps) {
+export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted, onCommentsClick, userProfile }: ShineFeedProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
 
@@ -107,6 +108,7 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
                         shine={shine}
                         onRayToggle={handleToggleRay}
                         onSettingsClick={handleSettingsClick}
+                        onCommentsClick={onCommentsClick}
                         userProfile={userProfile}
                     />
                 ))}
