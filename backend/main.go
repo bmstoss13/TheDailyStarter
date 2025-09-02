@@ -26,6 +26,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 
+	"services/supabase/commentservice"
+	CommentEndpoint "services/supabase/commentservice/endpoint"
 	SupabaseLoginEndpoint "services/supabase/loginservice/endpoint"
 	SupabasePhotos "services/supabase/photoservice"
 	SupabaseQuotes "services/supabase/quoteservice"
@@ -65,6 +67,7 @@ func main() {
 	supabasePhotoSvc := SupabasePhotos.NewSupabaseService(clients.DB, clients.Storage)
 	supabaseShineSvc := SupabaseShines.NewService(clients.DB, supabaseUserSvc)
 	bannerSvc := BannerService.NewService(supabaseUserSvc)
+	commentSvc := commentservice.NewService(clients.DB, supabaseUserSvc, supabaseShineSvc)
 
 	r := chi.NewRouter()
 
@@ -95,6 +98,7 @@ func main() {
 			r.Patch("/shines/{shineId}", SupabaseShinesEndpoint.UpdateShineHandler(supabaseShineSvc))
 			r.Post("/shines/{shineId}/toggleRay", SupabaseShinesEndpoint.ToggleRayHandler(supabaseShineSvc))
 			r.Delete("/shines/{shineId}", SupabaseShinesEndpoint.DeleteShineHandler(supabaseShineSvc))
+			r.Handle("/shines/{shineId}/comments", CommentEndpoint.CommentHandler(commentSvc))
 		})
 	})
 
