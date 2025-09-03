@@ -14,20 +14,25 @@ import Modal from '@/components/Modal';
 import CreateComment from './CreateComment';
 import CommentFeed from './CommentFeed';
 import ShinePost from './ShinePost';
+import CommentSettingsModal from './Settings/CommentSettings';
+import { User } from 'firebase/auth';
 
 interface CommentFeedModalProps {
     shine: ShineDataWithRayStatus;
     userProfile: UserProfileData;
+    user: User | null;
     onClose: () => void;
 }
 
 const api = getJsonApi();
 
-export default function CommentFeedModal({ shine, userProfile, onClose }: CommentFeedModalProps) {
+export default function CommentFeedModal({ shine, userProfile, user, onClose }: CommentFeedModalProps) {
     const [commentText, setCommentText] = useState<string>('');
     const [comments, setComments] = useState<CommentDataWithRayStatus[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [isClickingSettings, setIsClickingSettings] = useState(false);
+    const [getComment, setGetComment] = useState<CommentDataWithRayStatus | null>(null);
 
     const handleSubmit = async () => {
         if(!commentText.trim()) return;
@@ -130,6 +135,86 @@ export default function CommentFeedModal({ shine, userProfile, onClose }: Commen
         }
     };
 
+    const handleClickSettings = (comment: CommentDataWithRayStatus) => {
+        setGetComment(comment);
+        setIsClickingSettings(true)
+    }
+
+    const handleClosingSettings = () => {
+        setGetComment(null);
+        setIsClickingSettings(false)
+    }
+
+    const handleDeleteComment = async(commentId: string) => {
+        if (!commentId) return;
+        try{
+            const currentUser = auth.currentUser;
+            if(!currentUser) {
+                console.error("Must be authorized to delete this comment.")
+                return;
+            }
+
+            const idToken = await currentUser.getIdToken();
+
+            if(!idToken) {
+                console.error("Failed to extract id token from authorized user.")
+                return;
+            }
+
+            await api.delete(
+                `v1/shines/${shine.id}/comments/${commentId}`,
+                {
+                    headers: { 
+                        'Authorization': `Bearer ${idToken}` 
+                    },
+                }
+            )
+
+            setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
+            setIsClickingSettings(false)
+
+        } catch (err: any) {
+            console.error("An error occurred while deleting comment: ", err);
+        };
+    }
+
+    const handleToggleCommentRay = async(commentId: string) => {
+        if(!user) return;
+
+        try {
+            const idToken = await user.getIdToken();
+            if(!idToken){
+                console.error("An error occurred while extracting id token from user while toggling ray on comment.");
+                return;
+            }
+
+            const url = `/v1/shines/${shine.id}/comments/${commentId}/toggleRay`;
+            const { data } = await api.post(url, null, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            });
+
+            const hasRayed = data;
+            const originalComment = comments.find(comment => comment.id === commentId);
+            if(originalComment) {
+                const newRayCount = hasRayed ? originalComment.rayCount + 1 : originalComment.rayCount - 1
+                const updatedComment: CommentDataWithRayStatus = {
+                    ...originalComment,
+                    rayCount: newRayCount,
+                    hasRayed: hasRayed,
+                }
+
+                setComments(prevComments => prevComments.map(comment =>
+                    comment.id === commentId ? updatedComment : comment
+                ))
+            }
+
+        } catch (err: any) {
+            console.error("An error occurred while toggling ray on comment: ", err);
+        }
+    }
+
     return (
         <Modal 
             onClose={onClose} 
@@ -157,11 +242,20 @@ export default function CommentFeedModal({ shine, userProfile, onClose }: Commen
                 <div className={styles.commentContent}>
                     <CommentFeed 
                         comments={comments}
+                        onClickSettings={handleClickSettings}
+                        handleToggleRay={handleToggleCommentRay}
                         
                     />
                 </div>
-
             </div>
+            {isClickingSettings && getComment && (
+                <CommentSettingsModal 
+                    comment={getComment}
+                    currentUser={userProfile}
+                    onClose={handleClosingSettings}
+                    onDelete={handleDeleteComment}
+                />
+            )}
         </Modal>
     )
 }

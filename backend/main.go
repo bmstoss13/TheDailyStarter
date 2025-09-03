@@ -99,6 +99,8 @@ func main() {
 			r.Post("/shines/{shineId}/toggleRay", SupabaseShinesEndpoint.ToggleRayHandler(supabaseShineSvc))
 			r.Delete("/shines/{shineId}", SupabaseShinesEndpoint.DeleteShineHandler(supabaseShineSvc))
 			r.Handle("/shines/{shineId}/comments", CommentEndpoint.CommentHandler(commentSvc))
+			r.Delete("/shines/{shineId}/comments/{commentId}", CommentEndpoint.CommentHandler(commentSvc))
+			r.Handle("/shines/{shineId}/comments/{commentId}/toggleRay", CommentEndpoint.ToggleCommentRayHandler(commentSvc))
 		})
 	})
 

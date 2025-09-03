@@ -163,7 +163,7 @@ func (s *Service) ToggleCommentRay(ctx context.Context, uid string, commentId st
 		}
 
 		var comment Comment
-		commentErr := tx.Model(&comment).Where("comment_id = ?", commentId).Select()
+		commentErr := tx.Model(&comment).Where("id = ?", commentId).Select()
 		if commentErr != nil {
 			return fmt.Errorf("failed to retrieve comment from supabase: %w", err)
 		}

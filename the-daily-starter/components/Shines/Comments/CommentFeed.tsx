@@ -4,17 +4,17 @@ import CommentCard from "./CommentCard";
 
 interface CommentFeedProps{
     comments: CommentDataWithRayStatus[];
+    onClickSettings: (comment: CommentDataWithRayStatus) => void;
+    handleToggleRay: (commentId: string) => void;
 }
 
-const CommentFeed = ({comments}: CommentFeedProps) => {
-    const handleRayToggle = () => {
-
-    }
+const CommentFeed = ({comments, onClickSettings, handleToggleRay}: CommentFeedProps) => {
 
     if (!comments || comments.length === 0) {
         return (
             <div className={styles.noCommentsMessage}>
-                No comments yet. Be the first!
+                No comments yet. Be the 
+                <p className ={styles.zestyMessage}>first!</p>
             </div>
         )
     }
@@ -24,7 +24,8 @@ const CommentFeed = ({comments}: CommentFeedProps) => {
                 <CommentCard
                     key={comment.id}
                     comment={comment}
-                    onRayToggle={handleRayToggle}
+                    onClickSettings={onClickSettings}
+                    onRayToggle={handleToggleRay}
                 />
             ))}
         </div>
