@@ -31,7 +31,6 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
 
         try {
             const idToken = await user.getIdToken();
-            console.log("id token: " + idToken)
             const url = `http://localhost:8080/v1/shines/${shineId}/toggleRay`;
 
             const response = await axios.post(url, null, {
@@ -44,7 +43,6 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
             const originalShine = shines.find(s => s.id === shineId);
             if(originalShine) {
                 const newRayCount = hasRayed ? originalShine.rayCount + 1 : originalShine.rayCount - 1
-                console.log("new ray count: " + newRayCount);
                 const updatedShine: ShineDataWithRayStatus = {
                     ...originalShine,
                     rayCount: newRayCount,

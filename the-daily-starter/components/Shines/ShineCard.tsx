@@ -66,6 +66,7 @@ export default function ShineCard({ shine, onRayToggle, onSettingsClick, onComme
                         className={styles.commentIcon}
                     />
                 </button>
+                <span>{shine.commentNumber}</span>
                 <button
                     className={`${styles.rayButton} ${shine.hasRayed ? styles.rayed : ''}`}
                     onClick={handleRayToggle}

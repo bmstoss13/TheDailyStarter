@@ -14,20 +14,30 @@ import Modal from '@/components/Modal';
 import CreateComment from './CreateComment';
 import CommentFeed from './CommentFeed';
 import ShinePost from './ShinePost';
+import CommentSettingsModal from './Settings/CommentSettings';
+import { User } from 'firebase/auth';
 
 interface CommentFeedModalProps {
     shine: ShineDataWithRayStatus;
     userProfile: UserProfileData;
+    user: User | null;
     onClose: () => void;
 }
 
 const api = getJsonApi();
 
-export default function CommentFeedModal({ shine, userProfile, onClose }: CommentFeedModalProps) {
+export default function CommentFeedModal({ shine, userProfile, user, onClose }: CommentFeedModalProps) {
     const [commentText, setCommentText] = useState<string>('');
     const [comments, setComments] = useState<CommentDataWithRayStatus[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [replies, setReplies] = useState<Record<string, CommentDataWithRayStatus[]>>({});
+    const [replyHasMore, setReplyHasMore] = useState<Record<string, boolean>>({});
+    const [replyLoading, setReplyLoading] = useState<Record<string, boolean>>({});
+    const [isClickingSettings, setIsClickingSettings] = useState(false);
+    const [getComment, setGetComment] = useState<CommentDataWithRayStatus | null>(null);
+    const [editingComment, setEditingComment] = useState<CommentDataWithRayStatus | null>(null);
+    const [replyingTo, setReplyingTo] = useState<CommentDataWithRayStatus | null>(null);
 
     const handleSubmit = async () => {
         if(!commentText.trim()) return;
@@ -48,25 +58,72 @@ export default function CommentFeedModal({ shine, userProfile, onClose }: Commen
                 text: commentText,
             };
 
-            const { data } = await api.post<CommentDataWithRayStatus>(
-                `v1/shines/${shine.id}/comments`,
-                requestBody,
-                {
+            if (editingComment) {
+                const url = `/v1/shines/${shine.id}/comments/${editingComment.id}`;
+                await api.put<CommentDataWithRayStatus>(url, requestBody, {
+                    headers: { 'Authorization': `Bearer ${idToken}` }
+                });
 
-                    headers: {
-                        'Authorization': `Bearer ${idToken}`
+                setComments(prevComments =>
+                    prevComments.map(c =>
+                        c.id === editingComment.id ? { ...c, text: commentText } : c
+                    )
+                );
+                setEditingComment(null); 
+                setCommentText('');            
+            } else if (replyingTo) {
+                const url = `/v1/shines/${shine.id}/comments/${replyingTo.id}`;
+                const { data } = await api.post<CommentDataWithRayStatus>(url, requestBody,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${idToken}` 
+                        },
                     }
+                );
+
+                const newReply = {
+                    ...data,
+                    username: userProfile.username,
+                    userPhotoUrl: userProfile.photoURL
+                };
+
+                const id = replyingTo.id
+                setReplies(prev => ({
+                    ...prev,
+                    [id || '']: [newReply, ...(prev[id || ''] || [])]
+                }));
+
+                setComments(prev =>
+                    prev.map(c =>
+                        c.id === replyingTo.id
+                            ? { ...c, replyCount: c.replyCount + 1}
+                            : c
+                    )
+                );
+
+                setReplyingTo(null);
+                setCommentText('');
+            } else {
+                const { data } = await api.post<CommentDataWithRayStatus>(
+                    `v1/shines/${shine.id}/comments`,
+                    requestBody,
+                    {
+
+                        headers: {
+                            'Authorization': `Bearer ${idToken}`
+                        }
+                    }
+                );
+
+                const newComment = {
+                    ...data,
+                    username: userProfile.username,
+                    userPhotoUrl: userProfile.photoURL,
                 }
-            );
 
-            const newComment = {
-                ...data,
-                username: userProfile.username,
-                userPhotoUrl: userProfile.photoURL,
+                setComments(prevComments => [newComment, ...prevComments]);
+                setCommentText('')
             }
-
-            setComments(prevComments => [newComment, ...prevComments]);
-            setCommentText('')
         } catch (err: any) {
             console.error("An error occurred while creating comment: ", err);
         }
@@ -130,6 +187,145 @@ export default function CommentFeedModal({ shine, userProfile, onClose }: Commen
         }
     };
 
+    const handleStartEditing = (comment: CommentDataWithRayStatus) => {
+        setEditingComment(comment);
+        setCommentText(comment.text);
+        handleClosingSettings();
+    }
+
+    const handleClickSettings = (comment: CommentDataWithRayStatus) => {
+        setGetComment(comment);
+        setIsClickingSettings(true)
+    }
+
+    const handleClosingSettings = () => {
+        setGetComment(null);
+        setIsClickingSettings(false)
+    }
+
+    const handleStartReplying = (comment: CommentDataWithRayStatus) => {
+        setReplyingTo(comment)
+    }
+
+    const handleDeleteComment = async(commentId: string) => {
+        if (!commentId) return;
+        try{
+            const currentUser = auth.currentUser;
+            if(!currentUser) {
+                console.error("Must be authorized to delete this comment.")
+                return;
+            }
+
+            const idToken = await currentUser.getIdToken();
+
+            if(!idToken) {
+                console.error("Failed to extract id token from authorized user.")
+                return;
+            }
+
+            await api.delete(
+                `v1/shines/${shine.id}/comments/${commentId}`,
+                {
+                    headers: { 
+                        'Authorization': `Bearer ${idToken}` 
+                    },
+                }
+            )
+
+            setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
+            setIsClickingSettings(false)
+
+        } catch (err: any) {
+            console.error("An error occurred while deleting comment: ", err);
+        };
+    }
+
+    const handleToggleCommentRay = async(commentId: string) => {
+        if(!user) return;
+
+        try {
+            const idToken = await user.getIdToken();
+            if(!idToken){
+                console.error("An error occurred while extracting id token from user while toggling ray on comment.");
+                return;
+            }
+
+            const url = `/v1/shines/${shine.id}/comments/${commentId}/toggleRay`;
+            const { data } = await api.post(url, null, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            });
+
+            const hasRayed = data;
+            const originalComment = comments.find(comment => comment.id === commentId);
+            if(originalComment) {
+                const newRayCount = hasRayed ? originalComment.rayCount + 1 : originalComment.rayCount - 1
+                const updatedComment: CommentDataWithRayStatus = {
+                    ...originalComment,
+                    rayCount: newRayCount,
+                    hasRayed: hasRayed,
+                }
+
+                setComments(prevComments => prevComments.map(comment =>
+                    comment.id === commentId ? updatedComment : comment
+                ))
+            }
+
+        } catch (err: any) {
+            console.error("An error occurred while toggling ray on comment: ", err);
+        }
+    }
+
+    const handleFetchReplies = async(commentId: string, startAfterId?: string) => {
+        if (!commentId || replyLoading[commentId]) return;
+        setReplyLoading(prev => ({ ...prev, [commentId]: true}));
+        try{
+            const currentUser = auth.currentUser;
+            if(!currentUser) {
+                console.error("Current user is not authorized to view replies.")
+                return;
+            }
+
+            const idToken = await currentUser.getIdToken()
+            if (!idToken) {
+                console.error("Unable to retrieve ID token for user.");
+                return;
+            }
+
+            const url = `v1/comments/${commentId}/replies`
+            const { data } = await api.get<CommentDataWithRayStatus[]>(
+                url, 
+                {
+                    params: {
+                        limit: 10,
+                        startAfter: startAfterId,
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                },            
+            );
+
+            setReplies(prev => ({
+                ...prev,
+                [commentId]: startAfterId
+                    ? [...(prev[commentId] || []), ...data]
+                    : data
+            }))
+
+            if(data.length < 10) {
+                setReplyHasMore(prev => ({ ...prev, [commentId]: false}));
+            } else {
+                setReplyHasMore(prev => ({ ...prev, [commentId]: true}));
+            }
+        } catch (err: any) {
+            console.error("An error occurred while fetching replies for comment, " + commentId);
+        } finally{ 
+            setReplyLoading(prev => ({...prev, [commentId]: false}));
+        }
+    }
+
     return (
         <Modal 
             onClose={onClose} 
@@ -140,6 +336,12 @@ export default function CommentFeedModal({ shine, userProfile, onClose }: Commen
             }}
             footer={
                 <div className={styles.createCommentContainer}>
+                    {replyingTo && (
+                        <div>
+                            @{replyingTo.username}
+                            <button onClick={() => setReplyingTo(null)}>Cancel</button>
+                        </div>
+                    )}
                     <CreateComment 
                         onSubmit={handleSubmit}
                         commentText={commentText}
@@ -157,11 +359,25 @@ export default function CommentFeedModal({ shine, userProfile, onClose }: Commen
                 <div className={styles.commentContent}>
                     <CommentFeed 
                         comments={comments}
-                        
+                        onClickSettings={handleClickSettings}
+                        handleToggleRay={handleToggleCommentRay}
+                        replies={replies}
+                        replyHasMore={replyHasMore}
+                        replyLoading={replyLoading}
+                        onFetchReplies={handleFetchReplies}   
+                        handleStartReplying={handleStartReplying}                     
                     />
                 </div>
-
             </div>
+            {isClickingSettings && getComment && (
+                <CommentSettingsModal 
+                    comment={getComment}
+                    currentUser={userProfile}
+                    onClose={handleClosingSettings}
+                    onDelete={handleDeleteComment}
+                    onEdit={handleStartEditing}
+                />
+            )}
         </Modal>
     )
 }

@@ -9,7 +9,7 @@ type Comment struct {
 	UID        string    `pg:"uid" json:"uid"`
 	ShineId    string    `pg:"shine_id" json:"shineId"`
 	CreatedAt  time.Time `pg:"created_at" json:"createdAt"`
-	ParentId   string    `pg:"parent_id" json:"parentId"` //null for comments
+	ParentId   *string   `pg:"parent_id" json:"parentId"` //null for comments
 	Text       string    `pg:"text" json:"text"`
 	RayCount   int       `pg:"ray_count" json:"rayCount"`
 	ReplyCount int       `pg:"reply_count" json:"replyCount"`

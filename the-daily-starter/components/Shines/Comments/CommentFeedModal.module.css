@@ -19,6 +19,7 @@
     width: 100%;
     padding: 6px;
     flex-shrink: 0;
+    border-top: 1px solid var(--tertiary);
     /* position: sticky;
     bottom: 6px; */
 }

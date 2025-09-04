@@ -271,11 +271,12 @@ export default function FeedPage() {
                 <QuoteModal quote={quote} onClose={handleCloseModal} />
             )}
 
-            {selectedShine && userProfile && (
+            {selectedShine && userProfile && user && (
                 <CommentFeedModal
                     shine={selectedShine}
                     userProfile={userProfile}
                     onClose={handleCloseCommentModal}
+                    user={user}
 
                 />
             )}
