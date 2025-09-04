@@ -26,8 +26,8 @@ func NewService(db *pg.DB, userSvc *SupabaseUsers.SupabaseService, shineSvc *Sup
 	}
 }
 
-// creating a shine comment given uid, shine ID, parent ID (not passed in as it is a comment.), and text
-func (s *Service) CreateComment(ctx context.Context, uid string, shineId string, text string) (*Comment, error) {
+// CreateComment handles both new comments and replies by accepting an optional parentId.
+func (s *Service) CreateComment(ctx context.Context, uid string, shineId string, text string, parentId *string) (*Comment, error) {
 	if text == "" {
 		log.Printf("failed to create comment as comments must have text.")
 		return nil, fmt.Errorf("comments must have text")
@@ -39,25 +39,47 @@ func (s *Service) CreateComment(ctx context.Context, uid string, shineId string,
 		ID:         id,
 		UID:        uid,
 		ShineId:    shineId,
+		ParentId:   parentId, // Set the parent ID
 		CreatedAt:  time.Now(),
 		Text:       text,
 		RayCount:   0,
 		ReplyCount: 0,
 	}
 
-	_, err := s.db.WithContext(ctx).Model(newComment).Returning("*").Insert()
+	// Use a transaction to ensure atomicity for creating the comment and updating the counts.
+	tx, err := s.db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Model(newComment).Returning("*").Insert()
 	if err != nil {
 		log.Printf("An error occurred while creating comment: %v", err)
-		return nil, fmt.Errorf("error while creating shine: %v", err)
+		return nil, fmt.Errorf("error while creating comment: %v", err)
 	}
 
-	_, countErr := s.db.WithContext(ctx).Model(&SupabaseShines.ShineData{}).Where("id = ?", shineId).Set(`"commentNumber" = "commentNumber" + 1`).Update()
-	if countErr != nil {
-		log.Printf("An error occurred while updating the number of comments on shine %v: %v", shineId, countErr)
-		return nil, fmt.Errorf("error while updating comment number on this shine: %v", err)
+	if parentId != nil {
+		// Increment the reply count of the parent comment
+		_, err := tx.Model(&Comment{}).Where("id = ?", *parentId).Set(`"reply_count" = "reply_count" + 1`).Update()
+		if err != nil {
+			log.Printf("An error occurred while updating the reply count for parent %v: %v", *parentId, err)
+			return nil, fmt.Errorf("error while updating reply count: %v", err)
+		}
+	} else {
+		// If it's a top-level comment, increment the shine's comment count.
+		_, countErr := tx.Model(&SupabaseShines.ShineData{}).Where("id = ?", shineId).Set(`"commentNumber" = "commentNumber" + 1`).Update()
+		if countErr != nil {
+			log.Printf("An error occurred while updating the number of comments on shine %v: %v", shineId, countErr)
+			return nil, fmt.Errorf("error while updating comment number on this shine: %v", countErr)
+		}
 	}
 
-	log.Printf("New comment, %s, added by %s to collection ", newComment.ID, uid)
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	log.Printf("New comment, %s, added by %s", newComment.ID, uid)
 	return newComment, nil
 }
 
@@ -73,6 +95,7 @@ func (s *Service) GetComments(ctx context.Context, limit int, startAfterCommentI
 		Join("LEFT JOIN ? AS CommentRays ON CommentRays.comment_id = comment.id AND CommentRays.uid = ?", pg.Ident(CommentRayTable), uid).
 		ColumnExpr("CommentRays.uid IS NOT NULL AS has_rayed").
 		Where("comment.shine_id = ?", shineId).
+		Where("comment.parent_id IS NULL").
 		OrderExpr("comment.ray_count DESC").
 		OrderExpr("comment.created_at DESC")
 
@@ -96,6 +119,40 @@ func (s *Service) GetComments(ctx context.Context, limit int, startAfterCommentI
 
 	log.Printf("Fetched %d comments.", len(comments))
 	return comments, nil
+}
+
+func (s *Service) GetReplies(ctx context.Context, limit int, startAfterReplyId string, uid string, parentId string) ([]CommentsWithRayData, error) {
+	var replies []CommentsWithRayData
+
+	query := s.db.WithContext(ctx).Model((*Comment)(nil)).
+		ColumnExpr("comment.*").
+		ColumnExpr(`UserProfileData.username AS username, UserProfileData."photoURL" AS "userPhotoUrl"`).
+		Join("LEFT JOIN ? AS UserProfileData ON UserProfileData.uid = comment.uid", pg.Ident(SupabaseUsers.UserProfileTableName)).
+		Join("LEFT JOIN ? AS CommentRays ON CommentRays.comment_id = comment.id AND CommentRays.uid = ?", pg.Ident(CommentRayTable), uid).
+		ColumnExpr("CommentRays.uid IS NOT NULL AS has_rayed").
+		Where("comment.parent_id = ?", parentId). // Filter by parent ID
+		OrderExpr("comment.created_at ASC")
+
+	if startAfterReplyId != "" {
+		var startAfterReply Comment
+		err := s.db.Model(&startAfterReply).Where("id = ?", startAfterReplyId).Select()
+		if err != nil {
+			log.Printf("start after reply id %s not found", startAfterReplyId)
+		} else {
+			query.Where(`comment.created_at > ? OR (comment.created_at = ? AND comment.id > ?)`, startAfterReply.CreatedAt, startAfterReply.CreatedAt, startAfterReply.ID)
+			log.Printf("Queried new replies.")
+		}
+	}
+
+	query.Limit(limit)
+
+	if err := query.Select(&replies); err != nil {
+		log.Printf("an error occurred while getting replies: %v", err)
+		return nil, fmt.Errorf("failed to fetch replies: %w", err)
+	}
+
+	log.Printf("Fetched %d replies for parent %s.", len(replies), parentId)
+	return replies, nil
 }
 
 // comment owners and admins can delete comments, along with replies or rays tethered to it.
@@ -125,32 +182,38 @@ func (s *Service) DeleteComment(ctx context.Context, uid string, commentId strin
 		log.Printf("Failed to delete comment, %v: %v", commentId, err)
 		return fmt.Errorf("failed to delete comment")
 	}
+
+	_, countErr := s.db.WithContext(ctx).Model(&SupabaseShines.ShineData{}).Where("id = ?", comment.ShineId).Set(`"commentNumber" = "commentNumber" - 1`).Update()
+	if countErr != nil {
+		log.Printf("Failed to update comment number for %v: %v", comment.ShineId, err)
+		return fmt.Errorf("failed to decrement comment number")
+	}
 	return nil
 }
 
 // get the comment, marshal onto new comment struct var, send updates to comment, return nil
-func (s *Service) UpdateComment(ctx context.Context, uid string, commentId string, updates map[string]interface{}) error {
+func (s *Service) UpdateComment(ctx context.Context, uid string, commentId string, updates map[string]interface{}) (*Comment, error) {
 	var comment Comment
 	err := s.db.WithContext(ctx).Model(&comment).Where("id = ?", commentId).Select()
 	if err != nil {
 		if err == pg.ErrNoRows {
-			return fmt.Errorf("comment does not exist")
+			return nil, fmt.Errorf("comment does not exist")
 		}
 		log.Printf("Failed to marshal comment data from supabase: %v", err)
-		return fmt.Errorf("failed to retreive comment from db")
+		return nil, fmt.Errorf("failed to retreive comment from db")
 	}
 
 	if comment.UID != uid {
 		log.Printf("User %s is not authorized to update comment %s.", uid, commentId)
-		return fmt.Errorf("unauthorized to update this comment")
+		return nil, fmt.Errorf("unauthorized to update this comment")
 	}
 
 	_, updateErr := s.db.WithContext(ctx).Model(&comment).WherePK().Set("text = ?", updates["text"]).Update()
 	if updateErr != nil {
-		log.Printf("an error occurred while updating comment: %v", err)
-		return fmt.Errorf("failed to update comment")
+		log.Printf("an error occurred while updating comment: %v", updateErr)
+		return nil, fmt.Errorf("failed to update comment")
 	}
-	return nil
+	return &comment, nil
 }
 
 func (s *Service) ToggleCommentRay(ctx context.Context, uid string, commentId string) (bool, error) {

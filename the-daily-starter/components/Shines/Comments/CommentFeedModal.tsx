@@ -31,8 +31,13 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
     const [comments, setComments] = useState<CommentDataWithRayStatus[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+    const [replies, setReplies] = useState<Record<string, CommentDataWithRayStatus[]>>({});
+    const [replyHasMore, setReplyHasMore] = useState<Record<string, boolean>>({});
+    const [replyLoading, setReplyLoading] = useState<Record<string, boolean>>({});
     const [isClickingSettings, setIsClickingSettings] = useState(false);
     const [getComment, setGetComment] = useState<CommentDataWithRayStatus | null>(null);
+    const [editingComment, setEditingComment] = useState<CommentDataWithRayStatus | null>(null);
+    const [replyingTo, setReplyingTo] = useState<CommentDataWithRayStatus | null>(null);
 
     const handleSubmit = async () => {
         if(!commentText.trim()) return;
@@ -53,25 +58,72 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                 text: commentText,
             };
 
-            const { data } = await api.post<CommentDataWithRayStatus>(
-                `v1/shines/${shine.id}/comments`,
-                requestBody,
-                {
+            if (editingComment) {
+                const url = `/v1/shines/${shine.id}/comments/${editingComment.id}`;
+                await api.put<CommentDataWithRayStatus>(url, requestBody, {
+                    headers: { 'Authorization': `Bearer ${idToken}` }
+                });
 
-                    headers: {
-                        'Authorization': `Bearer ${idToken}`
+                setComments(prevComments =>
+                    prevComments.map(c =>
+                        c.id === editingComment.id ? { ...c, text: commentText } : c
+                    )
+                );
+                setEditingComment(null); 
+                setCommentText('');            
+            } else if (replyingTo) {
+                const url = `/v1/shines/${shine.id}/comments/${replyingTo.id}`;
+                const { data } = await api.post<CommentDataWithRayStatus>(url, requestBody,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${idToken}` 
+                        },
                     }
+                );
+
+                const newReply = {
+                    ...data,
+                    username: userProfile.username,
+                    userPhotoUrl: userProfile.photoURL
+                };
+
+                const id = replyingTo.id
+                setReplies(prev => ({
+                    ...prev,
+                    [id || '']: [newReply, ...(prev[id || ''] || [])]
+                }));
+
+                setComments(prev =>
+                    prev.map(c =>
+                        c.id === replyingTo.id
+                            ? { ...c, replyCount: c.replyCount + 1}
+                            : c
+                    )
+                );
+
+                setReplyingTo(null);
+                setCommentText('');
+            } else {
+                const { data } = await api.post<CommentDataWithRayStatus>(
+                    `v1/shines/${shine.id}/comments`,
+                    requestBody,
+                    {
+
+                        headers: {
+                            'Authorization': `Bearer ${idToken}`
+                        }
+                    }
+                );
+
+                const newComment = {
+                    ...data,
+                    username: userProfile.username,
+                    userPhotoUrl: userProfile.photoURL,
                 }
-            );
 
-            const newComment = {
-                ...data,
-                username: userProfile.username,
-                userPhotoUrl: userProfile.photoURL,
+                setComments(prevComments => [newComment, ...prevComments]);
+                setCommentText('')
             }
-
-            setComments(prevComments => [newComment, ...prevComments]);
-            setCommentText('')
         } catch (err: any) {
             console.error("An error occurred while creating comment: ", err);
         }
@@ -135,6 +187,12 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
         }
     };
 
+    const handleStartEditing = (comment: CommentDataWithRayStatus) => {
+        setEditingComment(comment);
+        setCommentText(comment.text);
+        handleClosingSettings();
+    }
+
     const handleClickSettings = (comment: CommentDataWithRayStatus) => {
         setGetComment(comment);
         setIsClickingSettings(true)
@@ -143,6 +201,10 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
     const handleClosingSettings = () => {
         setGetComment(null);
         setIsClickingSettings(false)
+    }
+
+    const handleStartReplying = (comment: CommentDataWithRayStatus) => {
+        setReplyingTo(comment)
     }
 
     const handleDeleteComment = async(commentId: string) => {
@@ -215,6 +277,55 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
         }
     }
 
+    const handleFetchReplies = async(commentId: string, startAfterId?: string) => {
+        if (!commentId || replyLoading[commentId]) return;
+        setReplyLoading(prev => ({ ...prev, [commentId]: true}));
+        try{
+            const currentUser = auth.currentUser;
+            if(!currentUser) {
+                console.error("Current user is not authorized to view replies.")
+                return;
+            }
+
+            const idToken = await currentUser.getIdToken()
+            if (!idToken) {
+                console.error("Unable to retrieve ID token for user.");
+                return;
+            }
+
+            const url = `v1/comments/${commentId}/replies`
+            const { data } = await api.get<CommentDataWithRayStatus[]>(
+                url, 
+                {
+                    params: {
+                        limit: 10,
+                        startAfter: startAfterId,
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                },            
+            );
+
+            setReplies(prev => ({
+                ...prev,
+                [commentId]: startAfterId
+                    ? [...(prev[commentId] || []), ...data]
+                    : data
+            }))
+
+            if(data.length < 10) {
+                setReplyHasMore(prev => ({ ...prev, [commentId]: false}));
+            } else {
+                setReplyHasMore(prev => ({ ...prev, [commentId]: true}));
+            }
+        } catch (err: any) {
+            console.error("An error occurred while fetching replies for comment, " + commentId);
+        } finally{ 
+            setReplyLoading(prev => ({...prev, [commentId]: false}));
+        }
+    }
+
     return (
         <Modal 
             onClose={onClose} 
@@ -225,6 +336,12 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
             }}
             footer={
                 <div className={styles.createCommentContainer}>
+                    {replyingTo && (
+                        <div>
+                            @{replyingTo.username}
+                            <button onClick={() => setReplyingTo(null)}>Cancel</button>
+                        </div>
+                    )}
                     <CreateComment 
                         onSubmit={handleSubmit}
                         commentText={commentText}
@@ -244,7 +361,11 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                         comments={comments}
                         onClickSettings={handleClickSettings}
                         handleToggleRay={handleToggleCommentRay}
-                        
+                        replies={replies}
+                        replyHasMore={replyHasMore}
+                        replyLoading={replyLoading}
+                        onFetchReplies={handleFetchReplies}   
+                        handleStartReplying={handleStartReplying}                     
                     />
                 </div>
             </div>
@@ -254,6 +375,7 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                     currentUser={userProfile}
                     onClose={handleClosingSettings}
                     onDelete={handleDeleteComment}
+                    onEdit={handleStartEditing}
                 />
             )}
         </Modal>

@@ -11,20 +11,47 @@ import styles from './CommentCard.module.css';
 import profile from '@/public/png-transparent-default-avatar.png'
 import Image from 'next/image';
 import { formatTimestamp } from '@/components/helper';
+import CommentFeed from './CommentFeed';
 
 interface CommentCardProps {
     comment: CommentDataWithRayStatus;
     onRayToggle: (commentId: string) => void;
     onClickSettings: (comment: CommentDataWithRayStatus) => void;
-
+    replies: CommentDataWithRayStatus[];
+    hasMoreReplies?: boolean;
+    isLoadingReplies?: boolean;
+    onFetchReplies: (commentId: string, startAfterId?: string) => void;  
+    handleStartReplying: (comment: CommentDataWithRayStatus) => void; 
 }
 
 
-export default function CommentCard({comment, onClickSettings, onRayToggle}: CommentCardProps) {
+export default function CommentCard({
+    comment, 
+    onClickSettings, 
+    onRayToggle,
+    replies,
+    hasMoreReplies,
+    isLoadingReplies,
+    onFetchReplies,
+    handleStartReplying,
+}: CommentCardProps) {
+    const [showReplies, setShowReplies] = useState(false);
 
     const createdAtDate = new Date(comment.createdAt)
+    
+    const handleToggleReplies = () => {
+        if(!showReplies && replies.length === 0) {
+            if(comment.id){
+                onFetchReplies(comment.id);
+            }
+        }
+        setShowReplies(!showReplies);
+    }
     return (
         <div className={styles.commentCard}>
+            <div className={styles.commentsAndReplies}>
+                
+            </div>
             <div className={styles.commentCardBody}>
                 <div className={styles.commentHeader}>
                     {comment.userPhotoUrl ? (
@@ -50,7 +77,9 @@ export default function CommentCard({comment, onClickSettings, onRayToggle}: Com
                 </div>
                 <div className={styles.commentCardStats}>
                     <span className={styles.timestamp}>{formatTimestamp(createdAtDate)}</span>
-                    <p>{comment.replyCount} replies</p>
+                    <button onClick={handleToggleReplies}>
+                        <p>{showReplies ? "Hide Replies" : comment.replyCount > 0 ? `View ${comment.replyCount} replies` : `${comment.replyCount} replies`}</p>
+                    </button>
                     <p>{comment.rayCount} rays</p>
 
                 </div>
@@ -61,6 +90,7 @@ export default function CommentCard({comment, onClickSettings, onRayToggle}: Com
                 <div className={styles.commentCardButtons}>
                     <button
                         className={`${styles.commentButton}`}
+                        onClick={() => handleStartReplying(comment)}
                     >
                         <FontAwesomeIcon
                             icon={faReply}
@@ -76,6 +106,33 @@ export default function CommentCard({comment, onClickSettings, onRayToggle}: Com
                             className={styles.rayIcon}
                         />
                     </button>
+                </div>
+            )}
+
+            {showReplies && (
+                <div className={styles.replySection}>
+                    {replies.length > 0 && (
+                        <CommentFeed
+                            comments={replies}
+                            onClickSettings={onClickSettings}
+                            handleToggleRay={onRayToggle}
+                            replies={{}}
+                            replyHasMore={{}}
+                            replyLoading={{}}
+                            onFetchReplies={() => {}} 
+                            handleStartReplying={handleStartReplying}
+                        />                           
+                    )}
+                {hasMoreReplies && !isLoadingReplies && (
+                    <button
+                        className={styles.loadMoreReplies}
+                        onClick={() => onFetchReplies(comment.id || '', replies[replies.length - 1]?.id)}
+                    >
+                        Load more replies
+                    </button>
+                )}
+
+                {isLoadingReplies && <p>Loading...</p>}
                 </div>
             )}
 

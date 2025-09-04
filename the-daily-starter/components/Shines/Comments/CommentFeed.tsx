@@ -6,9 +6,23 @@ interface CommentFeedProps{
     comments: CommentDataWithRayStatus[];
     onClickSettings: (comment: CommentDataWithRayStatus) => void;
     handleToggleRay: (commentId: string) => void;
+    replies: Record<string, CommentDataWithRayStatus[]>
+    replyHasMore: Record<string, boolean>;
+    replyLoading: Record<string, boolean>
+    onFetchReplies: (commentId: string, startAfterId?: string) => void;
+    handleStartReplying: (comment: CommentDataWithRayStatus) => void;
 }
 
-const CommentFeed = ({comments, onClickSettings, handleToggleRay}: CommentFeedProps) => {
+const CommentFeed = ({
+    comments, 
+    onClickSettings, 
+    handleToggleRay,
+    replies,
+    replyHasMore,
+    replyLoading,
+    onFetchReplies,
+    handleStartReplying,
+}: CommentFeedProps) => {
 
     if (!comments || comments.length === 0) {
         return (
@@ -26,6 +40,11 @@ const CommentFeed = ({comments, onClickSettings, handleToggleRay}: CommentFeedPr
                     comment={comment}
                     onClickSettings={onClickSettings}
                     onRayToggle={handleToggleRay}
+                    replies={replies[comment.id || ''] || []}
+                    hasMoreReplies={replyHasMore[comment.id || '']}
+                    isLoadingReplies={replyLoading[comment.id || '']}
+                    onFetchReplies={onFetchReplies}
+                    handleStartReplying={handleStartReplying}
                 />
             ))}
         </div>

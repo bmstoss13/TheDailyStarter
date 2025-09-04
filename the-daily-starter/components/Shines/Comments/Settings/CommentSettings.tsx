@@ -6,10 +6,11 @@ interface CommentSettingsModal{
     comment: CommentDataWithRayStatus;
     currentUser: UserProfileData;
     onClose: () => void;
+    onEdit: (comment: CommentDataWithRayStatus) => void;
     onDelete: (commentId: string) => void;
 };
 
-const CommentSettingsModal = ({comment, currentUser, onClose, onDelete}: CommentSettingsModal) => {
+const CommentSettingsModal = ({comment, currentUser, onClose, onEdit, onDelete}: CommentSettingsModal) => {
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     const isOwner = currentUser?.uid === comment.uid;
@@ -32,7 +33,10 @@ const CommentSettingsModal = ({comment, currentUser, onClose, onDelete}: Comment
                     >
                         <p className={styles.deleteText}>Delete</p>
                     </button>
-                    <button className={styles.cancelButton}>
+                    <button 
+                        className={styles.cancelButton}
+                        onClick={() => onEdit(comment)}
+                    >
                         <p>Edit</p>
                     </button>
                     {/* <button className={styles.cancelButton}>
