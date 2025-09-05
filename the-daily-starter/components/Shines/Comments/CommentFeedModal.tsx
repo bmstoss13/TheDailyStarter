@@ -35,9 +35,13 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
     const [replyHasMore, setReplyHasMore] = useState<Record<string, boolean>>({});
     const [replyLoading, setReplyLoading] = useState<Record<string, boolean>>({});
     const [isClickingSettings, setIsClickingSettings] = useState(false);
-    const [getComment, setGetComment] = useState<CommentDataWithRayStatus | null>(null);
     const [editingComment, setEditingComment] = useState<CommentDataWithRayStatus | null>(null);
     const [replyingTo, setReplyingTo] = useState<CommentDataWithRayStatus | null>(null);
+    const [parentComment, setParentComment] = useState<CommentDataWithRayStatus | null>(null);
+    const [settingsTarget, setSettingsTarget] = useState<{
+        comment: CommentDataWithRayStatus | null,
+        parent: CommentDataWithRayStatus | null
+    }>({ comment: null, parent: null});
 
     const handleSubmit = async () => {
         if(!commentText.trim()) return;
@@ -64,15 +68,30 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                     headers: { 'Authorization': `Bearer ${idToken}` }
                 });
 
-                setComments(prevComments =>
-                    prevComments.map(c =>
-                        c.id === editingComment.id ? { ...c, text: commentText } : c
-                    )
-                );
-                setEditingComment(null); 
+                if (parentComment) {
+                    setReplies(prevReplies => {
+                        const parentId = parentComment.id || '';
+                        const updatedReplies = { ...prevReplies };
+                        if (updatedReplies[parentId]) {
+                            updatedReplies[parentId] = updatedReplies[parentId].map(r =>
+                                r.id === editingComment.id ? { ...r, text: commentText } : r
+                            );
+                        }
+                        return updatedReplies;
+                    });
+                } else {
+                    setComments(prevComments =>
+                        prevComments.map(c =>
+                            c.id === editingComment.id ? { ...c, text: commentText } : c
+                        )
+                    );
+                }
+
+                setEditingComment(null);
+                setParentComment(null); 
                 setCommentText('');            
-            } else if (replyingTo) {
-                const url = `/v1/shines/${shine.id}/comments/${replyingTo.id}`;
+            } else if (replyingTo && parentComment) {
+                const url = `/v1/shines/${shine.id}/comments/${parentComment.id}`;
                 const { data } = await api.post<CommentDataWithRayStatus>(url, requestBody,
                     {
                         headers: {
@@ -87,21 +106,24 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                     userPhotoUrl: userProfile.photoURL
                 };
 
-                const id = replyingTo.id
+                const parentId = parentComment.id;
+
+                // const id = replyingTo.id
                 setReplies(prev => ({
                     ...prev,
-                    [id || '']: [newReply, ...(prev[id || ''] || [])]
+                    [parentId || '']: [newReply, ...(prev[parentId || ''] || [])]
                 }));
 
                 setComments(prev =>
                     prev.map(c =>
-                        c.id === replyingTo.id
+                        c.id === parentId
                             ? { ...c, replyCount: c.replyCount + 1}
                             : c
                     )
                 );
 
                 setReplyingTo(null);
+                setParentComment(null);
                 setCommentText('');
             } else {
                 const { data } = await api.post<CommentDataWithRayStatus>(
@@ -187,27 +209,42 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
         }
     };
 
-    const handleStartEditing = (comment: CommentDataWithRayStatus) => {
+    const handleStartEditing = (
+        comment: CommentDataWithRayStatus,
+        parent?: CommentDataWithRayStatus | null
+    ) => {
         setEditingComment(comment);
         setCommentText(comment.text);
+        setParentComment(parent ?? null);
         handleClosingSettings();
     }
 
-    const handleClickSettings = (comment: CommentDataWithRayStatus) => {
-        setGetComment(comment);
+    const handleClickSettings = (
+        comment: CommentDataWithRayStatus,
+        parent?: CommentDataWithRayStatus | null
+    ) => {
+        setSettingsTarget({ comment, parent: parent ?? null})
+        if(parentComment) console.log("parent set: " + parentComment.id)
         setIsClickingSettings(true)
     }
 
     const handleClosingSettings = () => {
-        setGetComment(null);
+        setSettingsTarget({ comment: null, parent: null });
         setIsClickingSettings(false)
     }
 
-    const handleStartReplying = (comment: CommentDataWithRayStatus) => {
-        setReplyingTo(comment)
+    const handleStartReplying = (
+        parent: CommentDataWithRayStatus,
+        target: CommentDataWithRayStatus
+    ) => {
+        setParentComment(parent)
+        setReplyingTo(target)
     }
 
-    const handleDeleteComment = async(commentId: string) => {
+    const handleDeleteComment = async(
+        commentId: string, 
+        parentComment?: CommentDataWithRayStatus | null
+    ) => {
         if (!commentId) return;
         try{
             const currentUser = auth.currentUser;
@@ -230,10 +267,31 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                         'Authorization': `Bearer ${idToken}` 
                     },
                 }
-            )
+            );
+            if (!parentComment) {
+                setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
+            } else {
+                setComments(prevComments => 
+                    prevComments.map(comment =>
+                        comment.id === parentComment.id
+                            ? {
+                                ...comment,
+                                replyCount: Math.max(comment.replyCount - 1, 0),
+                            }
+                            : comment
+                    )
+                );
+                setReplies(prevReplies => {
+                    const updatedReplies = { ...prevReplies };
+                    if (updatedReplies[parentComment.id || '']) {
+                        updatedReplies[parentComment.id || ''] = updatedReplies[parentComment.id || ''].filter(reply => reply.id !== commentId);
+                    }
+                    return updatedReplies;
+                });
+            }
 
-            setComments(prevComments => prevComments.filter(comment => comment.id !== commentId));
-            setIsClickingSettings(false)
+
+            handleClosingSettings();
 
         } catch (err: any) {
             console.error("An error occurred while deleting comment: ", err);
@@ -258,24 +316,32 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
             });
 
             const hasRayed = data;
-            const originalComment = comments.find(comment => comment.id === commentId);
-            if(originalComment) {
-                const newRayCount = hasRayed ? originalComment.rayCount + 1 : originalComment.rayCount - 1
-                const updatedComment: CommentDataWithRayStatus = {
-                    ...originalComment,
-                    rayCount: newRayCount,
-                    hasRayed: hasRayed,
-                }
 
-                setComments(prevComments => prevComments.map(comment =>
-                    comment.id === commentId ? updatedComment : comment
-                ))
-            }
+            setComments(prev =>
+                prev.map(c =>
+                    c.id === commentId
+                        ? { ...c, hasRayed, rayCount: hasRayed ? c.rayCount + 1 : c.rayCount - 1 }
+                        : c
+                )
+            );
+
+            setReplies(prev => {
+                const updated = { ...prev };
+                for (const parentId in updated) {
+                    updated[parentId] = updated[parentId].map(r =>
+                        r.id === commentId
+                            ? { ...r, hasRayed, rayCount: hasRayed ? r.rayCount + 1 : r.rayCount - 1 }
+                            : r
+                    );
+                }
+                return updated;
+            });
 
         } catch (err: any) {
             console.error("An error occurred while toggling ray on comment: ", err);
         }
     }
+
 
     const handleFetchReplies = async(commentId: string, startAfterId?: string) => {
         if (!commentId || replyLoading[commentId]) return;
@@ -338,8 +404,13 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                 <div className={styles.createCommentContainer}>
                     {replyingTo && (
                         <div>
-                            @{replyingTo.username}
-                            <button onClick={() => setReplyingTo(null)}>Cancel</button>
+                            Replying to @{replyingTo.username}
+                            <button onClick={() => {
+                                setReplyingTo(null)
+                                setParentComment(null)
+                            }}>
+                                Cancel
+                            </button>
                         </div>
                     )}
                     <CreateComment 
@@ -369,9 +440,10 @@ export default function CommentFeedModal({ shine, userProfile, user, onClose }: 
                     />
                 </div>
             </div>
-            {isClickingSettings && getComment && (
+            {isClickingSettings && settingsTarget.comment && (
                 <CommentSettingsModal 
-                    comment={getComment}
+                    comment={settingsTarget.comment}
+                    parentComment={settingsTarget.parent}
                     currentUser={userProfile}
                     onClose={handleClosingSettings}
                     onDelete={handleDeleteComment}

@@ -4,13 +4,19 @@ import CommentCard from "./CommentCard";
 
 interface CommentFeedProps{
     comments: CommentDataWithRayStatus[];
-    onClickSettings: (comment: CommentDataWithRayStatus) => void;
+    onClickSettings: (
+        comment: CommentDataWithRayStatus,
+        parent?: CommentDataWithRayStatus | null
+    ) => void;
     handleToggleRay: (commentId: string) => void;
     replies: Record<string, CommentDataWithRayStatus[]>
     replyHasMore: Record<string, boolean>;
     replyLoading: Record<string, boolean>
     onFetchReplies: (commentId: string, startAfterId?: string) => void;
-    handleStartReplying: (comment: CommentDataWithRayStatus) => void;
+    handleStartReplying: (
+        parent: CommentDataWithRayStatus,
+        target: CommentDataWithRayStatus
+    ) => void;
 }
 
 const CommentFeed = ({

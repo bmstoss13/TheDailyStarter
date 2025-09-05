@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import { CommentData, CommentDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSun, faReply } from '@fortawesome/free-solid-svg-icons';
@@ -12,16 +12,23 @@ import profile from '@/public/png-transparent-default-avatar.png'
 import Image from 'next/image';
 import { formatTimestamp } from '@/components/helper';
 import CommentFeed from './CommentFeed';
+import ReplyFeed from './Replies/ReplyFeed';
 
 interface CommentCardProps {
     comment: CommentDataWithRayStatus;
     onRayToggle: (commentId: string) => void;
-    onClickSettings: (comment: CommentDataWithRayStatus) => void;
+    onClickSettings: (
+        comment: CommentDataWithRayStatus,
+        parentComment?: CommentDataWithRayStatus | null
+    ) => void;
     replies: CommentDataWithRayStatus[];
     hasMoreReplies?: boolean;
     isLoadingReplies?: boolean;
     onFetchReplies: (commentId: string, startAfterId?: string) => void;  
-    handleStartReplying: (comment: CommentDataWithRayStatus) => void; 
+    handleStartReplying: (
+        parent: CommentDataWithRayStatus,
+        target: CommentDataWithRayStatus
+    ) => void; 
 }
 
 
@@ -49,9 +56,6 @@ export default function CommentCard({
     }
     return (
         <div className={styles.commentCard}>
-            <div className={styles.commentsAndReplies}>
-                
-            </div>
             <div className={styles.commentCardBody}>
                 <div className={styles.commentHeader}>
                     {comment.userPhotoUrl ? (
@@ -68,29 +72,33 @@ export default function CommentCard({
                     </div>
 
                     <button
-                        onClick={() => onClickSettings(comment)}
+                        onClick={() => onClickSettings(comment, null)}
                     >
                         <FontAwesomeIcon
                             icon={faEllipsis}
                         />
                     </button>
                 </div>
-                <div className={styles.commentCardStats}>
-                    <span className={styles.timestamp}>{formatTimestamp(createdAtDate)}</span>
-                    <button onClick={handleToggleReplies}>
-                        <p>{showReplies ? "Hide Replies" : comment.replyCount > 0 ? `View ${comment.replyCount} replies` : `${comment.replyCount} replies`}</p>
-                    </button>
-                    <p>{comment.rayCount} rays</p>
 
-                </div>
 
 
             </div>
+            <div className={styles.commentCardFooter}>
+                    <div className={styles.commentCardStats}>
+                        <span className={styles.timestamp}>{formatTimestamp(createdAtDate)}</span>
+                        <button onClick={handleToggleReplies}>
+                            <p>{showReplies ? "Hide Replies" : comment.replyCount > 0 ? `View ${comment.replyCount} replies` : `${comment.replyCount} replies`}</p>
+                        </button>
+                        <p>{comment.rayCount} rays</p>
+
+                    </div>
+
             {comment.id && (
                 <div className={styles.commentCardButtons}>
+
                     <button
                         className={`${styles.commentButton}`}
-                        onClick={() => handleStartReplying(comment)}
+                        onClick={() => handleStartReplying(comment, comment)}
                     >
                         <FontAwesomeIcon
                             icon={faReply}
@@ -109,17 +117,17 @@ export default function CommentCard({
                 </div>
             )}
 
+            </div>
+
             {showReplies && (
                 <div className={styles.replySection}>
                     {replies.length > 0 && (
-                        <CommentFeed
-                            comments={replies}
+                        <ReplyFeed
+                            key={`${comment.id}-${replies.length}`}
+                            parentComment={comment}
                             onClickSettings={onClickSettings}
-                            handleToggleRay={onRayToggle}
-                            replies={{}}
-                            replyHasMore={{}}
-                            replyLoading={{}}
-                            onFetchReplies={() => {}} 
+                            onRayToggle={onRayToggle}
+                            replies={replies}
                             handleStartReplying={handleStartReplying}
                         />                           
                     )}
