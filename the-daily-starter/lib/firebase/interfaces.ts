@@ -67,6 +67,7 @@ export interface RayData {
 export interface CommentOrReplyData {
     id?: string;
     uid: string;
+    parentId: string | null;
     username: string;
     userPhotoUrl?: string | null;
     text: string;

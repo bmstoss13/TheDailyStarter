@@ -183,11 +183,33 @@ func (s *Service) DeleteComment(ctx context.Context, uid string, commentId strin
 		return fmt.Errorf("failed to delete comment")
 	}
 
-	_, countErr := s.db.WithContext(ctx).Model(&SupabaseShines.ShineData{}).Where("id = ?", comment.ShineId).Set(`"commentNumber" = "commentNumber" - 1`).Update()
-	if countErr != nil {
-		log.Printf("Failed to update comment number for %v: %v", comment.ShineId, err)
-		return fmt.Errorf("failed to decrement comment number")
+	if comment.ParentId == nil {
+		_, countErr := s.db.WithContext(ctx).
+			Model(&SupabaseShines.ShineData{}).
+			Where("id = ?", comment.ShineId).
+			Set(`"commentNumber" = GREATEST("commentNumber" - 1, 0)`).
+			Update()
+		if countErr != nil {
+			log.Printf("Failed to update comment number for %v: %v", comment.ShineId, countErr)
+			return fmt.Errorf("failed to decrement shine comment number")
+		}
+	} else {
+		// Decrement the parent's reply count
+		_, replyErr := s.db.WithContext(ctx).
+			Model(&Comment{}).
+			Where("id = ?", *comment.ParentId).
+			Set(`"reply_count" = GREATEST("reply_count" - 1, 0)`).
+			Update()
+		if replyErr != nil {
+			log.Printf("Failed to update reply count for parent %v: %v", *comment.ParentId, replyErr)
+			return fmt.Errorf("failed to decrement reply count")
+		}
 	}
+	// _, countErr := s.db.WithContext(ctx).Model(&SupabaseShines.ShineData{}).Where("id = ?", comment.ShineId).Set(`"commentNumber" = "commentNumber" - 1`).Update()
+	// if countErr != nil {
+	// 	log.Printf("Failed to update comment number for %v: %v", comment.ShineId, err)
+	// 	return fmt.Errorf("failed to decrement comment number")
+	// }
 	return nil
 }
 

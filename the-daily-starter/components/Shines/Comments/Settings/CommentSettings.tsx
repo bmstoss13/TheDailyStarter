@@ -5,12 +5,16 @@ import styles from "./CommentSettings.module.css";
 interface CommentSettingsModal{
     comment: CommentDataWithRayStatus;
     currentUser: UserProfileData;
+    parentComment?: CommentDataWithRayStatus | null;
     onClose: () => void;
-    onEdit: (comment: CommentDataWithRayStatus) => void;
-    onDelete: (commentId: string) => void;
+    onEdit: (
+        comment: CommentDataWithRayStatus,
+        parent?: CommentDataWithRayStatus | null
+    ) => void;
+    onDelete: (commentId: string, parentComment?: CommentDataWithRayStatus | null) => void;
 };
 
-const CommentSettingsModal = ({comment, currentUser, onClose, onEdit, onDelete}: CommentSettingsModal) => {
+const CommentSettingsModal = ({comment, currentUser, onClose, onEdit, onDelete, parentComment}: CommentSettingsModal) => {
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
     const isOwner = currentUser?.uid === comment.uid;
@@ -20,7 +24,11 @@ const CommentSettingsModal = ({comment, currentUser, onClose, onEdit, onDelete}:
     };
 
     const handleConfirmDelete = () => {
-        onDelete(comment.id!);
+        console.log("Deleting comment with ID:", comment.id);
+        console.log("Parent comment exists:", !!parentComment);
+
+
+        onDelete(comment.id!, parentComment ?? null);
     };
 
     const optionsView = (
@@ -35,7 +43,7 @@ const CommentSettingsModal = ({comment, currentUser, onClose, onEdit, onDelete}:
                     </button>
                     <button 
                         className={styles.cancelButton}
-                        onClick={() => onEdit(comment)}
+                        onClick={() => onEdit(comment, parentComment)}
                     >
                         <p>Edit</p>
                     </button>
