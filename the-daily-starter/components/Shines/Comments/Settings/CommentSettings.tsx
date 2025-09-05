@@ -24,10 +24,6 @@ const CommentSettingsModal = ({comment, currentUser, onClose, onEdit, onDelete, 
     };
 
     const handleConfirmDelete = () => {
-        console.log("Deleting comment with ID:", comment.id);
-        console.log("Parent comment exists:", !!parentComment);
-
-
         onDelete(comment.id!, parentComment ?? null);
     };
 
