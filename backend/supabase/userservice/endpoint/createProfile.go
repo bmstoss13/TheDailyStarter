@@ -23,9 +23,6 @@ func ProfileHandler(svc *SupabaseUsers.SupabaseService, photoSvc *SupabasePhotos
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
 
-		log.Printf("context key: %v", r.Context().Value(sharedCtx.UIDKey))
-		log.Printf("context key: %v", r.Context().Value(sharedCtx.EmailKey))
-
 		uid, ok := r.Context().Value(sharedCtx.UIDKey).(string)
 		if !ok || uid == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -46,11 +43,14 @@ func ProfileHandler(svc *SupabaseUsers.SupabaseService, photoSvc *SupabasePhotos
 		}
 
 		profileData := SupabaseUsers.UserProfileData{
-			FirstName: r.FormValue("firstName"),
-			LastName:  r.FormValue("lastName"),
-			DOB:       r.FormValue("dob"),
-			Username:  r.FormValue("username"),
-			Email:     email,
+			FirstName:      r.FormValue("firstName"),
+			LastName:       r.FormValue("lastName"),
+			DOB:            r.FormValue("dob"),
+			Username:       r.FormValue("username"),
+			Email:          email,
+			Bio:            r.FormValue("bio"),
+			Pronouns:       SupabaseUsers.PronounCategory(r.FormValue("pronounCategory")),
+			CustomPronouns: r.FormValue("customPronouns"),
 		}
 
 		var photoURL string

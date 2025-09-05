@@ -29,6 +29,7 @@ import (
 	"services/supabase/commentservice"
 	CommentEndpoint "services/supabase/commentservice/endpoint"
 	SupabaseLoginEndpoint "services/supabase/loginservice/endpoint"
+	"services/supabase/newsservice"
 	SupabasePhotos "services/supabase/photoservice"
 	SupabaseQuotes "services/supabase/quoteservice"
 	SupabaseQuoteEndpoint "services/supabase/quoteservice/endpoint"
@@ -36,6 +37,8 @@ import (
 	SupabaseShinesEndpoint "services/supabase/shineservice/endpoint"
 	SupabaseUsers "services/supabase/userservice"
 	SupabaseUserEndpoint "services/supabase/userservice/endpoint"
+
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -68,7 +71,16 @@ func main() {
 	supabaseShineSvc := SupabaseShines.NewService(clients.DB, supabaseUserSvc)
 	bannerSvc := BannerService.NewService(supabaseUserSvc)
 	commentSvc := commentservice.NewService(clients.DB, supabaseUserSvc, supabaseShineSvc)
+	newsService := newsservice.NewService(clients.DB, clients)
 
+	cr := cron.New()
+
+	cr.AddFunc("0 0 * * *", func() {
+		log.Println("Starting daily news update...")
+		newsService.UpdateDailyNews(context.Background(), 5, 0.5)
+	})
+
+	cr.Start()
 	r := chi.NewRouter()
 
 	c := cors.New(cors.Options{
@@ -93,6 +105,7 @@ func main() {
 			r.Post("/user/create", SupabaseUserEndpoint.ProfileHandler(supabaseUserSvc, supabasePhotoSvc))
 			r.Post("/user/login", SupabaseLoginEndpoint.LoginHandler(supabaseUserSvc, supabaseQuoteSvc))
 			r.Get("/users/{uid}", SupabaseUserEndpoint.UserProfileHandler(supabaseUserSvc))
+			r.Put("/users/{uid}/update", SupabaseUserEndpoint.UpdateProfileHandler(supabaseUserSvc, supabasePhotoSvc))
 			r.Delete("/user/delete", SupabaseUserEndpoint.DeleteUserHandler(supabaseUserSvc))
 			r.Handle("/shines", SupabaseShinesEndpoint.ShineHandler(supabaseShineSvc, supabasePhotoSvc))
 			r.Patch("/shines/{shineId}", SupabaseShinesEndpoint.UpdateShineHandler(supabaseShineSvc))
@@ -149,4 +162,6 @@ func main() {
 		log.Fatalf("Server shutdown failed: %v", shutdownErr)
 	}
 	log.Println("Server stopped gracefully.")
+
+	select {}
 }
