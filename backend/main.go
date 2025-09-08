@@ -37,6 +37,7 @@ import (
 	SupabaseShinesEndpoint "services/supabase/shineservice/endpoint"
 	SupabaseUsers "services/supabase/userservice"
 	SupabaseUserEndpoint "services/supabase/userservice/endpoint"
+	"services/supabase/worldnewsapi"
 
 	"github.com/robfig/cron/v3"
 )
@@ -60,6 +61,8 @@ func main() {
 	}
 	defer clients.Close()
 
+	newsClient := worldnewsapi.NewClient(os.Getenv("WORLD_NEWS_API_KEY"))
+
 	quoteSvc := quoteService.NewService(clients)
 	userSvc := userservice.NewService(clients)
 	shineSvc := shineservice.NewService(clients, userSvc)
@@ -71,7 +74,7 @@ func main() {
 	supabaseShineSvc := SupabaseShines.NewService(clients.DB, supabaseUserSvc)
 	bannerSvc := BannerService.NewService(supabaseUserSvc)
 	commentSvc := commentservice.NewService(clients.DB, supabaseUserSvc, supabaseShineSvc)
-	newsService := newsservice.NewService(clients.DB, clients)
+	newsService := newsservice.NewService(clients.DB, newsClient)
 
 	cr := cron.New()
 
