@@ -4,6 +4,10 @@
     /* background-color: rgb(255, 252, 243); */
 }
 
+/* .feedLayout{
+  display: flex;
+} */
+
 /* Loading styles */
 .loadingContainer {
   display: flex;

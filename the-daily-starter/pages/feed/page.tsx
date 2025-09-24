@@ -12,12 +12,12 @@ import QuoteModal from "@/components/Quotes/QuoteModal";
 import styles from './FeedPage.module.css';
 import Navbar from '@/components/Navbar/Navbar';
 import { useAuthContext } from '@/hooks/authProvider';
-import { ShineData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
+import { NewsData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
 import { saveShineFeedToCache, loadShineFeedFromCache } from '@/hooks/feedCache';
 import FeedBanner from '@/components/Shines/FeedBanner';
 import { useProfile } from '@/hooks/useProfile';
-import CommentFeed from '@/components/Shines/Comments/CommentFeedModal';
 import CommentFeedModal from '@/components/Shines/Comments/CommentFeedModal';
+import DailyNewsFeed from './components/DailyNews/DailyNewsFeed';
 
 interface DailyQuoteData {
     quote: string;
@@ -44,6 +44,7 @@ export default function FeedPage() {
     const [isFormModal, setIsFormModal] = useState<boolean>(false);
     const [bannerMessage, setBannerMessage] = useState('');
     const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
+    const [newsData, setNewsData] = useState<NewsData[] | null>(null);
     
     const hasInitialFetched = useRef(false);
 
@@ -163,32 +164,40 @@ export default function FeedPage() {
                 {},
                 {
                     headers: {
-                        // 'Content-Type': 'application/json',
                         'Authorization': `Bearer ${idToken}`,
                     }
                 }
             );
 
-            // const data = response.data;
             if (data.isNewQuote && data.dailyQuote) {
                 setQuote(data.dailyQuote);
                 setShowQuoteModal(true);
             }
-        } catch (err: any) {
-            console.error("Failed to fetch new quote:", err.response?.data || err.message);
+        } catch (err) {
+            console.error("Failed to fetch new quote:", err);
         }
     };
 
     const fetchBannerMessage = async() => {
         const { data } = await api.get(`/v1/banner/message`)
         setBannerMessage(data.message)
+    }
 
+    const fetchDailyNews = async() => {
+        try{
+            const { data } = await api.get(`/v1/news`);
+            console.log("API response data:", data);
+            setNewsData(data);
+        } catch (err) {
+            console.error("error fetching news stories: ", err)
+        }
     }
 
     useEffect(() => {
         if (user && !authLoading) {
             fetchQuote(user);
             fetchBannerMessage();
+            fetchDailyNews();
         }
     }, [user, authLoading]);
     
@@ -240,12 +249,13 @@ export default function FeedPage() {
         <div className={styles.feedContainer}>
 
             {user && userProfile ? (
-                <>
-                 <Navbar userProfile={user}/>
-                <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} bannerMessage={bannerMessage} />
-                {isFormModal && (
-                    <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile}/>
-                )}
+                <div className={styles.feedLayout}>
+                    <Navbar userProfile={user}/>
+                    <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} bannerMessage={bannerMessage} />
+                    
+                    {isFormModal && (
+                        <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile}/>
+                    )}
 
                     <ShineFeed
                         user={user}
@@ -260,13 +270,18 @@ export default function FeedPage() {
                     />
 
                     <div ref={sentinelRef} style={{ height: "1px" }} />
-
-                </>
+                    <DailyNewsFeed dailyNews={newsData!}/>
+                </div>
+                
             ) : (
                 <div className={styles.loginPrompt}>
                     <p>Log in to share your shines!</p>
                 </div>
             )}
+            
+
+
+
             {showQuoteModal && quote && (
                 <QuoteModal quote={quote} onClose={handleCloseModal} />
             )}
@@ -277,7 +292,6 @@ export default function FeedPage() {
                     userProfile={userProfile}
                     onClose={handleCloseCommentModal}
                     user={user}
-
                 />
             )}
         </div>

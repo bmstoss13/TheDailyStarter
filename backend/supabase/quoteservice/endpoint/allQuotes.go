@@ -21,7 +21,7 @@ func AllDailyQuotesHandler(svc *SupabaseQuotes.SupabaseService) http.HandlerFunc
 
 		quotes, err := svc.GetAllQuotesSupabase(ctx)
 		if err != nil {
-			log.Printf("error fetching ")
+			log.Printf("error fetching all quotes: %s", err)
 			http.Error(w, "error fetching all quotes", http.StatusInternalServerError)
 			return
 		}

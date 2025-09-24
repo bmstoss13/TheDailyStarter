@@ -24,6 +24,9 @@ export interface UserProfileData {
     quotesAlbum?: DailyQuote[] | null;
     lastQuoteShown?: string | null;
     rayCount?: number;
+    bio?: string;
+    pronouns?: string;
+    customPronouns?: string;
 }
 
 // Defines the structure for a username entry (for uniqueness checks).
@@ -111,6 +114,21 @@ export interface CurrentUserModalData {
     displayName: string | null;
 }
 
+// Happy message!
 export interface BannerData {
     message: string;
+}
+
+// News data interface
+export interface NewsData {
+    id: string;
+    createdAt: Date;
+    title: string;
+    summary?: string;
+    articleText?: string;
+    imageUrl?: string;
+    sourceUrl: string;
+    sourceCountry?: string;
+    sentimentScore?: number;
+    publishDate: string; 
 }

@@ -44,10 +44,10 @@ const ProfileHeader = ({userProfile, onSettingsClick, onEditClick}: UserProfileP
                         </div>
                     </div>
                     <div className={styles.firstLastName}>
-                        <p>{userProfile.firstName} {userProfile.lastName}</p>
+                        <p>{userProfile.firstName} {userProfile.lastName} {userProfile.pronouns!=='Prefer not to say' ? '(' + userProfile.pronouns + ')' : ''}</p>
                     </div>
                     <div className={styles.aboutMe}>
-                        I love software engineering!
+                        {userProfile.bio}
                     </div>
                     <div className={styles.publicStatsContainer}>
                         <div className={styles.publicStats}>

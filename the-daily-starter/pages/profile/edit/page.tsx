@@ -56,7 +56,7 @@ export default function EditPage() {
     return (
         <>
             <div className={styles.pageWrapper}>
-                <Navbar />
+                <Navbar userProfile={user}/>
                 <div className={styles.editPageContainer}>
                     <EditProfileForm 
                         userProfile={userProfile} 

@@ -6,9 +6,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import styles from './EditProfileForm.module.css'; // Create a new CSS module for the form
 
-const placeholderPronouns = 'he/him';
-const placeholderBio = 'I love software engineering!'
-
 interface EditProfileFormProps {
     userProfile: UserProfileData;
     onSave: () => void;
@@ -31,8 +28,8 @@ const EditProfileForm = ({ userProfile, onSave, onBack, onEditName }: EditProfil
             setUsername(userProfile.username);
             setFirstName(userProfile.firstName);
             setLastName(userProfile.lastName);
-            setPronouns(placeholderPronouns);
-            setBio(placeholderBio);
+            setPronouns(userProfile.pronouns || 'N/A');
+            setBio(userProfile.bio || '');
         }
     }, [userProfile]);
 
@@ -84,7 +81,7 @@ const EditProfileForm = ({ userProfile, onSave, onBack, onEditName }: EditProfil
                 <div className={styles.infoContainer}>
                     <div className={styles.nameRow}>
                         <p>{firstName} {lastName}</p>
-                        <p className={styles.pronouns}>({pronouns})</p>
+                        <p className={styles.pronouns}>({pronouns !== 'Prefer not to say' ? pronouns : 'N/A'})</p>
                         <button onClick={onEditName}>
                             <FontAwesomeIcon icon={faEdit}/>
                         </button>
@@ -95,7 +92,7 @@ const EditProfileForm = ({ userProfile, onSave, onBack, onEditName }: EditProfil
             </div>
             <div className={styles.usernameRow}>
                 <p className={styles.username}>Username</p>
-                <input defaultValue={username} placeholder={'Whatcha wanna go by?'}></input>
+                <input defaultValue={username} placeholder={'What should the world call you?'}></input>
             </div>
             <div className={styles.bio}>
                 <h2>Bio</h2>

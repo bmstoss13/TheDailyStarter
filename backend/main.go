@@ -12,24 +12,13 @@ import (
 	BannerService "services/bannerAPI"
 	BannerEndpoint "services/bannerAPI/endpoint"
 	firebaseService "services/firebase"
-	LoginEndpoint "services/loginservice/enpdoint"
 	"services/photoservice"
-	quoteService "services/quoteservice"
-	QuoteEndpoint "services/quoteservice/endpoint"
-	"services/shineservice"
-	ShinesEndpoint "services/shineservice/endpoint"
-	"services/userservice"
-	UserEndpoint "services/userservice/endpoint"
-	helpers "services/utils"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/joho/godotenv"
-	"github.com/rs/cors"
-
+	redisclient "services/redis"
 	"services/supabase/commentservice"
 	CommentEndpoint "services/supabase/commentservice/endpoint"
 	SupabaseLoginEndpoint "services/supabase/loginservice/endpoint"
 	"services/supabase/newsservice"
+	NewsEndpoint "services/supabase/newsservice/endpoint"
 	SupabasePhotos "services/supabase/photoservice"
 	SupabaseQuotes "services/supabase/quoteservice"
 	SupabaseQuoteEndpoint "services/supabase/quoteservice/endpoint"
@@ -38,8 +27,12 @@ import (
 	SupabaseUsers "services/supabase/userservice"
 	SupabaseUserEndpoint "services/supabase/userservice/endpoint"
 	"services/supabase/worldnewsapi"
+	helpers "services/utils"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -62,11 +55,7 @@ func main() {
 	defer clients.Close()
 
 	newsClient := worldnewsapi.NewClient(os.Getenv("WORLD_NEWS_API_KEY"))
-
-	quoteSvc := quoteService.NewService(clients)
-	userSvc := userservice.NewService(clients)
-	shineSvc := shineservice.NewService(clients, userSvc)
-	photoSvc := photoservice.NewService(clients.Firestore, clients.Storage)
+	redisClient := redisclient.NewClient(ctx)
 
 	supabaseQuoteSvc := SupabaseQuotes.NewSupabaseService(clients.DB)
 	supabaseUserSvc := SupabaseUsers.NewSupabaseService(clients.DB, clients)
@@ -74,7 +63,7 @@ func main() {
 	supabaseShineSvc := SupabaseShines.NewService(clients.DB, supabaseUserSvc)
 	bannerSvc := BannerService.NewService(supabaseUserSvc)
 	commentSvc := commentservice.NewService(clients.DB, supabaseUserSvc, supabaseShineSvc)
-	newsService := newsservice.NewService(clients.DB, newsClient)
+	newsService := newsservice.NewService(clients.DB, newsClient, redisClient)
 
 	cr := cron.New()
 
@@ -102,8 +91,10 @@ func main() {
 		r.Get("/quote/today", SupabaseQuoteEndpoint.SupabaseQuoteHandler(supabaseQuoteSvc))
 		r.Get("/quotes/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
 		r.Get("/banner/message", BannerEndpoint.BannerHandler(bannerSvc))
+		r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
 
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
+			// r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
 			r.Get("/users/search", SupabaseUserEndpoint.SearchUsersHandler(supabaseUserSvc))
 			r.Post("/user/create", SupabaseUserEndpoint.ProfileHandler(supabaseUserSvc, supabasePhotoSvc))
 			r.Post("/user/login", SupabaseLoginEndpoint.LoginHandler(supabaseUserSvc, supabaseQuoteSvc))
@@ -120,23 +111,6 @@ func main() {
 			r.Put("/shines/{shineId}/comments/{commentId}", CommentEndpoint.CommentHandler(commentSvc))
 			r.Handle("/shines/{shineId}/comments/{commentId}/toggleRay", CommentEndpoint.ToggleCommentRayHandler(commentSvc))
 			r.Handle("/comments/{commentId}/replies", CommentEndpoint.ReplyHandler(commentSvc))
-		})
-	})
-
-	r.Route("/api", func(r chi.Router) {
-		r.Get("/quote/today", QuoteEndpoint.QuoteHandler(quoteSvc))
-		r.Get("/quotes/all", QuoteEndpoint.AllQuotesHandler(quoteSvc))
-		r.Get("/users/search", UserEndpoint.SearchUsersHandler(userSvc))
-		r.Post("/user/create", UserEndpoint.CreateProfileHandler(userSvc, photoSvc))
-
-		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
-			r.Post("/user/login", LoginEndpoint.LoginFlowHandler(userSvc, quoteSvc))
-			r.Delete("/user/delete", UserEndpoint.DeleteUserHandler(userSvc))
-			r.Get("/users/{uid}", UserEndpoint.UserProfileHandler(userSvc))
-			r.Handle("/shines", ShinesEndpoint.ShineHandler(shineSvc))
-			r.Delete("/shines/{shineId}", ShinesEndpoint.DeleteShineHandler(shineSvc))
-			r.Patch("/shines/{shineId}", ShinesEndpoint.UpdateShineHandler(shineSvc))
-			r.Post("/shines/{shineId}/toggleRay", ShinesEndpoint.ToggleRayHandler(shineSvc))
 		})
 	})
 
@@ -166,5 +140,5 @@ func main() {
 	}
 	log.Println("Server stopped gracefully.")
 
-	select {}
+	// select {}
 }

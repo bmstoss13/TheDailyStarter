@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from "axios"
 
 const isProductionBackendURL: boolean = false
 
-const devURL: string = process.env.NEXT_PUBLIC_API_URL_DEV || "error"
+const devURL: string = process.env.NEXT_PUBLIC_API_URL_DEV || "http://localhost:8080"
 const prodURL: string = process.env.NEXT_PUBLIC_API_URL_PROD || "http://localhost:8080"
 
 function getBaseURL(prod: boolean) {

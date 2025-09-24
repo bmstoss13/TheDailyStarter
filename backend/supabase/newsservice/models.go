@@ -5,7 +5,7 @@ import "time"
 type NewsData struct {
 	tableName struct{} `pg:"news"`
 
-	Id             string    `pg:"id" json:"id"`
+	Id             string    `pg:"id,pk" json:"id"`
 	CreatedAt      time.Time `pg:"created_at" json:"createdAt"`
 	Title          string    `pg:"title" json:"title"`
 	Summary        string    `pg:"summary" json:"summary"`          // The API has a 'summary' field

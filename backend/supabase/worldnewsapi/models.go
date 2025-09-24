@@ -4,7 +4,7 @@ package worldnewsapi
 
 type Article struct {
 	// Basic fields
-	ID      string `json:"id"`
+	ID      int    `json:"id"`
 	Title   string `json:"title"`
 	Text    string `json:"text"`    // The full article text
 	Summary string `json:"summary"` // A short summary
