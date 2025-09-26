@@ -27,6 +27,21 @@ export interface UserProfileData {
     bio?: string;
     pronouns?: string;
     customPronouns?: string;
+    followerCount?: string;
+    shineCount?: string;
+
+    //Checklist
+    dailyCheckList?: DailyTask[];
+    scheduledEvents?: ScheduledEvent[];
+
+    //Achievements
+    categoryProgress?: CategoryProgress[];
+    achievements?: Achievement[];
+    totalExperience?: number; 
+    lastDailyReset?: string;
+    streakCount?: number; // number of consecutive days the user has completed all tasks
+
+
 }
 
 // Defines the structure for a username entry (for uniqueness checks).
@@ -132,3 +147,48 @@ export interface NewsData {
     sentimentScore?: number;
     publishDate: string; 
 }
+
+export interface DailyTask {
+    id: string;
+    title: string;
+    category: Category;
+    isComplete: boolean;
+    points: number; // Points awarded for completing the task
+    isDaily: boolean; // Flag to indicate if the task should repeat daily
+    createdAt: Date;
+    completedAt?: Date | null
+}
+
+export interface ScheduledEvent {
+    id: string;
+    title: string;
+    category: Category;
+    points: number;
+    startTime: Date;
+    endTime?: Date | null;
+}
+
+export interface CategoryProgress {
+    id: string;
+    category: Category;
+    xp: number;
+    level: number;
+}
+
+export interface Achievement {
+    id: string;
+    name: string;
+    description: string;
+    unlockedAt: Date;
+}
+
+enum Category {
+    Mental, // (BLUE) Read news stories (will track if clicking on news story in app), read a book, etc. 
+    Physical, // (ORANGE) Workout, go for a walk in nature, etc. 
+    Social, // (RED) Get lunch with a friend or colleague, send someone an affirmation (in app), posting a shine (in app), etc.
+    Mindfulness, // (VIOLET) Prayer, meditation, reflection, journaling, etc.
+    Productivity, // (INDIGO) Organize your desk, complete task at work, set up checklist (in app), etc.
+    Creativity, // (YELLOW) Hobbies, draw for 15 minutes, write a short story
+    Financial, // (GREEN) Review budget for 10 minutes, pay a bill, set up an automatic savings plan, etc.
+}
+

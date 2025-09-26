@@ -68,11 +68,11 @@ func (s *Service) UpdateDailyNews(ctx context.Context, limit int, sentiment floa
 
 		// Create new data item for each new story
 		newsItem := NewsData{
-			Id:             uuid.New().String(),
-			CreatedAt:      time.Now(),
-			Title:          story.Title,
-			Summary:        story.Summary,
-			ArticleText:    story.Text, // Mapping API's "Text" field to "Description"
+			Id:        uuid.New().String(),
+			CreatedAt: time.Now(),
+			Title:     story.Title,
+			Summary:   story.Summary,
+			// Mapping API's "Text" field to "Description"
 			ImageUrl:       story.Image,
 			SourceUrl:      story.URL,
 			SentimentScore: story.Sentiment,

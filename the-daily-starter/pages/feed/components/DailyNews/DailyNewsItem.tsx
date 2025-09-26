@@ -8,7 +8,7 @@ interface DailyNewsItemProps{
 const DailyNewsItem = ({newsItem}: DailyNewsItemProps) => {
     
     return (
-        <div className="w-full hover:text-(--primary)">
+        <div className="w-full transition-all hover:text-(--primary)">
             <a
                 href={newsItem.sourceUrl}
                 target="_blank"

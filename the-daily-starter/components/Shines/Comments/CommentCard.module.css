@@ -247,6 +247,10 @@
     font-size: 0.7em;
 }
 
+.commentCardStats button{
+    cursor: pointer;
+}
+
 .replySection {
     display: flex;
     flex-direction: column;

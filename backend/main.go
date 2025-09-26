@@ -57,7 +57,7 @@ func main() {
 	newsClient := worldnewsapi.NewClient(os.Getenv("WORLD_NEWS_API_KEY"))
 	redisClient := redisclient.NewClient(ctx)
 
-	supabaseQuoteSvc := SupabaseQuotes.NewSupabaseService(clients.DB)
+	supabaseQuoteSvc := SupabaseQuotes.NewSupabaseService(clients.DB, redisClient)
 	supabaseUserSvc := SupabaseUsers.NewSupabaseService(clients.DB, clients)
 	supabasePhotoSvc := SupabasePhotos.NewSupabaseService(clients.DB, clients.Storage)
 	supabaseShineSvc := SupabaseShines.NewService(clients.DB, supabaseUserSvc)
@@ -88,8 +88,9 @@ func main() {
 	})
 
 	r.Route("/v1", func(r chi.Router) {
+		r.Handle("/quote", SupabaseQuoteEndpoint.QuoteHandler(supabaseQuoteSvc))
 		r.Get("/quote/today", SupabaseQuoteEndpoint.SupabaseQuoteHandler(supabaseQuoteSvc))
-		r.Get("/quotes/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
+		r.Get("/quote/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
 		r.Get("/banner/message", BannerEndpoint.BannerHandler(bannerSvc))
 		r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
 

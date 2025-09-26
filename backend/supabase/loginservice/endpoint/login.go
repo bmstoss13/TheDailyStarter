@@ -40,7 +40,7 @@ func LoginHandler(userSvc *SupabaseUsers.SupabaseService, quoteSvc *SupabaseQuot
 			return
 		}
 
-		dailyQuote, err := quoteSvc.GetOrCreateDailyQuote(r.Context())
+		dailyQuote, err := quoteSvc.GetDailyQuoteFromCache(r.Context())
 		if err != nil {
 			log.Printf("Error getting or creating daily quote: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)

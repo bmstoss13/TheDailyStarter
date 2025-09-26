@@ -11,6 +11,6 @@ type DailyQuote struct {
 	CreatedAt time.Time `pg:"createdAt" json:"createdAt"`
 }
 
-// const (
-// 	quotesTable = "quotes"
-// )
+const (
+	redisQuoteKey = "quote"
+)

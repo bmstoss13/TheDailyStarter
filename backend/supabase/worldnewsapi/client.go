@@ -45,8 +45,8 @@ func (c *Client) GetPositiveNews(ctx context.Context, number int, sentiment floa
 	params.Add("number", fmt.Sprintf("%d", number))
 	params.Add("min-sentiment", strconv.FormatFloat(float64(sentiment), 'f', 2, 32))
 	params.Add("language", "en")
-	params.Add("sort", "publish-time") // Sort by sentiment
-	params.Add("sort-direction", "DESC")
+	// params.Add("sort", "publish-time")
+	// params.Add("sort-direction", "DESC")
 	params.Add("earliest-publish-date", earliestStr)
 
 	params.Add("offset", fmt.Sprintf("%d", offset))

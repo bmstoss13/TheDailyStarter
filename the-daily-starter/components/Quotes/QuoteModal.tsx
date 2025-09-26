@@ -18,7 +18,7 @@ const QuoteModal = ({quote, onClose}: QuoteModalProps) => {
     return(
         <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
-            <h2 className={styles.modalHeader}> <WeatherSunset className={styles.sunriseIcon}/> Daily Sunshine! </h2>
+            <h2 className={styles.modalHeader}> <WeatherSunset className={styles.sunriseIcon}/> Quote of The Day! </h2>
                 <div className={styles.quoteContainer}>
                     <p className={styles.quoteText}>"{quote.quote}"</p>
                     <p className={styles.quoteAuthor}>—{quote.author}</p>

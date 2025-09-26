@@ -5,19 +5,17 @@ import axios from 'axios';
 import { getJsonApi } from '@/lib/routes/routes';
 import { User } from 'firebase/auth';
 
-import CreateShineForm from '@/components/Shines/CreateShineForm';
-import ShineFeed from '@/components/Shines/ShineFeed';
 import QuoteModal from "@/components/Quotes/QuoteModal";
 
 import styles from './FeedPage.module.css';
-import Navbar from '@/components/Navbar/Navbar';
 import { useAuthContext } from '@/hooks/authProvider';
-import { NewsData, ShineDataWithRayStatus } from '@/lib/firebase/interfaces';
+import { NewsData, ShineDataWithRayStatus, UserProfileData } from '@/lib/firebase/interfaces';
 import { saveShineFeedToCache, loadShineFeedFromCache } from '@/hooks/feedCache';
-import FeedBanner from '@/components/Shines/FeedBanner';
 import { useProfile } from '@/hooks/useProfile';
 import CommentFeedModal from '@/components/Shines/Comments/CommentFeedModal';
-import DailyNewsFeed from './components/DailyNews/DailyNewsFeed';
+
+// New component for the main feed layout and ResizeObserver logic
+import FeedLayout from './components/FeedLayout';
 
 interface DailyQuoteData {
     quote: string;
@@ -33,7 +31,7 @@ const api = getJsonApi();
 
 export default function FeedPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
-    const { userProfile, loadingProfile, errorProfile} = useProfile()
+    const { userProfile, loadingProfile, errorProfile} = useProfile();
     const [quote, setQuote] = useState<DailyQuoteData | null>(null);
     const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
     const [shines, setShines] = useState<ShineDataWithRayStatus[]>([]);
@@ -57,12 +55,10 @@ export default function FeedPage() {
         return () => {
             document.body.style.overflow = 'auto';
         };
-
     }, [selectedShine, showQuoteModal, isFormModal]);
 
     const fetchShines = useCallback(async (startAfterId?: string) => {
         if (!user) return;
-
         setIsLoadingFeed(true);
         setError(null);
 
@@ -84,8 +80,6 @@ export default function FeedPage() {
                 saveShineFeedToCache(unique);
                 return unique;
             })
-
-            // setLastShineId(data.length > 0 ? data[data.length - 1].id : undefined);
             setLastShineId(data.at(-1)?.id);
             setHasMore(data.length === 10);
             
@@ -104,20 +98,16 @@ export default function FeedPage() {
 
     useEffect(() => {
         if (!user || hasInitialFetched.current) return;
-
         const cachedShines = loadShineFeedFromCache();        
         if (cachedShines?.length) {
             setShines(cachedShines); 
-            // const lastId = cachedShines[cachedShines.length - 1].id;
-            setLastShineId(cachedShines.at(-1)?.id); //was lastId
+            setLastShineId(cachedShines.at(-1)?.id);
             setHasMore(true);
             setIsLoadingFeed(false);
         } else {
             fetchShines(undefined);
-
         }
         hasInitialFetched.current = true;
-        
     }, [user, fetchShines]);
 
     const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -126,7 +116,6 @@ export default function FeedPage() {
         const observer = new IntersectionObserver((entries) => {
             if(entries[0].isIntersecting) fetchShines(lastShineId);
         });
-
         observer.observe(sentinelRef.current);
         return () => observer.disconnect();
     }, [lastShineId, hasMore, isLoadingFeed, fetchShines]);
@@ -140,7 +129,6 @@ export default function FeedPage() {
     }
 
     const handleShineUpdated = (updated: ShineDataWithRayStatus) => {
-        
         setShines((prev) => {
             const updatedList = prev.map((s) => (s.id === updated.id ? updated : s));
             saveShineFeedToCache(updatedList);
@@ -193,6 +181,17 @@ export default function FeedPage() {
         }
     }
 
+    // Placeholder function for daily tasks - might not need for later
+    const fetchDailyTasks = async(user: User) => {
+        if(!user) return;
+        try{
+            const idToken = user.getIdToken()
+            const { data } = await api.get(`/v1/user/list`)
+        } catch (err) {
+            console.error("error while fetching user's daily stories")
+        }
+    }
+
     useEffect(() => {
         if (user && !authLoading) {
             fetchQuote(user);
@@ -201,7 +200,6 @@ export default function FeedPage() {
         }
     }, [user, authLoading]);
     
-
     const handleCloseModal = () => {
         setShowQuoteModal(false);
     };
@@ -215,7 +213,6 @@ export default function FeedPage() {
     }
 
     const handleOpenComments = (shine: ShineDataWithRayStatus) => {
-
         setSelectedShine(shine);
     }
 
@@ -243,49 +240,37 @@ export default function FeedPage() {
         );
     }
 
-
-
     return (
         <div className={styles.feedContainer}>
-
-            {user && userProfile ? (
-                <div className={styles.feedLayout}>
-                    <Navbar userProfile={user}/>
-                    <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} bannerMessage={bannerMessage} />
-                    
-                    {isFormModal && (
-                        <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile}/>
-                    )}
-
-                    <ShineFeed
-                        user={user}
-                        shines={shines}
-                        isLoadingFeed={isLoadingFeed}
-                        error={error}
-                        hasMore={hasMore}
-                        onShineUpdated={handleShineUpdated}
-                        onShineDeleted={handleShineDeleted}
-                        onCommentsClick={handleOpenComments}
-                        userProfile={userProfile}
-                    />
-
-                    <div ref={sentinelRef} style={{ height: "1px" }} />
-                    <DailyNewsFeed dailyNews={newsData!}/>
-                </div>
-                
+            {user && userProfile && sentinelRef ? (
+                <FeedLayout
+                    user={user}
+                    userProfile={userProfile}
+                    shines={shines}
+                    isLoadingFeed={isLoadingFeed}
+                    error={error}
+                    hasMore={hasMore}
+                    bannerMessage={bannerMessage}
+                    newsData={newsData}
+                    isFormModal={isFormModal}
+                    selectedShine={selectedShine}
+                    sentinelRef={sentinelRef}
+                    handleOpenFormModal={handleOpenFormModal}
+                    handleShinePosted={handleShinePosted}
+                    handleShineUpdated={handleShineUpdated}
+                    handleShineDeleted={handleShineDeleted}
+                    handleOpenComments={handleOpenComments}
+                    handleCloseFormModal={handleCloseFormModal}
+                    handleCloseCommentModal={handleCloseCommentModal}
+                />
             ) : (
                 <div className={styles.loginPrompt}>
                     <p>Log in to share your shines!</p>
                 </div>
             )}
-            
-
-
-
             {showQuoteModal && quote && (
                 <QuoteModal quote={quote} onClose={handleCloseModal} />
             )}
-
             {selectedShine && userProfile && user && (
                 <CommentFeedModal
                     shine={selectedShine}
