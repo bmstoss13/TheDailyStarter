@@ -1,0 +1,11 @@
+.checkListContainer{
+    display: flex;
+    height: 100%;
+    margin: 10px;
+}
+
+.statBarColumn{
+    width: 16%;
+    min-width: 200px;
+    max-height: 100%;
+}

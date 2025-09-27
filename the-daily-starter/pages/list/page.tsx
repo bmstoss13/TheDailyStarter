@@ -2,6 +2,7 @@ import Navbar from '@/components/Navbar/Navbar';
 import styles from './CheckListPage.module.css';
 import { useAuthContext } from '@/hooks/authProvider';
 import { useProfile } from '@/hooks/useProfile';
+import CheckListLayout from './components/CheckListLayout';
 
 export default function CheckListPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
@@ -11,9 +12,16 @@ export default function CheckListPage() {
             {user && (
                 <>
                     <Navbar userProfile={user}/>
-                    <main className={styles.checkListContainer}>
+                    <CheckListLayout />
+                    {/* <main className={styles.checkListContainer}>
+                        <div className={styles.statBarColumn}>
 
-                    </main>
+                        </div>
+                        <div>
+
+                        </div>
+                        
+                    </main> */}
                 </> 
             )}
 
