@@ -7,6 +7,7 @@ interface MiniListDailyItemProps{
     dailyTask: DailyTask
 }
 
+// Task list item
 const MiniListDailyTask = ({dailyTask}: MiniListDailyItemProps) => {
     return(
         <div>

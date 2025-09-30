@@ -8,23 +8,14 @@ export default function CheckListPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
     const { userProfile, loadingProfile, errorProfile} = useProfile();
     return(
-        <div>
+        <main className={styles.listPage}>
             {user && (
                 <>
                     <Navbar userProfile={user}/>
                     <CheckListLayout />
-                    {/* <main className={styles.checkListContainer}>
-                        <div className={styles.statBarColumn}>
-
-                        </div>
-                        <div>
-
-                        </div>
-                        
-                    </main> */}
                 </> 
             )}
 
-        </div>
+        </main>
     )
 }

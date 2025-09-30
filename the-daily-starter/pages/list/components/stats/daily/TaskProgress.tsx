@@ -16,10 +16,12 @@ const TaskProgress = ({totalTasks, completedTasks}: TaskProgressProps) => {
                 <h2>
                     Task Progress:
                 </h2>
+                
 
                 <div
                     className="text-(--primary) ml-auto"
                 >
+                    {`(${completedTasks}/${totalTasks})`}
                 </div>
 
             </span>

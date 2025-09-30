@@ -3,6 +3,7 @@
  */
 
 import Image from "next/image";
+import { lazy } from "react";
 
 interface LevelHeaderProfileProps{
     profilePicture: string
@@ -15,7 +16,8 @@ const LevelHeaderProfile = () => {
             alt="profile picture"
             width={100}
             height={100}
-            className="border-solid border-[1px] border-gray rounded-[100%]"
+            className="border-solid border-[1px] border-gray-300 rounded-[100%]"
+            priority={true}
         />
     )
 };

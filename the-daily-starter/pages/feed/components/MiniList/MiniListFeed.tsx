@@ -8,7 +8,7 @@ interface MiniListFeedProps{
 const MiniListFeed = ({userProfile}: MiniListFeedProps) => {
 
     return(
-        <div>
+        <div className='w-full'>
                 {userProfile.dailyCheckList ? (
                     <div>
                         {userProfile.dailyCheckList.map((item) => {
@@ -21,9 +21,10 @@ const MiniListFeed = ({userProfile}: MiniListFeedProps) => {
 
                     </div>
                 ) : (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full">
                         <button
-                            className="rounded-xl border-[2px] border-(--iconColor) border-dashed p-4 text-(--iconColor) text-[18px]"
+                            className="rounded-xl border-[2px] border-gray-200 border-dashed w-full h-[80px] text-gray-400 text-[18px]
+                            cursor-pointer"
                         >
                             <p>
                                 + Start Your Day!

@@ -70,6 +70,7 @@ func main() {
 	cr.AddFunc("0 0 * * *", func() {
 		log.Println("Starting daily news update...")
 		newsService.UpdateDailyNews(context.Background(), 5, 0.5)
+		supabaseQuoteSvc.UpdateAndStoreDailyQuote(context.Background())
 	})
 
 	cr.Start()

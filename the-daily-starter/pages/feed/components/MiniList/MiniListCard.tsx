@@ -24,13 +24,13 @@ const MiniListCard = ({userProfile}: MiniListCardProps) => {
                         className="text-[24px]"
 
                     >
-                        Checklist
+                        My Tasks
                     </h1>
                 </span>
 
             </div>
 
-            <div className="flex flex-col mt-4 gap-4 h-[500px]">
+            <div className="flex flex-col w-full mt-4 gap-4 h-[500px]">
                 <MiniListFeed userProfile={userProfile} />
             </div>
         </div>

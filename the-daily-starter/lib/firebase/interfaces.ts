@@ -1,44 +1,56 @@
-// document objects
-import firebase from "firebase/compat/app";
+// Data entities
+
 import { admin } from "./firebaseAdmin";
-import { FieldValue } from "firebase-admin/firestore";
 
 // Defines the structure for a user's daily quote album.
 export interface DailyQuote {
-    id?: string;
+    id: string;
     author?: string;
-    createdAt: string;
+    createdAt: Date;
     quote?: string;
+}
+
+export interface QuoteAlbum {
+    id: string; // PK
+    uid: string; // FK to User
+    album: DailyQuote[] | null
 }
 
 // Defines the core user profile data.
 export interface UserProfileData {
+
+    // Core identifiers
     uid: string;
+    username: string;
+    email?: string | null;    
+
+    // Personal Info
     firstName: string;
     lastName: string;
-    username: string;
-    dob: string;
-    createdAt: Date;
-    email?: string | null;
-    photoURL?: string | null;
-    quotesAlbum?: DailyQuote[] | null;
-    lastQuoteShown?: string | null;
-    rayCount?: number;
+    dob: Date;
     bio?: string;
+    photoURL?: string | null;
     pronouns?: string;
     customPronouns?: string;
-    followerCount?: string;
-    shineCount?: string;
 
-    //Checklist
+    // Metadata
+    createdAt: Date;    
+
+    // Social Counts
+    rayCount?: number;
+    followerCount?: number;
+    shineCount?: number;
+
+    // Quotes
+    lastQuoteShown?: string | null;
+
+    // Checklist
     dailyCheckList?: DailyTask[];
     scheduledEvents?: ScheduledEvent[];
 
-    //Achievements
-    categoryProgress?: CategoryProgress[];
-    achievements?: Achievement[];
+    // Gamification and Streak
     totalExperience?: number; 
-    lastDailyReset?: string;
+    lastDailyReset?: Date;
     streakCount?: number; // number of consecutive days the user has completed all tasks
 
 
@@ -145,34 +157,77 @@ export interface NewsData {
     sourceUrl: string;
     sourceCountry?: string;
     sentimentScore?: number;
-    publishDate: string; 
+    publishDate: Date; 
 }
 
-export interface DailyTask {
+export interface Task {
     id: string;
     title: string;
-    category: Category;
     isComplete: boolean;
+    createdAt: Date;
+    category: Category | null;
+    completedAt?: Date | null
+    notes?: string;
+    progressSteps?: Task[]
+    budget?: number | null;
+}
+
+export interface DailyTask extends Task {
+    priority?: PriorityType;    
     points: number; // Points awarded for completing the task
     isDaily: boolean; // Flag to indicate if the task should repeat daily
-    createdAt: Date;
-    completedAt?: Date | null
 }
 
-export interface ScheduledEvent {
+export interface UserDailyTasks {
     id: string;
-    title: string;
-    category: Category;
-    points: number;
+    uid: string;
+    dailyTasks: DailyTask[] | null;
+}
+
+export interface ScheduledEvent extends DailyTask {
     startTime: Date;
-    endTime?: Date | null;
+    endTime: Date | null;
+}
+
+export interface UserScheduledTasks {
+    id: string;
+    uid: string;
+    scheduledEvents: ScheduledEvent[] | null;
+}
+
+export interface BucketListItem extends Task {
+    priority: PriorityType;
+    location?: string;
+    targetDate?: Date | null;
+}
+
+export interface UserBucketList {
+    id: string;
+    uid: string;
+    bucketList: BucketListItem[] | null;
+
+}
+
+export interface RecommendationBlueprint {
+    title: string;
+    notes?: string;
+    category: Category | null;
+    taskType: TaskType;
+    defaultPoints?: number; 
+    defaultPriority?: PriorityType;
 }
 
 export interface CategoryProgress {
-    id: string;
     category: Category;
-    xp: number;
+    currentXP: number;
+    totalXP: number;
     level: number;
+}
+
+export interface UserCategories {
+    id: string;
+    uid: string;
+    categoryProgress: CategoryProgress[] | null;
 }
 
 export interface Achievement {
@@ -182,7 +237,13 @@ export interface Achievement {
     unlockedAt: Date;
 }
 
-enum Category {
+export interface UserAchievements {
+    id: string;
+    uid: string;
+    achievements: Achievement[] | null;
+}
+
+export enum Category {
     Mental, // (BLUE) Read news stories (will track if clicking on news story in app), read a book, etc. 
     Physical, // (ORANGE) Workout, go for a walk in nature, etc. 
     Social, // (RED) Get lunch with a friend or colleague, send someone an affirmation (in app), posting a shine (in app), etc.
@@ -191,4 +252,19 @@ enum Category {
     Creativity, // (YELLOW) Hobbies, draw for 15 minutes, write a short story
     Financial, // (GREEN) Review budget for 10 minutes, pay a bill, set up an automatic savings plan, etc.
 }
+
+
+export interface Option {
+    value: Category | string;
+    label: string;
+}
+
+export const taskTypes = ['daily', 'schedule', 'bucket'] as const;
+
+export type TaskType = typeof taskTypes[number];
+
+export const priorityTypes = ['Low', 'Medium', 'High'] as const;
+
+export type PriorityType = typeof priorityTypes[number];
+
 

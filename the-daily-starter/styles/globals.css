@@ -5,13 +5,23 @@
   --foreground: #171717;
   --primary: #f59e0b;
   --primaryHover: #f9b032;
+  --primaryBg: #f59f0b20;
   --secondary: #FFEA00;
   --tertiary: rgb(210, 210, 210);
   --cardShadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   --iconColor: #6b7280;
   --iconColorHover: #7d8696;
   --iconColorClicked: #434851;
-  --cardHover: rgb(255, 234, 0)
+  --cardHover: rgb(255, 234, 0);
+
+  /* Category colors */
+  --social: #F50B0B;
+  --physical: #f59e0b;
+  --creativity: #F1F50B;
+  --financial: #0BF569;
+  --mental: #0B80F5;
+  --productivity: #5D0BF5;
+  --mindfulness: #AF0BF5;
 }
 
 /* @theme inline {
@@ -31,6 +41,14 @@
     --cardShadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     --iconColor: #6b7280;
     --cardHover: rgb(255, 234, 0)
+    /* Category colors */
+  --social: #F50B0B;
+  --physical: #f59e0b;
+  --creativity: #F1F50B;
+  --financial: #0BF569;
+  --mental: #0B80F5;
+  --productivity: #5D0BF5;
+  --mindfulness: #AF0BF5;
   }
 }
 

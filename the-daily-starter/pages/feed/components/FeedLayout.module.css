@@ -8,9 +8,8 @@
 .feedLayout{
   display: flex;
   justify-content: center;
-  margin-top: 10px;
   gap: 16px;
-  /* width: 99%; */
+  padding: 10px;
 }
 
 .listColumn{

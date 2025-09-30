@@ -1,0 +1,12 @@
+.listPage{
+    height: 100vh; /* Exactly 100% of the viewport */
+    display: flex;
+    flex-direction: column; 
+    overflow: hidden
+}
+
+@media (max-height: 640px){
+    .listPage{
+        overflow-y: auto;
+    }
+}

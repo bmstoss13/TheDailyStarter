@@ -3,7 +3,7 @@
  * Display the user's xp bar
  */
 
-import ExperienceBar from "./ExperienceBar";
+import ProgressBar from "../ProgressMeter";
 import LevelHeaderProfile from "./LevelHeaderProfile";
 import UserLevel from "./UserLevel";
 
@@ -12,12 +12,17 @@ const LevelHeader = () => {
         <div className="flex flex-col gap-[6px]">
             <span className="flex flex-row w-full items-center">
                 <LevelHeaderProfile/>
-                <p className="ml-auto mr-auto">
+                <div className="ml-auto mr-auto">
                     <UserLevel level={'2'} />
-                </p>
+                </div>
 
             </span>
-            <ExperienceBar currentXP={5} levelUpXP={10} />
+            <ProgressBar 
+                completed={5} 
+                total={10} 
+                color="var(--primary)"
+                height="8px" 
+            />
 
         </div>
     )
