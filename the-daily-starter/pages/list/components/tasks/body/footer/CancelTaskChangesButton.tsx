@@ -11,7 +11,7 @@ const CancelTaskChangesButton = ({
 }: CancelTaskChangesButtonProps) => {
     return(
         <button 
-            className="flex flex-row items-center justify-center w-[80px] p-[8px] border-[1px]
+            className="flex items-center justify-center w-[80px] p-[6px] border-[1px]
             border-solid rounded-[14px]"
             style={{
                 borderColor: hasChanges ? 'var(--primary)' : 'var(--iconColor)',

@@ -1,7 +1,8 @@
-import { DailyQuote, DailyTask, TaskType } from "@/lib/firebase/interfaces";
+import { DailyQuote, DailyTask, ScheduleType, TaskType } from "@/lib/firebase/interfaces";
 import DailyTaskContainer from "./daily/DailyTaskContainer";
-import ScheduleContainer from "./schedule/ScheduleContainer";
+import Schedule from "./schedule/Schedule";
 import BucketListContainer from "./bucket/BucketListContainer";
+import { useState } from "react";
 
 interface TaskBodyProps{
     taskType: TaskType;
@@ -19,7 +20,7 @@ const TaskBody = ({
                 <DailyTaskContainer onAddTask={onAddTask}/>
             )}
             {taskType === 'schedule' && (
-                <ScheduleContainer />
+                <Schedule/>
             )}
             {taskType === 'bucket' && (
                 <BucketListContainer />

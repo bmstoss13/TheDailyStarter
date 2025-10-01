@@ -11,11 +11,11 @@ const categoryOptions: Option[] = [
     { value: "", label: "All Categories" }, 
     { value: Category.Social, label: "Social" },
     { value: Category.Physical, label: "Physical" },
-    { value: Category.Mental, label: "Mental" },
-    { value: Category.Mindfulness, label: "Mindfulness" },
-    { value: Category.Productivity, label: "Productivity" },
     { value: Category.Creativity, label: "Creativity" },
     { value: Category.Financial, label: "Financial" },
+    { value: Category.Mental, label: "Mental" },
+    { value: Category.Productivity, label: "Productivity" },
+    { value: Category.Mindfulness, label: "Mindfulness" },
 ];
 
 const CategoryFilter = ({

@@ -267,4 +267,8 @@ export const priorityTypes = ['Low', 'Medium', 'High'] as const;
 
 export type PriorityType = typeof priorityTypes[number];
 
+export const scheduleTypes = ['Day', 'Week', 'Month'] as const;
+
+export type ScheduleType = typeof scheduleTypes[number];
+
 

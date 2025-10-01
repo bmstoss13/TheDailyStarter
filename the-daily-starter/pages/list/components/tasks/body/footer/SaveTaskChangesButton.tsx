@@ -14,7 +14,7 @@ const SaveTaskChangesButton = ({
 }: SaveTaskChangesButtonProps) => {
     return(
         <button 
-            className="flex flex-col w-[80px] p-[8px] items-center justify-center 
+            className="flex w-[80px] p-[6px] items-center justify-center 
             text-white text-wrap rounded-[14px]"
             style={{
                 background: hasChanges ? 'var(--primary)' : 'var(--iconColor)',
