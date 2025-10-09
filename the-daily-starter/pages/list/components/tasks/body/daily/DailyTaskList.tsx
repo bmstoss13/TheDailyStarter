@@ -6,9 +6,14 @@ import { handleTaskColor } from "@/pages/api/taskColorHelper";
 interface DailyTaskListProps{
     dailyTaskList: DailyTask[];
     onAddTask: (task: DailyTask) => void;
+    onToggleDailyTaskModal: () => void;
 }
 
-const DailyTaskList = ({dailyTaskList, onAddTask}: DailyTaskListProps) => {
+const DailyTaskList = ({
+    dailyTaskList,
+    onAddTask,
+    onToggleDailyTaskModal
+}: DailyTaskListProps) => {
 
     return (
         <div className='flex flex-col h-full w-full gap-[10px]'>
@@ -21,7 +26,10 @@ const DailyTaskList = ({dailyTaskList, onAddTask}: DailyTaskListProps) => {
                     />
                 )
             })}
-            <AddDailyTask onAddTask={onAddTask} />
+            <AddDailyTask 
+                onAddTask={onAddTask}
+                onToggleDailyTaskModal={onToggleDailyTaskModal} 
+            />
 
         </div>
     )

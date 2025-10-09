@@ -2,9 +2,13 @@ import { DailyTask } from "@/lib/firebase/interfaces";
 
 interface AddDailyTaskProps{
     onAddTask: (task: DailyTask) => void;
+    onToggleDailyTaskModal: () => void;
 }
 
-const AddDailyTask = ({onAddTask}: AddDailyTaskProps) => {
+const AddDailyTask = ({
+    onAddTask,
+    onToggleDailyTaskModal
+}: AddDailyTaskProps) => {
     return (
         <button
             className='flex flex-col w-full h-[80px] border-[2px] border-dashed border-gray-200 rounded-[14px] 
@@ -12,7 +16,7 @@ const AddDailyTask = ({onAddTask}: AddDailyTaskProps) => {
             hover:border-(--primary) hover:text-(--primary) hover:scale-[1.015] hover:shadow-md 
             hover:shadow-(color:--primary) hover:bg-(--primaryBg)
             transition-all duration-[0.1s] ease'
-            onClick={() => onAddTask}
+            onClick={onToggleDailyTaskModal}
         >
             + Add New Task
         </button>

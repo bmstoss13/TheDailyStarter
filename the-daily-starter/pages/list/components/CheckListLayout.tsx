@@ -1,5 +1,5 @@
 
-import { RecommendationBlueprint, TaskType, UserProfileData } from "@/lib/firebase/interfaces";
+import { DailyTask, RecommendationBlueprint, TaskType, UserProfileData } from "@/lib/firebase/interfaces";
 import styles from "./CheckListLayout.module.css";
 import RecommendationContainer from "./recommendations/RecommendationContainer";
 import StatBar from "./stats/StatBar";
@@ -8,7 +8,13 @@ import { useEffect, useState } from "react";
 import { defaultRecommendations } from "@/pages/api/defaultRec";
 
 interface CheckListLayoutProps{
-    user: UserProfileData
+    user: UserProfileData;
+    userDailyTasks: DailyTask[] | null;
+    recommendations: RecommendationBlueprint[] | null;
+
+    taskType: TaskType;
+    onSwitchTaskType: (switchType: TaskType) => void;
+    onToggleDailyTaskModal: () => void;
 }
 /**
  * Layout for the Task page
@@ -16,47 +22,31 @@ interface CheckListLayoutProps{
  * on the right
  */
 
-export default function CheckListLayout(){
-    const [taskType, setTaskType] = useState<TaskType>('daily');
-    const [recommendations, setRecommendations] = useState<RecommendationBlueprint[] | null>(null)
-
-    // handler for switching task/list type (daily, schedule, bucket)
-    const handleSwitchTaskType = (switchType: TaskType) => {
-        try{
-            setTaskType(switchType)
-        } catch (err) {
-            console.error(`error switching type of task to ${switchType}: `, err);
-        }
-    }
-
-    const handleRetrieveRecommendations = () => {
-        try{
-            // Placeholder code for recommendations - should come from backend as processed data
-            setRecommendations(defaultRecommendations)
-        } catch (err) {
-            console.error("error fetching recommendations: ", err)
-        }
-    }
-
-    useEffect(() => {
-        handleRetrieveRecommendations();
-    }, [])
+export default function CheckListLayout({
+    user,
+    userDailyTasks,
+    recommendations,
+    onSwitchTaskType,
+    taskType,
+    onToggleDailyTaskModal
+}:CheckListLayoutProps){
 
     return(
         <main className={styles.checkListContainer}>
             <div className={styles.statBarColumn}>
-                <StatBar />
+                <StatBar user={user}/>
             </div>
             <div className={styles.taskColumn}>
                 <TaskContainer 
                     taskType={taskType} 
-                    onSwitchTaskType={handleSwitchTaskType}
+                    onSwitchTaskType={onSwitchTaskType}
+                    onToggleAddDailyTask={onToggleDailyTaskModal}
                 />                            
             </div>
             <div className={styles.recommendationColumn}>
                 <RecommendationContainer
                     taskType={taskType} 
-                    onSwitchTaskType={handleSwitchTaskType}
+                    onSwitchTaskType={onSwitchTaskType}
                     recommendations={recommendations}
                 />
             </div>

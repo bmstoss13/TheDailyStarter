@@ -18,13 +18,19 @@ const DateToggler = ({
     return(
         <div className={`flex items-center text-center`}>
             <button onClick={onPrev}>
-                <FontAwesomeIcon icon={faChevronLeft} />
+                <FontAwesomeIcon 
+                    icon={faChevronLeft} 
+                    className="cursor-pointer"
+                />
             </button>
             <p>
                 {date}
             </p>
             <button onClick={onNext}>
-                <FontAwesomeIcon icon={faChevronRight} />
+                <FontAwesomeIcon 
+                    icon={faChevronRight} 
+                    className="cursor-pointer"
+                />
             </button>
         </div>
     )

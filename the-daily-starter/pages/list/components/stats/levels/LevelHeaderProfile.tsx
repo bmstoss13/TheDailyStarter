@@ -3,16 +3,17 @@
  */
 
 import Image from "next/image";
-import { lazy } from "react";
 
 interface LevelHeaderProfileProps{
     profilePicture: string
 }
 
-const LevelHeaderProfile = () => {
+const LevelHeaderProfile = ({
+    profilePicture
+}: LevelHeaderProfileProps) => {
     return (
         <Image 
-            src="/logo3.png" 
+            src={profilePicture !== "" ? profilePicture : "/logo3.png"} 
             alt="profile picture"
             width={100}
             height={100}

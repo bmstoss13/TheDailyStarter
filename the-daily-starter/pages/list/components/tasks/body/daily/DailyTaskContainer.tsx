@@ -35,14 +35,19 @@ export const taskList: DailyTask[] = [
 
 interface DailyTaskContainerProps{
     onAddTask: (task: DailyTask) => void
+    onToggleDailyTaskModal: () => void
 }
 
-const DailyTaskContainer = ({onAddTask}: DailyTaskContainerProps) => {
+const DailyTaskContainer = ({
+    onAddTask,
+    onToggleDailyTaskModal
+}: DailyTaskContainerProps) => {
     return(
         <div className="flex flex-col w-full h-full items-center">
             <DailyTaskList 
                 dailyTaskList={taskList}
                 onAddTask={onAddTask}
+                onToggleDailyTaskModal={onToggleDailyTaskModal}
             />
         </div>
     )

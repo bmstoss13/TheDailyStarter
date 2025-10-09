@@ -7,6 +7,8 @@ import TaskBarFooter from "./body/footer/TaskBarFooter";
 interface TaskContainerProps{
     taskType: TaskType;
     onSwitchTaskType: (taskType: TaskType) => void;
+
+    onToggleAddDailyTask: () => void;
 }
 /**
  * Container for the task (main) column of My Tasks
@@ -14,7 +16,8 @@ interface TaskContainerProps{
  */
 const TaskContainer = ({
     taskType, 
-    onSwitchTaskType
+    onSwitchTaskType,
+    onToggleAddDailyTask
 }: TaskContainerProps) => {
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [changes, setChanges] = useState<DailyTask[] | null>(null);
@@ -91,6 +94,7 @@ const TaskContainer = ({
             <TaskBody 
                 taskType={taskType}
                 onAddTask={handleAddTask} 
+                onToggleDailyTaskModal={onToggleAddDailyTask}
             />
             <TaskBarFooter
                 hasChanges={hasChanges} 
