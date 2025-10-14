@@ -209,12 +209,15 @@ export interface UserBucketList {
 }
 
 export interface RecommendationBlueprint {
+    id?: string;
     title: string;
     notes?: string;
     category: Category | null;
-    taskType: TaskType;
+    taskType?: TaskType;
     defaultPoints?: number; 
     defaultPriority?: PriorityType;
+    quantity?: string;
+    timeType?: TimeType | null;
 }
 
 export interface CategoryProgress {
@@ -253,7 +256,6 @@ export enum Category {
     Financial, // (GREEN) Review budget for 10 minutes, pay a bill, set up an automatic savings plan, etc.
 }
 
-
 export interface Option {
     value: Category | string;
     label: string;
@@ -270,5 +272,11 @@ export type PriorityType = typeof priorityTypes[number];
 export const scheduleTypes = ['Day', 'Week', 'Month'] as const;
 
 export type ScheduleType = typeof scheduleTypes[number];
+
+export const timeTypes = ['Minute', 'Hour', 'N/A']
+
+export type TimeType = typeof timeTypes[number];
+
+
 
 

@@ -1,0 +1,104 @@
+{
+    "recommendations":[
+        {
+            "id": "1dmental",
+            "title": "Catch Up on Current Events",
+            "notes": "Spend 10 minutes catching up on current events using news sources such as the Daily Sunshine (on the home page!)",
+            "category": "Mental",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 10,
+            "timeType": "Minute"
+
+        },
+        {
+            "id": "2dmental",
+            "title": "Read an Engaging Book",
+            "notes": "Set aside 30 minutes to read a book with minimal distractions.",
+            "category": "Mental",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 30,
+            "timeType": "Minute"
+        },
+        {
+            "id": "3dmental",
+            "title": "Listen To an Informational Podcast",
+            "notes": "While doing a less-demanding activity (i.e. driving home from work, washing the dishes, etc.) or just relaxing, put on an educational podcast using your favorite streaming service.",
+            "category": "Mental",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 0,
+            "timeType": "N/A"            
+        },
+        {
+            "id": "4dmental",
+            "title": "Study For an Upcoming Assessment",
+            "notes": "With no distractions, spend 1.5 hours studying for an upcoming assessment.",
+            "category": "Mental",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 1.5,
+            "timeType": "Hour"              
+        },
+        {
+            "id": "5dmental",
+            "title": "Brush Up on Educational Topic",
+            "notes": "Take 30 minutes out of your day to brush up on previously learned content",
+            "category": "Mental",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 30,
+            "timeType": "Minutes"              
+        },
+        {
+            "id": "6dmental",
+            "title": "Educate Yourself on a New Topic",
+            "notes": "With no distractions, spend 1 hour learning a new topic",
+            "category": "Mental",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 1,
+            "timeType": "Hour"
+        },
+        {
+            "id": "1dphysical",
+            "title": "Mindful Morning Stretch",
+            "notes": "Spend 5 minutes stretching before checking your phone. Good for mind and body.",
+            "category": "Physical",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 5,
+            "timeType": "Minute"  
+        },
+        {
+            "id": "1dphysical",
+            "title": "Mindful Morning Stretch",
+            "notes": "Spend 5 minutes stretching before checking your phone. Good for mind and body.",
+            "category": "Physical",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 5,
+            "timeType": "Minute"  
+        },
+        {
+            "id": "2dphysical",
+            "title": "Healthy Hydration",
+            "notes": "Drink 8 cups of water throughout the day",
+            "category": "Physical",
+            "taskType": "daily",
+            "defaultPoints": 1,
+            "defaultPriority": "Low",
+            "quantity": 8,
+            "timeType": "N/A"
+        }
+    ]
+}

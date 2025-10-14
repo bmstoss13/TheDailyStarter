@@ -27,6 +27,8 @@ import (
 	SupabaseUsers "services/supabase/userservice"
 	SupabaseUserEndpoint "services/supabase/userservice/endpoint"
 	"services/supabase/worldnewsapi"
+	RecommendationService "services/tasks/recommendationAPI"
+	RecommendationsEndpoint "services/tasks/recommendationAPI/endpoint"
 	helpers "services/utils"
 
 	"github.com/go-chi/chi/v5"
@@ -64,12 +66,13 @@ func main() {
 	bannerSvc := BannerService.NewService(supabaseUserSvc)
 	commentSvc := commentservice.NewService(clients.DB, supabaseUserSvc, supabaseShineSvc)
 	newsService := newsservice.NewService(clients.DB, newsClient, redisClient)
+	recommendationsService := RecommendationService.NewService(supabaseUserSvc)
 
 	cr := cron.New()
 
 	cr.AddFunc("0 0 * * *", func() {
 		log.Println("Starting daily news update...")
-		newsService.UpdateDailyNews(context.Background(), 5, 0.5)
+		newsService.UpdateDailyNews(context.Background(), 5, 0.9)
 		supabaseQuoteSvc.UpdateAndStoreDailyQuote(context.Background())
 	})
 
@@ -94,6 +97,7 @@ func main() {
 		r.Get("/quote/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
 		r.Get("/banner/message", BannerEndpoint.BannerHandler(bannerSvc))
 		r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
+		r.Handle("/tasks/recommendations", RecommendationsEndpoint.RecommendationsHandler(recommendationsService))
 
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
 			// r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
