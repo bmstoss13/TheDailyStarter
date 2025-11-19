@@ -1,21 +1,21 @@
-import { Category, Option } from "@/lib/firebase/interfaces";
+import { Category, CategoryType, Option } from "@/lib/firebase/interfaces";
 import TaskCategorySelect from "./TaskCategorySelect";
 
 interface TaskCategoryFilterProps{
-    onChangeCategory: (category: Category | string) => void;
+    onChangeCategory: (category: Category | CategoryType | string) => void;
     color: string;
 }
 
 const categoryOptions: Option[] = [
 
     // { value: "", label: "Select Category" }, 
-    { value: Category.Social, label: "Social" },
-    { value: Category.Physical, label: "Physical" },
-    { value: Category.Creativity, label: "Creativity" },
-    { value: Category.Financial, label: "Financial" },
-    { value: Category.Mental, label: "Mental" },
-    { value: Category.Productivity, label: "Productivity" },
-    { value: Category.Mindfulness, label: "Mindfulness" },
+    { value: "Social" as CategoryType, label: "Social" },
+    { value: "Physical" as CategoryType, label: "Physical" },
+    { value: "Creativity" as CategoryType, label: "Creativity" },
+    { value: "Financial" as CategoryType, label: "Financial" },
+    { value: "Mental" as CategoryType, label: "Mental" },
+    { value: "Productivity" as CategoryType, label: "Productivity" },
+    { value: "Mindfulness" as CategoryType, label: "Mindfulness" },
 ];
 
 const TaskCategoryFilter = ({

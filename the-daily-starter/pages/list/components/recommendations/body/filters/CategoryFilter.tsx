@@ -1,21 +1,21 @@
-import { Category, Option } from "@/lib/firebase/interfaces";
+import { Category, CategoryType, Option } from "@/lib/firebase/interfaces";
 import CustomSelect from "./CustomSelect";
 
 interface CategoryFilterProps{
-    onChangeCategory: (category: Category | string) => void;
+    onChangeCategory: (category: Category | CategoryType) => void;
     color: string;
 }
 
 const categoryOptions: Option[] = [
 
     { value: "", label: "All Categories" }, 
-    { value: Category.Social, label: "Social" },
-    { value: Category.Physical, label: "Physical" },
-    { value: Category.Creativity, label: "Creativity" },
-    { value: Category.Financial, label: "Financial" },
-    { value: Category.Mental, label: "Mental" },
-    { value: Category.Productivity, label: "Productivity" },
-    { value: Category.Mindfulness, label: "Mindfulness" },
+    { value: "Social", label: "Social" },
+    { value: "Physical", label: "Physical" },
+    { value: "Creativity", label: "Creativity" },
+    { value: "Financial", label: "Financial" },
+    { value: "Mental", label: "Mental" },
+    { value: "Productivity", label: "Productivity" },
+    { value: "Mindfulness", label: "Mindfulness" },
 ];
 
 const CategoryFilter = ({

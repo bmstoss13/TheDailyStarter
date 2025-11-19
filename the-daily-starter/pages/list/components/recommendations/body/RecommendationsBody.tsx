@@ -1,4 +1,4 @@
-import { Category, RecommendationBlueprint, TaskType } from "@/lib/firebase/interfaces"
+import { Category, CategoryType, RecommendationBlueprint, TaskType } from "@/lib/firebase/interfaces"
 import RecommendationList from "./RecommendationList";
 import CategoryFilter from "./filters/CategoryFilter";
 import { useState } from "react";
@@ -13,9 +13,9 @@ const RecommendationsBody = ({
     recommendations,
     taskType,
 }: RecommendationsBodyProps) => {
-    const [category, setCategory] = useState<Category | null | string>(null);
+    const [category, setCategory] = useState<Category | CategoryType | null>(null);
 
-    const handleFilterCategory = (selectedCategory: Category | null | string) => {
+    const handleFilterCategory = (selectedCategory: Category | CategoryType | null) => {
         try{
             setCategory(selectedCategory);
         } catch (err) {
@@ -23,10 +23,10 @@ const RecommendationsBody = ({
         }
     }
     return(
-        <div className="flex flex-col w-full h-full gap-[10px]">
+        <div className="flex flex-col h-full w-full max-h-[80vh] gap-[10px]">
             <CategoryFilter 
                 onChangeCategory={handleFilterCategory}
-                color={category !== null && category !== "" ? handleCategoryColor(category as Category) : 'var(--iconColor)'}
+                color={category !== null? handleCategoryColor(category as CategoryType) : 'var(--iconColor)'}
             />
             <RecommendationList 
                 recommendations={recommendations}

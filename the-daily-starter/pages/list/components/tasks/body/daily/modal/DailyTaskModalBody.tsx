@@ -1,4 +1,4 @@
-import { Category, DailyTask } from "@/lib/firebase/interfaces";
+import { Category, CategoryType, DailyTask } from "@/lib/firebase/interfaces";
 import { useState } from "react";
 import TaskCategoryFilter from "./filters/TaskCategoryFilter";
 import { handleCategoryColor } from "@/pages/api/taskColorHelper";
@@ -8,10 +8,10 @@ interface DailyTaskModalBodyProps{
 }
 
 const DailyTaskModalBody = () => {
-    const [category, setCategory] = useState<Category | null | string>(null);
+    const [category, setCategory] = useState<Category | CategoryType | string | null>(null);
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
-    const handleFilterCategory = (selectedCategory: Category | null | string) => {
+    const handleFilterCategory = (selectedCategory: Category | CategoryType | string | null) => {
         try{
             setCategory(selectedCategory);
         } catch (err) {
@@ -36,7 +36,7 @@ const DailyTaskModalBody = () => {
             </textarea>
             <TaskCategoryFilter 
                 onChangeCategory={handleFilterCategory}
-                color={category !== null && category !== "" ? handleCategoryColor(category as Category) : 'var(--iconColor)'}
+                color={category !== null && category !== "" ? handleCategoryColor(category as CategoryType) : 'var(--iconColor)'}
             />
         </div>
     )

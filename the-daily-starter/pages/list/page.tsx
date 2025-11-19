@@ -8,6 +8,9 @@ import { DailyTask, RecommendationBlueprint, TaskType } from '@/lib/firebase/int
 import { defaultRecommendations } from "@/pages/api/defaultRec";
 import { taskList } from './components/tasks/body/daily/DailyTaskContainer';
 import DailyTaskModal from './components/tasks/body/daily/modal/DailyTaskModal';
+import { getJsonApi } from '@/lib/routes/routes';
+
+const api = getJsonApi();
 
 export default function CheckListPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
@@ -30,10 +33,11 @@ export default function CheckListPage() {
         }
     }
 
-    const handleRetrieveRecommendations = () => {
+    const handleRetrieveRecommendations = async () => {
         try{
             // Placeholder code for recommendations - should come from backend as processed data
-            setRecommendations(defaultRecommendations)
+            const { data } = await api.get('/v1/tasks/recommendations')
+            setRecommendations(data)
         } catch (err) {
             console.error("error fetching recommendations: ", err)
         }

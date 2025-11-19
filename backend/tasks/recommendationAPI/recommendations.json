@@ -79,17 +79,6 @@
             "timeType": "Minute"  
         },
         {
-            "id": "1dphysical",
-            "title": "Mindful Morning Stretch",
-            "notes": "Spend 5 minutes stretching before checking your phone. Good for mind and body.",
-            "category": "Physical",
-            "taskType": "daily",
-            "defaultPoints": 1,
-            "defaultPriority": "Low",
-            "quantity": 5,
-            "timeType": "Minute"  
-        },
-        {
             "id": "2dphysical",
             "title": "Healthy Hydration",
             "notes": "Drink 8 cups of water throughout the day",

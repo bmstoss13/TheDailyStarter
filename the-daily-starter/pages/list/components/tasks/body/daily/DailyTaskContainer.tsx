@@ -6,7 +6,7 @@ export const taskList: DailyTask[] = [
     {
         id: '123',
         title: 'Do the dishes',
-        category: Category.Productivity,
+        category: "Productivity",
         isComplete: false,
         points: 3,
         isDaily: false,
@@ -16,7 +16,7 @@ export const taskList: DailyTask[] = [
     {
         id: '1245',
         title: 'Make music for 1 hour',
-        category: Category.Creativity,
+        category: "Creativity",
         isComplete: false,
         points: 5,
         isDaily: true,
@@ -25,7 +25,7 @@ export const taskList: DailyTask[] = [
     {
         id: '1254',
         title: 'Lift weights for 30 minutes',
-        category: Category.Physical,
+        category: "Physical",
         isComplete: true,
         points: 3,
         isDaily: true,

@@ -12,7 +12,7 @@ const RecommendationItem = ({
 
     return(
         <div
-            className='flex flex-col w-full h-[80px] border-[2px] border-solid rounded-[14px] p-[10px]'
+            className='flex flex-col w-full min-h-[80px] border-[2px] border-solid rounded-xl p-[10px]'
             style={{
                 borderColor: color
             }}

@@ -1,42 +1,43 @@
-import { Category, DailyTask, RecommendationBlueprint, ScheduledEvent } from "@/lib/firebase/interfaces"
+import { Category, CategoryType, DailyTask, RecommendationBlueprint, ScheduledEvent } from "@/lib/firebase/interfaces"
 
 
 export function handleTaskColor(task: DailyTask | ScheduledEvent | RecommendationBlueprint) {
+
     switch(task.category){
-        case Category.Mental:
+        case 'Mental':
             return 'var(--mental)'
-        case Category.Physical:
+        case 'Physical':
             return 'var(--physical)'
-        case Category.Social:
+        case 'Social':
             return 'var(--social)'
-        case Category.Mindfulness:
+        case 'Mindfulness':
             return'var(--mindfulness)'
-        case Category.Productivity:
+        case 'Productivity':
             return 'var(--productivity)'
-        case Category.Creativity:
+        case 'Creativity':
             return 'var(--creativity)'
-        case Category.Financial:
+        case 'Financial':
             return 'var(--financial)'
         default:
             return ''
     }
 }
 
-export function handleCategoryColor(category: Category) {
+export function handleCategoryColor(category: Category | CategoryType) {
     switch(category){
-        case Category.Mental:
+        case 'Mental':
             return 'var(--mental)'
-        case Category.Physical:
+        case 'Physical':
             return 'var(--physical)'
-        case Category.Social:
+        case 'Social':
             return 'var(--social)'
-        case Category.Mindfulness:
+        case 'Mindfulness':
             return'var(--mindfulness)'
-        case Category.Productivity:
+        case 'Productivity':
             return 'var(--productivity)'
-        case Category.Creativity:
+        case 'Creativity':
             return 'var(--creativity)'
-        case Category.Financial:
+        case 'Financial':
             return 'var(--financial)'
         default:
             return ''

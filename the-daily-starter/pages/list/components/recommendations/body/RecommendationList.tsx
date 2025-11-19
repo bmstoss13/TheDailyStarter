@@ -1,11 +1,11 @@
-import { Category, RecommendationBlueprint, TaskType } from "@/lib/firebase/interfaces";
+import { Category, CategoryType, RecommendationBlueprint, TaskType } from "@/lib/firebase/interfaces";
 import RecommendationItem from "./RecommendationItem";
 import { handleTaskColor } from "@/pages/api/taskColorHelper";
 
 interface RecommendationListProps{
     recommendations: RecommendationBlueprint[] | null;
     taskType: TaskType;
-    category: Category | null | string;
+    category: Category | CategoryType | null | string;
 }
 
 const RecommendationList = ({
@@ -15,7 +15,7 @@ const RecommendationList = ({
 }: RecommendationListProps) => {
 
     return (
-        <div className="flex flex-col w-full h-full gap-[10px]">
+        <div className="flex flex-col w-full flex-grow max-h-full gap-[10px] overflow-y-auto">
             {recommendations?.
                 filter(rec => rec.taskType === taskType).
                 filter(rec => {

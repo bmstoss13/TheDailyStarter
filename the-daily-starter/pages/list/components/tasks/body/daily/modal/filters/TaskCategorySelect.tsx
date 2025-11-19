@@ -1,11 +1,11 @@
-import { Category, Option } from "@/lib/firebase/interfaces";
+import { Category, CategoryType, Option } from "@/lib/firebase/interfaces";
 import { useState, useEffect } from "react";
 import { faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
 interface TaskCategorySelectProps {
-    onChangeCategory: (category: Category | string) => void;
+    onChangeCategory: (category: Category | CategoryType | string) => void;
     options: Option[];
     color: string;  
 }
@@ -16,16 +16,16 @@ const TaskCategorySelect = ({
     color
 }: TaskCategorySelectProps) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [selectedItem, setSelectedItem] = useState<Category | string>(Category.Productivity);
+    const [selectedItem, setSelectedItem] = useState<Category | CategoryType | string>("Productivity");
 
     const selectedOption = options.find(opt => opt.value === selectedItem) || options[0];
 
-    const handleSelect = (val: Category | string) => {
+    const handleSelect = (val: Category | CategoryType | string) => {
 
         if (typeof val === 'number') {
             onChangeCategory(val as Category);
         } else {
-            onChangeCategory(val);
+            onChangeCategory(val as CategoryType);
         }
         setSelectedItem(val);
         setIsOpen(false);

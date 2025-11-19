@@ -165,7 +165,7 @@ export interface Task {
     title: string;
     isComplete: boolean;
     createdAt: Date;
-    category: Category | null;
+    category: Category | CategoryType | null;
     completedAt?: Date | null
     notes?: string;
     progressSteps?: Task[]
@@ -212,7 +212,7 @@ export interface RecommendationBlueprint {
     id?: string;
     title: string;
     notes?: string;
-    category: Category | null;
+    category: Category | CategoryType | null;
     taskType?: TaskType;
     defaultPoints?: number; 
     defaultPriority?: PriorityType;
@@ -221,7 +221,7 @@ export interface RecommendationBlueprint {
 }
 
 export interface CategoryProgress {
-    category: Category;
+    category: Category | CategoryType;
     currentXP: number;
     totalXP: number;
     level: number;
@@ -256,8 +256,10 @@ export enum Category {
     Financial, // (GREEN) Review budget for 10 minutes, pay a bill, set up an automatic savings plan, etc.
 }
 
+export type CategoryType = 'Mental' | 'Physical' | 'Social' | 'Mindfulness' | 'Productivity' | 'Creativity' | 'Financial';
+
 export interface Option {
-    value: Category | string;
+    value: CategoryType | string;
     label: string;
 }
 
