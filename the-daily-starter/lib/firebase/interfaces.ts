@@ -45,8 +45,9 @@ export interface UserProfileData {
     lastQuoteShown?: string | null;
 
     // Checklist
-    dailyCheckList?: DailyTask[];
-    scheduledEvents?: ScheduledEvent[];
+    dailyCheckList?: DailyTask[] | UserDailyTasks;
+    scheduledEvents?: ScheduledEvent[] | UserScheduledTasks;
+    bucketList?: BucketListItem[] | UserBucketList;
 
     // Gamification and Streak
     totalExperience?: number; 
@@ -170,11 +171,12 @@ export interface Task {
     notes?: string;
     progressSteps?: Task[]
     budget?: number | null;
+    points: number;
+    quantity?: number;
 }
 
 export interface DailyTask extends Task {
     priority?: PriorityType;    
-    points: number; // Points awarded for completing the task
     isDaily: boolean; // Flag to indicate if the task should repeat daily
 }
 
@@ -266,6 +268,8 @@ export interface Option {
 export const taskTypes = ['daily', 'schedule', 'bucket'] as const;
 
 export type TaskType = typeof taskTypes[number];
+
+export type TypeTask = 'daily' | 'schedule' | 'bucket'
 
 export const priorityTypes = ['Low', 'Medium', 'High'] as const;
 

@@ -48,30 +48,5 @@ func (svc *Service) GetAllRecommendations(ctx context.Context) (*[]Recommendatio
 		return nil, fmt.Errorf("failed to unmarshal recommendations json data")
 	}
 
-	// log.Printf("dat: %v", dat)
-	// recommendation, ok := dat["recommendations"].([]Recommendation)
-	// if !ok {
-	// 	log.Printf("ok: %v", ok)
-	// 	log.Printf("recommendation: %v", recommendation)
-	// 	return nil, fmt.Errorf("invalid format for recommendations")
-	// }
-
-	// var recommendationData []Recommendation
-	// for _, v := range recommendation {
-	// 	recommendationItem := Recommendation{
-	// 		Id:              v.Id,
-	// 		Title:           v.Title,
-	// 		Notes:           v.Notes,
-	// 		Category:        v.Category,
-	// 		TaskType:        v.TaskType,
-	// 		DefaultPoints:   v.DefaultPoints,
-	// 		DefaultPriority: v.DefaultPriority,
-	// 		Quantity:        v.Quantity,
-	// 		TimeType:        v.TimeType,
-	// 	}
-
-	// 	recommendationData = append(recommendationData, recommendationItem)
-	// }
-
 	return &recommendationList.Recommendations, nil
 }
