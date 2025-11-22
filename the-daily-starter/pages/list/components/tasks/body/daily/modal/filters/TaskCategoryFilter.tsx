@@ -8,7 +8,7 @@ interface TaskCategoryFilterProps{
 
 const categoryOptions: Option[] = [
 
-    // { value: "", label: "Select Category" }, 
+    { value: "", label: "Select Category" }, 
     { value: "Social" as CategoryType, label: "Social" },
     { value: "Physical" as CategoryType, label: "Physical" },
     { value: "Creativity" as CategoryType, label: "Creativity" },

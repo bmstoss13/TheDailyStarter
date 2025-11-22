@@ -5,12 +5,14 @@ import BucketListContainer from "./bucket/BucketListContainer";
 import { useState } from "react";
 
 interface TaskBodyProps{
+    tasks: DailyTask[] | null;
     taskType: TaskType;
     onAddTask: (task: DailyTask) => void;
     onToggleDailyTaskModal: () => void;
 }
 
 const TaskBody = ({
+    tasks,
     taskType,
     onAddTask,
     onToggleDailyTaskModal
@@ -20,6 +22,7 @@ const TaskBody = ({
         p-[10px] border-[2px] border-solid border-gray-200 rounded-[14px]">
             {taskType === 'daily' && (
                 <DailyTaskContainer 
+                    tasks={tasks}
                     onAddTask={onAddTask}
                     onToggleDailyTaskModal={onToggleDailyTaskModal}
                 />

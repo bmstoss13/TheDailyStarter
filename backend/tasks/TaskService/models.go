@@ -8,7 +8,7 @@ import (
 type Task struct {
 	Id            string                   `pg:"id,pk" json:"id"`
 	Title         string                   `pg:"title" json:"title"`
-	Notes         string                   `pg:"notes" json:"notes"`
+	Notes         string                   `pg:"notes" json:"notes,omitempty"`
 	ProgressSteps []Task                   `pg:"progress_steps,array" json:"progressSteps,omitempty"`
 	Category      TaskEnums.GrowthCategory `pg:"category" json:"category"`
 	Quantity      *float64                 `pg:"quantity" json:"quantity,omitempty"`

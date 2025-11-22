@@ -83,7 +83,7 @@ export default function FeedPage() {
             setLastShineId(data.at(-1)?.id);
             setHasMore(data.length === 10);
             
-        } catch (err: unknown) {
+        } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error("Error fetching shines:", err.response?.data || err.message);
                 setError(err.response?.data?.error || err.response?.data?.message || 'Failed to fetch shines.');

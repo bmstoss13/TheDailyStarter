@@ -1,10 +1,11 @@
 import { useState } from "react";
 import TaskBody from "./body/TaskBody";
 import TaskHeader from "./header/TaskHeader";
-import { DailyTask, TaskType } from "@/lib/firebase/interfaces";
+import { DailyTask, TaskType} from "@/lib/firebase/interfaces";
 import TaskBarFooter from "./body/footer/TaskBarFooter";
 
 interface TaskContainerProps{
+    tasks: DailyTask[] | null;
     taskType: TaskType;
     onSwitchTaskType: (taskType: TaskType) => void;
 
@@ -15,6 +16,7 @@ interface TaskContainerProps{
  * @returns TaskHeader and TaskBody
  */
 const TaskContainer = ({
+    tasks,
     taskType, 
     onSwitchTaskType,
     onToggleAddDailyTask
@@ -92,15 +94,16 @@ const TaskContainer = ({
                 onSwitchType={onSwitchTaskType}
             />
             <TaskBody 
+                tasks={tasks}
                 taskType={taskType}
                 onAddTask={handleAddTask} 
                 onToggleDailyTaskModal={onToggleAddDailyTask}
             />
-            <TaskBarFooter
+            {/* <TaskBarFooter
                 hasChanges={hasChanges} 
                 onSaveChanges={handleSaveChanges}
                 onCancelChanges={handleCancelChanges}
-            />
+            /> */}
         </div>
     )
 }

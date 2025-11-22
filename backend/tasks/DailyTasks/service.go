@@ -51,9 +51,10 @@ func (s *Service) GetUserDailyTasks(ctx context.Context, uid string) ([]DailyTas
 
 	if err != nil && err != pg.ErrNoRows {
 		log.Printf("Error while getting user %v daily tasks: %v", uid, err)
-		return nil, err
+		return nil, fmt.Errorf("failed to get user daily tasks")
 	}
 
+	log.Printf("Daily tasks retrieved: %v", dailyTasks)
 	return dailyTasks, nil
 }
 
@@ -72,7 +73,7 @@ func (s *Service) UpdateUserDailyTask(ctx context.Context, updatedTask *DailyTas
 
 	if err != nil {
 		log.Printf("Error updating daily task: %v", err)
-		return err
+		return fmt.Errorf("failed to update daily task")
 	}
 	return nil
 }
@@ -97,6 +98,11 @@ func (s *Service) DeleteUserDailyTask(ctx context.Context, uid string, taskID st
 
 func (s *Service) ToggleTaskCompletion(ctx context.Context, taskID string, isComplete bool) error {
 
+	if taskID == "" {
+		log.Printf("Task ID must be provided.")
+		return fmt.Errorf("taskId required")
+	}
+
 	var completedAt string
 	if isComplete {
 		completedAt = "NOW()"
@@ -104,7 +110,7 @@ func (s *Service) ToggleTaskCompletion(ctx context.Context, taskID string, isCom
 		completedAt = "NULL"
 	}
 
-	_, err := s.db.WithContext(ctx).Model(&DailyTask{}).
+	res, err := s.db.WithContext(ctx).Model(&DailyTask{}).
 		Where("id = ?", taskID).
 		Set("is_complete = ?", isComplete).
 		Set("completed_at = " + completedAt).
@@ -115,6 +121,11 @@ func (s *Service) ToggleTaskCompletion(ctx context.Context, taskID string, isCom
 		return fmt.Errorf("failed to toggle task completion status")
 	}
 
-	log.Printf("Task is already complete.")
+	if res.RowsAffected() == 0 {
+		log.Printf("Daily task being toggled not found or user unauthorized")
+		return ErrTaskNotFoundOrUnauthorized
+	}
+
+	log.Printf("Task is complete.")
 	return nil
 }

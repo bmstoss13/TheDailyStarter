@@ -74,14 +74,14 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
             setSuccess('Shine posted successfully!');
             onShinePosted(hydratedShine); //Parent! Refresh!
 
-        } catch (err: any){
+        } catch (err){
             if(axios.isAxiosError(err) && err.response){
                 const errorData = err.response.data;
                 console.error("An error occurred while posting shine: ", err.response);
                 setError(errorData.message || errorData.error || "Failed to post shine.");
             } else {
                 console.error("An unexpected error occurred: ", err);
-                setError(err.message || "An unexpected error occurred while posting form");
+                setError("An unexpected error occurred while posting form");
             }
         } finally {
             setIsLoading(false);

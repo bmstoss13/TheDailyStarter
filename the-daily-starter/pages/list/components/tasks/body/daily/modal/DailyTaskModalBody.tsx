@@ -4,10 +4,16 @@ import TaskCategoryFilter from "./filters/TaskCategoryFilter";
 import { handleCategoryColor } from "@/pages/api/taskColorHelper";
 
 interface DailyTaskModalBodyProps{
-    onAddDailyTask: (dailyTask: DailyTask) => void
+    dailyTask: DailyTask;
+    onAddDailyTask: (dailyTask: DailyTask) => void;
+    onChangeFormField: (dailyTask: DailyTask) => void;
 }
 
-const DailyTaskModalBody = () => {
+const DailyTaskModalBody = ({
+    onAddDailyTask,
+    dailyTask,
+    onChangeFormField
+}:DailyTaskModalBodyProps) => {
     const [category, setCategory] = useState<Category | CategoryType | string | null>(null);
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
@@ -20,7 +26,7 @@ const DailyTaskModalBody = () => {
     }
 
     return(
-        <div className={`flex flex-col w-full p-[10px] gap-[10px]`}>
+        <form className={`flex flex-col w-full p-[10px] gap-[10px]`} onSubmit={() => onAddDailyTask}>
             <textarea 
                 placeholder="What do you want to accomplish today?"
                 className={`flex w-full h-[100px] p-[6px] rounded-[14px]
@@ -32,13 +38,15 @@ const DailyTaskModalBody = () => {
                 style={{
                     'resize': 'none'
                 }}
+                value={dailyTask.title}
+                onChange={(e) => onChangeFormField({...dailyTask, title: e.target.value})}
             >
             </textarea>
             <TaskCategoryFilter 
                 onChangeCategory={handleFilterCategory}
                 color={category !== null && category !== "" ? handleCategoryColor(category as CategoryType) : 'var(--iconColor)'}
             />
-        </div>
+        </form>
     )
 }
 

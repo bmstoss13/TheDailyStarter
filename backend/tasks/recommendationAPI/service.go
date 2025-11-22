@@ -27,7 +27,6 @@ func (svc *Service) GetAllRecommendations(ctx context.Context) (*[]Recommendatio
 
 	//read the file
 	recommendationBytes, err := os.ReadFile(fileName)
-	log.Printf("recommendations: %v", recommendationBytes)
 	if err != nil {
 		log.Printf("error while trying to read recommendations json: %v", err)
 		return nil, fmt.Errorf("failed to read recommendations json")

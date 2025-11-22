@@ -4,7 +4,7 @@ import AddDailyTask from "./AddDailyTask";
 import { handleTaskColor } from "@/pages/api/taskColorHelper";
 
 interface DailyTaskListProps{
-    dailyTaskList: DailyTask[];
+    dailyTaskList: DailyTask[] | null;
     onAddTask: (task: DailyTask) => void;
     onToggleDailyTaskModal: () => void;
 }
@@ -17,7 +17,7 @@ const DailyTaskList = ({
 
     return (
         <div className='flex flex-col h-full w-full gap-[10px]'>
-            {dailyTaskList.map((dailyTask) => {
+            {dailyTaskList && dailyTaskList.map((dailyTask) => {
                 return(
                     <DailyTaskItem 
                         key={dailyTask.id} 

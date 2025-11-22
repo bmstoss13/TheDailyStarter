@@ -176,7 +176,8 @@ export interface Task {
 }
 
 export interface DailyTask extends Task {
-    priority?: PriorityType;    
+    priority?: PriorityType;  
+    uid: string;  
     isDaily: boolean; // Flag to indicate if the task should repeat daily
 }
 

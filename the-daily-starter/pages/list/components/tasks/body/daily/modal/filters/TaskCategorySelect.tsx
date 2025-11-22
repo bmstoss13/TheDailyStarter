@@ -16,7 +16,7 @@ const TaskCategorySelect = ({
     color
 }: TaskCategorySelectProps) => {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [selectedItem, setSelectedItem] = useState<Category | CategoryType | string>("Productivity");
+    const [selectedItem, setSelectedItem] = useState<Category | CategoryType | string>("");
 
     const selectedOption = options.find(opt => opt.value === selectedItem) || options[0];
 

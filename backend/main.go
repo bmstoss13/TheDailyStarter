@@ -27,6 +27,8 @@ import (
 	SupabaseUsers "services/supabase/userservice"
 	SupabaseUserEndpoint "services/supabase/userservice/endpoint"
 	"services/supabase/worldnewsapi"
+	DailyTaskService "services/tasks/DailyTasks"
+	DailyTaskEndpoint "services/tasks/dailyTasks/endpoint"
 	RecommendationService "services/tasks/recommendationAPI"
 	RecommendationsEndpoint "services/tasks/recommendationAPI/endpoint"
 	helpers "services/utils"
@@ -67,6 +69,7 @@ func main() {
 	commentSvc := commentservice.NewService(clients.DB, supabaseUserSvc, supabaseShineSvc)
 	newsService := newsservice.NewService(clients.DB, newsClient, redisClient)
 	recommendationsService := RecommendationService.NewService(supabaseUserSvc)
+	dailyTaskService := DailyTaskService.NewService(&DailyTaskService.PGDataStore{DB: clients.DB}, supabaseUserSvc)
 
 	cr := cron.New()
 
@@ -117,6 +120,8 @@ func main() {
 			r.Put("/shines/{shineId}/comments/{commentId}", CommentEndpoint.CommentHandler(commentSvc))
 			r.Handle("/shines/{shineId}/comments/{commentId}/toggleRay", CommentEndpoint.ToggleCommentRayHandler(commentSvc))
 			r.Handle("/comments/{commentId}/replies", CommentEndpoint.ReplyHandler(commentSvc))
+			r.Handle("/tasks", DailyTaskEndpoint.DailyTaskHandler(dailyTaskService))
+			r.Delete("/tasks/{taskId}", DailyTaskEndpoint.DailyTaskHandler(dailyTaskService))
 		})
 	})
 

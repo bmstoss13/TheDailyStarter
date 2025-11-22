@@ -38,6 +38,7 @@ export default function CheckListLayout({
             </div>
             <div className={styles.taskColumn}>
                 <TaskContainer 
+                    tasks={userDailyTasks}
                     taskType={taskType} 
                     onSwitchTaskType={onSwitchTaskType}
                     onToggleAddDailyTask={onToggleDailyTaskModal}
