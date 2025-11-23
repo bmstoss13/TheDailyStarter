@@ -2,7 +2,7 @@ import { Category, CategoryType, Option } from "@/lib/firebase/interfaces";
 import TaskCategorySelect from "./TaskCategorySelect";
 
 interface TaskCategoryFilterProps{
-    onChangeCategory: (category: Category | CategoryType | string) => void;
+    onChangeCategory: (category: Category | CategoryType | null) => void;
     color: string;
 }
 

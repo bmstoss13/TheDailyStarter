@@ -17,8 +17,9 @@ const DailyTaskModalBody = ({
     const [category, setCategory] = useState<Category | CategoryType | string | null>(null);
     const [isSelected, setIsSelected] = useState<boolean>(false);
 
-    const handleFilterCategory = (selectedCategory: Category | CategoryType | string | null) => {
+    const handleFilterCategory = (selectedCategory: Category | CategoryType | null) => {
         try{
+            onChangeFormField({...dailyTask, category: selectedCategory})
             setCategory(selectedCategory);
         } catch (err) {
             console.error("error while changing category filter: ", err)

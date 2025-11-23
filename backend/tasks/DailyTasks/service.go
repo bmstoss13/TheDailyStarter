@@ -54,7 +54,6 @@ func (s *Service) GetUserDailyTasks(ctx context.Context, uid string) ([]DailyTas
 		return nil, fmt.Errorf("failed to get user daily tasks")
 	}
 
-	log.Printf("Daily tasks retrieved: %v", dailyTasks)
 	return dailyTasks, nil
 }
 

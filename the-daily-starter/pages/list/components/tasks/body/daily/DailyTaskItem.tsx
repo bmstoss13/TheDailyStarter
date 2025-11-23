@@ -8,7 +8,8 @@ interface DailyTaskItemProps{
 const DailyTaskItem = ({dailyTask, color}: DailyTaskItemProps) => {
     return(
         <div 
-            className='flex flex-col w-full h-[80px] border-[2px] border-solid rounded-[14px] p-[10px]'
+            className={`flex flex-col w-full h-[100px] border-[2px] border-solid rounded-xl p-[10px]
+                shadow-md`}
             style={{
                 borderColor: color
             }}

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
 interface TaskCategorySelectProps {
-    onChangeCategory: (category: Category | CategoryType | string) => void;
+    onChangeCategory: (category: Category | CategoryType | null) => void;
     options: Option[];
     color: string;  
 }

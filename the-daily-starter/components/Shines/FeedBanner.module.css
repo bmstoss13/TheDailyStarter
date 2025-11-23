@@ -1,7 +1,7 @@
 .feedBannerContainer {
     background: radial-gradient(circle at 30% 20%, #3b1d5e, #1a103d 60%, #050014 100%);
     border: 1px solid rgba(255, 200, 255, 0.3);
-    border-radius: 14px;
+    border-radius: 12px;
     box-shadow:
         0 0 20px rgba(255, 180, 255, 0.5),
         0 0 45px rgba(180, 140, 255, 0.35),
@@ -80,7 +80,7 @@
     background: rgba(255, 255, 255, 0.05);
     color: white;
     padding: 10px 15px;
-    border-radius: 10px;
+    border-radius: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     box-shadow: 0 0 14px rgba(255, 180, 255, 0.6);

@@ -113,6 +113,7 @@ func handleUpdateUserDailyTask(w http.ResponseWriter, r *http.Request, svc *Dail
 func handleDeleteDailyTask(w http.ResponseWriter, r *http.Request, svc *DailyTaskService.Service, uid string) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
+	//Get task from the url sent in
 	taskId := chi.URLParam(r, "taskId")
 	if taskId == "" {
 		log.Printf("handleDeleteDailyTask: Bad request, task id not found in params.")
