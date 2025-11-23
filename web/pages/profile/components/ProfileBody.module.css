@@ -1,0 +1,20 @@
+.bodyContainer{
+    height: 100%;
+    min-height: 1000px;
+    width: 100%;
+    background-color: white;
+    border: 1px solid var(--tertiary);
+    border-radius: 8px;
+    box-shadow: var(--cardShadow) !important;
+    max-width: 800px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: auto; 
+    margin-right: auto; 
+}
+
+@media (max-width: 800px) {
+    .bodyContainer{
+        width: 97%;
+    }
+}

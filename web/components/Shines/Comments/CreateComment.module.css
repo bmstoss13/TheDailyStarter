@@ -1,0 +1,37 @@
+.createComment {
+    display: flex;
+    background-color: rgb(249, 249, 249);
+    padding: 8px;
+    gap: 6px;
+    border: 1px solid var(--tertiary);
+    border-radius: 12px;
+}
+
+.createComment input {
+    border: 1px solid var(--iconColor);
+    border-radius: 12px;
+    width: 100%;
+    padding: 4px;
+    transition: all 0.1s ease;
+}
+
+.createComment input:hover {
+    border: 1px solid var(--primary);
+}
+
+.createComment button {
+    cursor: pointer;
+    background-color: var(--primary);
+    border-radius: 12px;
+    color: white;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 16px;
+    padding-right: 16px;
+    transition: all 0.1s ease;
+}
+
+.createComment button:hover {
+    background-color: var(--primaryHover);
+    transform: translateY(-2px);
+}

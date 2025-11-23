@@ -1,0 +1,123 @@
+.profileHeaderContainer{
+    display: flex;
+    background-color: white;
+    border: 1px solid var(--tertiary);
+    border-radius: 8px;
+    box-shadow: var(--cardShadow) !important;
+    width: 100%;
+    max-width: 800px;
+    padding: 15px;
+    margin-top: 10px;
+    margin-left: auto; 
+    margin-right: auto; 
+    gap: 20px;
+}
+
+.profilePicture{
+    border: 2px solid var(--tertiary);
+    border-radius: 100%;
+    width: 150px;
+    height: 150px;
+}
+
+.profilePicture:hover{
+    border: 2px solid var(--cardHover);
+    cursor:pointer
+}
+
+.rightContainer{
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.usernameContainer{
+    display: flex;
+    width: 100%;
+}
+
+.profileUsername{
+    font-weight: bold;
+    font-size: 1.35em;
+}
+
+.rightTools {
+    display: flex;
+    margin-left: auto;
+    gap: 10px;
+}
+
+.settingsGear{
+    color: var(--iconColor);
+    font-size: 1.1em;
+
+}
+
+.settingsGear button {
+    transition: all 0.2s ease;
+}
+
+.settingsGear button:hover{
+    cursor:pointer !important;
+    transform: translateY(-2px);    
+}
+
+.settingsGear button:active {
+    transform: translateY(0px);
+    color: var(--iconColorHover)
+}
+
+.firstLastName {
+    font-size: 0.8em;
+    color: var(--iconColor)
+}
+
+.aboutMe {
+    margin-top: 8px;
+    font-size: 0.9em;
+}
+
+.publicStatsContainer {
+    margin-top: auto;
+    display: flex;    
+    flex-direction: row;
+    gap: 40px;
+    transition: all 0.1s ease;
+
+}
+
+.publicStats {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+.publicStats:hover {
+    cursor: pointer;
+    transform: translateY(-1);
+}
+
+.stat {
+    color: var(--primary);
+    font-weight:700;
+}
+
+.statText {
+    font-weight: 300;
+}
+
+@media (max-width: 800px) {
+
+    .profileHeaderContainer{
+        width:97%;
+    }
+
+    .rightContainer {
+        margin-left: 0; 
+    }
+    
+    .publicStatsContainer {
+        gap: 20px; 
+    }
+}

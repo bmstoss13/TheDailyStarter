@@ -1,0 +1,38 @@
+.navbarContainer{
+    position: sticky;
+    width: 100%;
+    z-index: 100;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 70px;
+    background-color: white;
+    border-bottom: 1px solid rgb(210, 210, 210);
+    box-shadow: 0px 2px 4px rgba(0 0 0 0.1);
+}
+
+.logo{
+    border-radius: 8px;
+}
+
+.navbarItem {
+    color: var(--iconColor);
+    font-size: 1.3em;
+    transition: all 0.2s ease !important;
+}
+
+.navbarItem.active {
+    color: var(--primary);
+}
+
+.navbarItem:hover {
+    cursor:pointer;
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.logout{
+    margin-left: auto;
+    margin-right: 10px;
+}
