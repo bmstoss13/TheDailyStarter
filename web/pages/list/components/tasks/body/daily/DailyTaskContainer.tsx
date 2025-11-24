@@ -5,12 +5,14 @@ interface DailyTaskContainerProps{
     tasks: DailyTask[] | null;
     onAddTask: (task: DailyTask) => void
     onToggleDailyTaskModal: () => void
+    onDeleteDailyTask: (taskId: string) => void
 }
 
 const DailyTaskContainer = ({
     tasks,
     onAddTask,
-    onToggleDailyTaskModal
+    onToggleDailyTaskModal,
+    onDeleteDailyTask
 }: DailyTaskContainerProps) => {
     return(
         <div className="flex flex-col w-full h-full items-center">
@@ -18,6 +20,7 @@ const DailyTaskContainer = ({
                 dailyTaskList={tasks}
                 onAddTask={onAddTask}
                 onToggleDailyTaskModal={onToggleDailyTaskModal}
+                onDeleteDailyTask={onDeleteDailyTask}
             />
         </div>
     )

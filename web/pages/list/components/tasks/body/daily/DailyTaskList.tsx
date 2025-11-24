@@ -1,5 +1,5 @@
 import { Category, DailyTask } from "@/lib/firebase/interfaces";
-import DailyTaskItem from "./DailyTaskItem";
+import DailyTaskItem from "./TaskItem/DailyTaskItem";
 import AddDailyTask from "./AddDailyTask";
 import { handleTaskColor } from "@/pages/api/taskColorHelper";
 
@@ -7,12 +7,14 @@ interface DailyTaskListProps{
     dailyTaskList: DailyTask[] | null;
     onAddTask: (task: DailyTask) => void;
     onToggleDailyTaskModal: () => void;
+    onDeleteDailyTask: (taskId: string) => void;
 }
 
 const DailyTaskList = ({
     dailyTaskList,
     onAddTask,
-    onToggleDailyTaskModal
+    onToggleDailyTaskModal,
+    onDeleteDailyTask
 }: DailyTaskListProps) => {
 
     return (
@@ -23,6 +25,7 @@ const DailyTaskList = ({
                         key={dailyTask.id} 
                         dailyTask={dailyTask}
                         color={handleTaskColor(dailyTask)}
+                        onDeleteDailyTask={onDeleteDailyTask}
                     />
                 )
             })}

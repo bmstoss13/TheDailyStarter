@@ -1,21 +1,22 @@
-import { DailyQuote, DailyTask, ScheduleType, TaskType } from "@/lib/firebase/interfaces";
+import { DailyTask, TaskType } from "@/lib/firebase/interfaces";
 import DailyTaskContainer from "./daily/DailyTaskContainer";
 import Schedule from "./schedule/Schedule";
 import BucketListContainer from "./bucket/BucketListContainer";
-import { useState } from "react";
 
 interface TaskBodyProps{
     tasks: DailyTask[] | null;
     taskType: TaskType;
     onAddTask: (task: DailyTask) => void;
     onToggleDailyTaskModal: () => void;
+    onDeleteDailyTask: (taskId: string) => void;
 }
 
 const TaskBody = ({
     tasks,
     taskType,
     onAddTask,
-    onToggleDailyTaskModal
+    onToggleDailyTaskModal,
+    onDeleteDailyTask,
 }: TaskBodyProps) => {
     return(
         <div className="flex flex-col w-full h-full
@@ -25,6 +26,7 @@ const TaskBody = ({
                     tasks={tasks}
                     onAddTask={onAddTask}
                     onToggleDailyTaskModal={onToggleDailyTaskModal}
+                    onDeleteDailyTask={onDeleteDailyTask}
                 />
             )}
             {taskType === 'schedule' && (

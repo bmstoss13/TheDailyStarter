@@ -43,7 +43,7 @@ export default function Home() {
     // If no user, show login form
     return (
         <main className={styles.mainContainer}>
-            <h1 className={styles.appHeader}>Sun<Image src={logo} alt={'Sunshine logo'} className={styles.logo}/> </h1>
+            <h1 className={styles.appHeader}><Image src={logo} alt={'Sunshine logo'} className={styles.logo}/> </h1>
             {!user && (
                 <div className={styles.authContainer}>
                 <AuthForm />

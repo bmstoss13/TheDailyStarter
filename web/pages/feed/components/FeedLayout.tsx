@@ -12,7 +12,7 @@ import { NewsData, ShineDataWithRayStatus, UserProfileData } from '@/lib/firebas
 import { User } from 'firebase/auth';
 
 interface FeedLayoutProps {
-    user: User | null;
+    user: User;
     userProfile: UserProfileData;
     shines: ShineDataWithRayStatus[];
     isLoadingFeed: boolean;
@@ -22,11 +22,11 @@ interface FeedLayoutProps {
     newsData: NewsData[] | null;
     isFormModal: boolean;
     selectedShine: ShineDataWithRayStatus | null;
-    sentinelRef: React.RefObject<HTMLDivElement | null>;
+    sentinelRef: React.Ref<HTMLDivElement>;
     handleOpenFormModal: () => void;
-    handleShinePosted: (newShine: ShineDataWithRayStatus) => void;
-    handleShineUpdated: (updated: ShineDataWithRayStatus) => void;
-    handleShineDeleted: (id: string) => void;
+    // handleShinePosted: (newShine: ShineDataWithRayStatus) => void;
+    // handleShineUpdated: (updated: ShineDataWithRayStatus) => void;
+    // handleShineDeleted: (id: string) => void;
     handleOpenComments: (shine: ShineDataWithRayStatus) => void;
     handleCloseFormModal: () => void;
     handleCloseCommentModal: () => void;
@@ -42,15 +42,13 @@ export default function FeedLayout({
     bannerMessage,
     newsData,
     isFormModal,
-    selectedShine,
     sentinelRef,
     handleOpenFormModal,
-    handleShinePosted,
-    handleShineUpdated,
-    handleShineDeleted,
+    // handleShinePosted,
+    // handleShineUpdated,
+    // handleShineDeleted,
     handleOpenComments,
     handleCloseFormModal,
-    handleCloseCommentModal,
 }: FeedLayoutProps) {
     const listColumnRef = useRef<HTMLDivElement>(null);
     const listCardContainerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +75,7 @@ export default function FeedLayout({
 
     return (
         <>
-            <Navbar userProfile={user!}/>
+            <Navbar userProfile={user}/>
             <div className={styles.feedLayout}>
                 <div className={styles.listColumn} ref={listColumnRef}>
                     <div className={styles.listCardContainer} ref={listCardContainerRef}>
@@ -85,18 +83,24 @@ export default function FeedLayout({
                     </div>
                 </div>
                 <div className={styles.feedColumn}>
-                    <FeedBanner onClickShine={handleOpenFormModal} userProfile={userProfile} bannerMessage={bannerMessage} />
-                    {isFormModal && (
-                        <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile}/>
-                    )}
+                    <FeedBanner 
+                        onClickShine={handleOpenFormModal} 
+                        userProfile={userProfile} 
+                        bannerMessage={bannerMessage} 
+                    />
+                    {/* {isFormModal && (
+                        <CreateShineForm 
+                        onShinePosted={handleShinePosted} 
+                        onClose={handleCloseFormModal} userProfile={userProfile}/>
+                    )} */}
                     <ShineFeed
                         user={user}
                         shines={shines}
                         isLoadingFeed={isLoadingFeed}
                         error={error}
                         hasMore={hasMore}
-                        onShineUpdated={handleShineUpdated}
-                        onShineDeleted={handleShineDeleted}
+                        // onShineUpdated={handleShineUpdated}
+                        // onShineDeleted={handleShineDeleted}
                         onCommentsClick={handleOpenComments}
                         userProfile={userProfile}
                     />
@@ -107,7 +111,11 @@ export default function FeedLayout({
                 </div>
             </div>
             {isFormModal && (
-                <CreateShineForm onShinePosted={handleShinePosted} onClose={handleCloseFormModal} userProfile={userProfile} />
+                <CreateShineForm 
+                    // onShinePosted={handleShinePosted} 
+                    onClose={handleCloseFormModal} 
+                    userProfile={userProfile} 
+                />
             )}
         </>
     );

@@ -1,130 +1,84 @@
 "use client";
 
 import React, { useState } from "react";
-import { auth } from "@/lib/firebase/firebase";
-import axios from "axios";
-
 import styles from "./CreateShineForm.module.css";
-import { ShineData, ShineDataWithRayStatus, UserProfileData } from "@/lib/firebase/interfaces";
+import { UserProfileData } from "@/lib/firebase/interfaces";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera, faStar, faX } from "@fortawesome/free-solid-svg-icons";
+
+// Components & Hooks
 import PhotoUpload from "./PhotoUpload";
+import { useCreateShine } from "@/hooks/ShineFeed/useShines";
 
 interface CreateShineFormProps {
-    onShinePosted: (newShine: ShineDataWithRayStatus) => void //set callback to notify parent aka refresh feed.
-    onClose: () => void
-    userProfile: UserProfileData
+    onClose: () => void;
+    userProfile: UserProfileData;
+    // Removed 'onShinePosted' -> The hook handles the update now
 }
 
-export default function CreateShineForm({ onShinePosted, onClose, userProfile }: CreateShineFormProps){
+export default function CreateShineForm({ onClose, userProfile }: CreateShineFormProps) {
+    // 1. Form State (Kept local)
     const [shineText, setShineText] = useState('');
-    const [mediaURL, setMediaURL] = useState('');
-    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [mediaFile, setMediaFile] = useState<File | null>(null);
-    const [mediaPreview, setMediaPreview] = useState('')
-    const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const [mediaPreview, setMediaPreview] = useState('');
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
-    const handleSubmit = async(e: React.FormEvent) => {
+    // 2. The Mutation Hook
+    const { mutate, isPending } = useCreateShine(userProfile);
+
+    // 3. Handlers
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
-        setSuccess(null);
-        setIsLoading(true);
 
-        if(!shineText.trim()){
-            setError("Cannot post Shine without text.");
-            setIsLoading(false);
-            return;
-        }
-        
-        try{
-            const currentUser = auth.currentUser;
-            console.log("current user: " + currentUser)
-            if(!currentUser) {
-                throw new Error ("You must be logged in to post a shine.");
-            };
+        if (!shineText.trim()) return;
 
-            const idToken = await currentUser.getIdToken();
-            const url = `http://localhost:8080/v1/shines`;
-
-            const formData = new FormData();
-            formData.append("text", shineText.trim())
-            if (mediaFile) {
-                formData.append("photo", mediaFile)
-            }
-
-            const response = await axios.post(url, formData, {
-                headers: {
-                    'Authorization': `Bearer ${idToken}`
+        // Fire mutation
+        mutate(
+            { text: shineText, file: mediaFile },
+            {
+                onSuccess: () => {
+                    // Clear form and close modal only on success
+                    setShineText('');
+                    setMediaFile(null);
+                    setMediaPreview('');
+                    onClose();
                 }
-            })
-
-            const data:ShineDataWithRayStatus = await response.data;
-
-            const hydratedShine: ShineDataWithRayStatus = {
-                ...data,
-                username: userProfile.username,
-                userPhotoUrl: userProfile.photoURL,
-            };
-
-
-            setShineText('');
-            setMediaURL('');
-            setSuccess('Shine posted successfully!');
-            onShinePosted(hydratedShine); //Parent! Refresh!
-
-        } catch (err){
-            if(axios.isAxiosError(err) && err.response){
-                const errorData = err.response.data;
-                console.error("An error occurred while posting shine: ", err.response);
-                setError(errorData.message || errorData.error || "Failed to post shine.");
-            } else {
-                console.error("An unexpected error occurred: ", err);
-                setError("An unexpected error occurred while posting form");
             }
-        } finally {
-            setIsLoading(false);
-            onClose();
-        }
-    }
+        );
+    };
 
-    const handlePhotoUpload = () => {
-        setIsUploadingPhoto(true);
-        
-    }
-
-    const handlePhotoClose = () => {
+    const handlePhotoSubmit = (file: File) => {
+        setMediaFile(file);
+        setMediaPreview(URL.createObjectURL(file));
         setIsUploadingPhoto(false);
-    }
+    };
+
+    // --- Render ---
+
     return (
         <div className={styles.shineModalOverlay}>
             {isUploadingPhoto ? (
                 <PhotoUpload 
-                    onClose={handlePhotoClose} 
-                    onSubmit={(file) => {
-                        setMediaFile(file);
-                        setMediaPreview(URL.createObjectURL(file));
-                        setIsUploadingPhoto(false)
-                    }}
+                    onClose={() => setIsUploadingPhoto(false)} 
+                    onSubmit={handlePhotoSubmit}
                     userProfile={userProfile}
                 />
-            ):(
+            ) : (
                 <div className={styles.createShineContainer}>
+                    {/* HEADER */}
                     <div className={styles.createShineHeader}>
                         <div className={styles.titleHeader}> 
                             <FontAwesomeIcon icon={faStar} className={styles.starIcon}/>
                             <h3>What's Shining Today?</h3>
                         </div>
                         <div className={styles.exitButtonContainer}> 
-                            <button  className={styles.exitCreatePost} onClick={onClose}>
+                            <button className={styles.exitCreatePost} onClick={onClose}>
                                 <FontAwesomeIcon icon={faX}/>
                             </button>
-
                         </div>
-
-
                     </div>
+
+                    {/* BODY */}
                     <div className={styles.createShineBody}>
                         <form onSubmit={handleSubmit}>
                             <textarea
@@ -133,32 +87,44 @@ export default function CreateShineForm({ onShinePosted, onClose, userProfile }:
                                 onChange={(e) => setShineText(e.target.value)}
                                 rows={4}
                                 required
-                                disabled={isLoading}
+                                disabled={isPending} // Use isPending from hook
                             ></textarea>
+
+                            {/* PHOTO PREVIEW */}
                             <div className={styles.photoContainerShine}>
                                 {mediaPreview && (
-                                    <img src={mediaPreview} className={styles.uploadedPhotoPost}/>
+                                    <img 
+                                        src={mediaPreview} 
+                                        alt="Preview" 
+                                        className={styles.uploadedPhotoPost}
+                                    />
                                 )}
-
                             </div>
+
+                            {/* FOOTER / BUTTONS */}
                             <div className={styles.submissionsFooter}>
                                 <div className={styles.photoUpload}>
-                                    <button onClick={handlePhotoUpload}>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsUploadingPhoto(true)}
+                                        disabled={isPending}
+                                    >
                                         <FontAwesomeIcon icon={faCamera} />
                                     </button>
                                 </div>
                                 <div className={styles.shinePost}>
-                                    <button type="submit" disabled={isLoading || shineText === ''}>
-                                        {isLoading ? 'Posting...' : 'Post!'}
+                                    <button 
+                                        type="submit" 
+                                        disabled={isPending || shineText.trim() === ''}
+                                    >
+                                        {isPending ? 'Posting...' : 'Post!'}
                                     </button>
                                 </div>
                             </div>
                         </form>
                     </div>
-
                 </div>
             )}
-
         </div>
     );
 }

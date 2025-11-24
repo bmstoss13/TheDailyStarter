@@ -29,11 +29,11 @@ const TaskHeader = ({taskType, onSwitchType}: TaskHeaderProps) => {
                             icon={faCalendarDay} 
                         />
                     )}
-                    {type==='schedule' && (
+                    {/* {type==='schedule' && (
                         <FontAwesomeIcon 
                             icon={faAlarmClock} 
                         />
-                    )}
+                    )} */}
                     {type==='bucket' && (
                         <FontAwesomeIcon 
                             icon={faBucket} 

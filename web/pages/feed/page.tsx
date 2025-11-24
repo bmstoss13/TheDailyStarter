@@ -16,6 +16,9 @@ import CommentFeedModal from '@/components/Shines/Comments/CommentFeedModal';
 
 // New component for the main feed layout and ResizeObserver logic
 import FeedLayout from './components/FeedLayout';
+import { useUIStore } from '@/hooks/useUIStore';
+import { useBannerMessage, useDailyNews, useDailyQuote, useShinesFeed } from '@/hooks/ShineFeed/useShines';
+import { useInView } from 'react-intersection-observer';
 
 interface DailyQuoteData {
     quote: string;
@@ -32,193 +35,43 @@ const api = getJsonApi();
 export default function FeedPage() {
     const { user, loading: authLoading, error: authError } = useAuthContext();
     const { userProfile, loadingProfile, errorProfile} = useProfile();
-    const [quote, setQuote] = useState<DailyQuoteData | null>(null);
-    const [showQuoteModal, setShowQuoteModal] = useState<boolean>(false);
-    const [shines, setShines] = useState<ShineDataWithRayStatus[]>([]);
     const [isLoadingFeed, setIsLoadingFeed] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [lastShineId, setLastShineId] = useState<string | undefined>(undefined);
     const [hasMore, setHasMore] = useState(true);
-    const [isFormModal, setIsFormModal] = useState<boolean>(false);
-    const [bannerMessage, setBannerMessage] = useState('');
-    const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
-    const [newsData, setNewsData] = useState<NewsData[] | null>(null);
-    
-    const hasInitialFetched = useRef(false);
+
+    const {
+        isQuoteModalOpen, closeQuoteModal,
+        isFormModalOpen, openFormModal, closeFormModal,
+        selectedShine, openComments, closeComments
+    } = useUIStore();
+
+    const {
+        data: shinesData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading: isFeedLoading,
+        error: feedError
+    } = useShinesFeed();
+
+    const { data: quote } = useDailyQuote();
+    const { data: newsData } = useDailyNews();
+    const { data: bannerMessage } = useBannerMessage();
+
+    const { ref: sentinelRef, inView } = useInView();
+    useEffect(() => {
+        const shouldLock = selectedShine || isQuoteModalOpen || isFormModalOpen;
+        document.body.style.overflow = shouldLock ? 'hidden' : 'auto';
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [selectedShine, isQuoteModalOpen, isFormModalOpen]);
 
     useEffect(() => {
-        if (selectedShine || showQuoteModal || isFormModal) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
+        if (inView && hasNextPage) {
+            fetchNextPage();
         }
-        return () => {
-            document.body.style.overflow = 'auto';
-        };
-    }, [selectedShine, showQuoteModal, isFormModal]);
+    }, [inView, hasNextPage, fetchNextPage]);
 
-    const fetchShines = useCallback(async (startAfterId?: string) => {
-        if (!user) return;
-        setIsLoadingFeed(true);
-        setError(null);
-
-        try {
-            const idToken = await user.getIdToken();
-            const { data } = await api.get<ShineDataWithRayStatus[]>(`/v1/shines`, {
-                params: {
-                    limit: 10,
-                    startAfter: startAfterId,
-                },
-                headers: {
-                    'Authorization': `Bearer ${idToken}`
-                }
-            });
-
-            setShines((prev) => {
-                const combined = startAfterId ? [...prev, ...data] : data;
-                const unique = Array.from(new Map(combined.map((s) => [s.id, s])).values());
-                saveShineFeedToCache(unique);
-                return unique;
-            })
-            setLastShineId(data.at(-1)?.id);
-            setHasMore(data.length === 10);
-            
-        } catch (err) {
-            if (axios.isAxiosError(err)) {
-                console.error("Error fetching shines:", err.response?.data || err.message);
-                setError(err.response?.data?.error || err.response?.data?.message || 'Failed to fetch shines.');
-            } else {
-                console.error("Unknown error:", err);
-                setError('Could not load shines.');
-            }
-        } finally {
-            setIsLoadingFeed(false);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        if (!user || hasInitialFetched.current) return;
-        const cachedShines = loadShineFeedFromCache();        
-        if (cachedShines?.length) {
-            setShines(cachedShines); 
-            setLastShineId(cachedShines.at(-1)?.id);
-            setHasMore(true);
-            setIsLoadingFeed(false);
-        } else {
-            fetchShines(undefined);
-        }
-        hasInitialFetched.current = true;
-    }, [user, fetchShines]);
-
-    const sentinelRef = useRef<HTMLDivElement | null>(null);
-    useEffect(() => {
-        if(!sentinelRef.current || !hasMore || isLoadingFeed) return;
-        const observer = new IntersectionObserver((entries) => {
-            if(entries[0].isIntersecting) fetchShines(lastShineId);
-        });
-        observer.observe(sentinelRef.current);
-        return () => observer.disconnect();
-    }, [lastShineId, hasMore, isLoadingFeed, fetchShines]);
-
-    const handleShinePosted = (newShine: ShineDataWithRayStatus) => {
-        setShines((prev) => {
-            const updated = [newShine, ...prev];
-            saveShineFeedToCache(updated);
-            return updated;
-        });
-    }
-
-    const handleShineUpdated = (updated: ShineDataWithRayStatus) => {
-        setShines((prev) => {
-            const updatedList = prev.map((s) => (s.id === updated.id ? updated : s));
-            saveShineFeedToCache(updatedList);
-            return updatedList;
-        });
-    };
-
-    const handleShineDeleted = (id: string) => {
-        setShines((prev) => {
-            const updatedList = prev.filter(shine => shine.id !== id);
-            saveShineFeedToCache(updatedList);
-            return updatedList;
-        });
-    };
-
-    const fetchQuote = async (user: User) => {
-        try {
-            const idToken = await user.getIdToken();
-            const { data } = await api.post<LoginFlowResponse>(
-                `/v1/user/login`,
-                {},
-                {
-                    headers: {
-                        'Authorization': `Bearer ${idToken}`,
-                    }
-                }
-            );
-
-            if (data.isNewQuote && data.dailyQuote) {
-                setQuote(data.dailyQuote);
-                setShowQuoteModal(true);
-            }
-        } catch (err) {
-            console.error("Failed to fetch new quote:", err);
-        }
-    };
-
-    const fetchBannerMessage = async() => {
-        const { data } = await api.get(`/v1/banner/message`)
-        setBannerMessage(data.message)
-    }
-
-    const fetchDailyNews = async() => {
-        try{
-            const { data } = await api.get(`/v1/news`);
-            console.log("API response data:", data);
-            setNewsData(data);
-        } catch (err) {
-            console.error("error fetching news stories: ", err)
-        }
-    }
-
-    // Placeholder function for daily tasks - might not need for later
-    const fetchDailyTasks = async(user: User) => {
-        if(!user) return;
-        try{
-            const idToken = user.getIdToken()
-            const { data } = await api.get(`/v1/tasks`)
-        } catch (err) {
-            console.error("error while fetching user's daily stories")
-        }
-    }
-
-    useEffect(() => {
-        if (user && !authLoading) {
-            fetchQuote(user);
-            fetchBannerMessage();
-            fetchDailyNews();
-        }
-    }, [user, authLoading]);
-    
-    const handleCloseModal = () => {
-        setShowQuoteModal(false);
-    };
-
-    const handleOpenFormModal = () => {
-        setIsFormModal(true)
-    }
-
-    const handleCloseFormModal = () => {
-        setIsFormModal(false);
-    }
-
-    const handleOpenComments = (shine: ShineDataWithRayStatus) => {
-        setSelectedShine(shine);
-    }
-
-    const handleCloseCommentModal = () => {
-        setSelectedShine(null);
-    }
+    const shines = shinesData?.pages.flat() || []
 
     if (authLoading || loadingProfile) {
         return (
@@ -230,11 +83,16 @@ export default function FeedPage() {
         );
     }
 
-    if (authError || errorProfile) {
+    if (authError || errorProfile || feedError) {
+        const errorMessage =
+            (authError as Error)?.message ||
+            (errorProfile as Error)?.message || 
+            (feedError as Error)?.message || 
+            "Error loading feed.";
+
         return (
             <div className={styles.feedContainer}>
-                <h1>Feed</h1>
-                <p className={styles.errorMessage}>Error loading user session</p>
+                <p className={styles.errorMessage}>{errorMessage}</p>
                 <p>Please try refreshing the page or logging in again.</p>
             </div>
         );
@@ -247,35 +105,33 @@ export default function FeedPage() {
                     user={user}
                     userProfile={userProfile}
                     shines={shines}
-                    isLoadingFeed={isLoadingFeed}
+                    isLoadingFeed={isFeedLoading}
                     error={error}
                     hasMore={hasMore}
                     bannerMessage={bannerMessage}
                     newsData={newsData}
-                    isFormModal={isFormModal}
+                    isFormModal={isFormModalOpen}
                     selectedShine={selectedShine}
                     sentinelRef={sentinelRef}
-                    handleOpenFormModal={handleOpenFormModal}
-                    handleShinePosted={handleShinePosted}
-                    handleShineUpdated={handleShineUpdated}
-                    handleShineDeleted={handleShineDeleted}
-                    handleOpenComments={handleOpenComments}
-                    handleCloseFormModal={handleCloseFormModal}
-                    handleCloseCommentModal={handleCloseCommentModal}
+                    handleOpenFormModal={openFormModal}
+                    handleCloseFormModal={closeFormModal}
+                    handleOpenComments={openComments}                
+                    
+                    handleCloseCommentModal={closeComments}
                 />
             ) : (
                 <div className={styles.loginPrompt}>
                     <p>Log in to share your shines!</p>
                 </div>
             )}
-            {showQuoteModal && quote && (
-                <QuoteModal quote={quote} onClose={handleCloseModal} />
+            {isQuoteModalOpen && quote && (
+                <QuoteModal quote={quote} onClose={closeQuoteModal} />
             )}
             {selectedShine && userProfile && user && (
                 <CommentFeedModal
                     shine={selectedShine}
                     userProfile={userProfile}
-                    onClose={handleCloseCommentModal}
+                    onClose={closeComments}
                     user={user}
                 />
             )}

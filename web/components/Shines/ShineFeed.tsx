@@ -7,84 +7,104 @@ import ShineCard from './ShineCard';
 import SettingsModal from '@/components/Shines/Settings/SettingsModal';
 import axios from 'axios';
 import styles from './ShineFeed.module.css';
+import { useDeleteShine, useToggleRay } from '@/hooks/ShineFeed/useShines';
 
 interface ShineFeedProps {
     user: User | null;
+    userProfile: UserProfileData;
     shines: ShineDataWithRayStatus[];
+
     isLoadingFeed: boolean;
     error: string | null;
     hasMore: boolean;
-    userProfile: UserProfileData;
-    onShineUpdated: (shine: ShineDataWithRayStatus) => void;
-    onShineDeleted: (shineId: string) => void;
+    
+    // onShineUpdated: (shine: ShineDataWithRayStatus) => void;
+    // onShineDeleted: (shineId: string) => void;
     onCommentsClick: (shine: ShineDataWithRayStatus) => void;
 }
 
-export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onShineUpdated, onShineDeleted, onCommentsClick, userProfile }: ShineFeedProps) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
+export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore, onCommentsClick, userProfile }: ShineFeedProps) {
+    // const [isModalOpen, setIsModalOpen] = useState(false);
+    // const [selectedShine, setSelectedShine] = useState<ShineDataWithRayStatus | null>(null);
 
-    const handleToggleRay = useCallback(async (shineId: string) => {
-        if (!user) {
-            return;
-        }
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [shineInSettings, setShineInSettings] = useState<ShineDataWithRayStatus | null>(null);
 
-        try {
-            const idToken = await user.getIdToken();
-            const url = `http://localhost:8080/v1/shines/${shineId}/toggleRay`;
+    const { mutate: toggleRay } = useToggleRay();
+    const { mutate: deleteShine } = useDeleteShine();
+    // const handleToggleRay = useCallback(async (shineId: string) => {
+    //     if (!user) {
+    //         return;
+    //     }
 
-            const response = await axios.post(url, null, {
-                headers: {
-                    'Authorization': `Bearer ${idToken}`,
-                },
-            });
+    //     try {
+    //         const idToken = await user.getIdToken();
+    //         const url = `http://localhost:8080/v1/shines/${shineId}/toggleRay`;
 
-            const hasRayed = response.data;
-            const originalShine = shines.find(s => s.id === shineId);
-            if(originalShine) {
-                const newRayCount = hasRayed ? originalShine.rayCount + 1 : originalShine.rayCount - 1
-                const updatedShine: ShineDataWithRayStatus = {
-                    ...originalShine,
-                    rayCount: newRayCount,
-                    hasRayed: hasRayed,
-                }
-                onShineUpdated(updatedShine);
-            }
+    //         const response = await axios.post(url, null, {
+    //             headers: {
+    //                 'Authorization': `Bearer ${idToken}`,
+    //             },
+    //         });
 
-        } catch (err) {
-            console.error("Failed to toggle ray:", err);
-        }
-    }, [user, onShineUpdated]);
+    //         const hasRayed = response.data;
+    //         const originalShine = shines.find(s => s.id === shineId);
+    //         if(originalShine) {
+    //             const newRayCount = hasRayed ? originalShine.rayCount + 1 : originalShine.rayCount - 1
+    //             const updatedShine: ShineDataWithRayStatus = {
+    //                 ...originalShine,
+    //                 rayCount: newRayCount,
+    //                 hasRayed: hasRayed,
+    //             }
+    //             onShineUpdated(updatedShine);
+    //         }
+
+    //     } catch (err) {
+    //         console.error("Failed to toggle ray:", err);
+    //     }
+    // }, [user, onShineUpdated]);
+
+    const handleToggleRay = useCallback((shineId: string) => {
+        toggleRay(shineId); 
+    }, [toggleRay]);
 
     const handleSettingsClick = useCallback((shine: ShineDataWithRayStatus) => {
-        setSelectedShine(shine);
-        setIsModalOpen(true);
+        setShineInSettings(shine);
+        setIsSettingsOpen(true);
     }, []);
 
-    const handleCloseModal = useCallback(() => {
-        setIsModalOpen(false);
-        setSelectedShine(null);
+    const handleCloseSettings = useCallback(() => {
+        setIsSettingsOpen(false);
+        setShineInSettings(null);
     }, []);
 
-    const handleDeleteShine = useCallback(async () => {
-        if (!selectedShine || !user) return;
-        
-        try {
-            const idToken = await user.getIdToken();
-            const url = `http://localhost:8080/v1/shines/${selectedShine.id}`;
-
-            await axios.delete(url, {
-                headers: { 'Authorization': `Bearer ${idToken}` },
+    const handleDeleteShine = useCallback(() => {
+        if (shineInSettings?.id) {
+            deleteShine(shineInSettings.id, {
+                onSuccess: () => handleCloseSettings() // Close modal on success
             });
-
-            onShineDeleted(selectedShine.id ? selectedShine.id : '');
-
-        } catch (err) {
-            console.error("Failed to delete shine:", err);
-        } finally {
-            handleCloseModal();
         }
-    }, [selectedShine, user, handleCloseModal, onShineDeleted]);
+    }, [shineInSettings, deleteShine, handleCloseSettings]);
+
+    // const handleDeleteShine = useCallback(async () => {
+    //     if (!selectedShine || !user) return;
+        
+    //     try {
+    //         const idToken = await user.getIdToken();
+    //         const url = `http://localhost:8080/v1/shines/${selectedShine.id}`;
+
+    //         await axios.delete(url, {
+    //             headers: { 'Authorization': `Bearer ${idToken}` },
+    //         });
+
+    //         onShineDeleted(selectedShine.id ? selectedShine.id : '');
+
+    //     } catch (err) {
+    //         console.error("Failed to delete shine:", err);
+    //     } finally {
+    //         handleCloseModal();
+    //     }
+    // }, [selectedShine, user, handleCloseModal, onShineDeleted]);
     
     if (!user) {
         return null;
@@ -122,11 +142,11 @@ export default function ShineFeed({ user, shines, isLoadingFeed, error, hasMore,
                 </p>
             )}
 
-            {isModalOpen && selectedShine && user && (
+            {isSettingsOpen && shineInSettings && user && (
                 <SettingsModal
-                    shine={selectedShine}
+                    shine={shineInSettings}
                     currentUser={currentUserProfile}
-                    onClose={handleCloseModal}
+                    onClose={handleCloseSettings}
                     onDelete={handleDeleteShine}
                 />
             )}

@@ -56,23 +56,27 @@ func (s *Service) GetShines(ctx context.Context, limit int, startAfterShineId st
 	var shines []ShineDataWithRayStatus
 
 	query := s.db.WithContext(ctx).Model((*ShineData)(nil)).
-		TableExpr("shines AS shineData").
-		ColumnExpr("shineData.*").
+		ColumnExpr("shine_data.*").
 		ColumnExpr(`UserProfileData.username AS username, UserProfileData."photoURL" AS "userPhotoUrl"`).
-		Join("LEFT JOIN ? AS UserProfileData ON UserProfileData.uid = shineData.uid", pg.Ident(SupabaseUsers.UserProfileTableName)).
-		Join(`LEFT JOIN ? AS RayData ON RayData."shineId" = shineData.id AND RayData.uid = ?`, pg.Ident(RayTable), uid).
-		ColumnExpr(`RayData.uid IS NOT NULL AS "hasRayed"`).
-		OrderExpr(`shineData."createdAt" DESC`)
+
+		// Subquery Check
+		ColumnExpr(`(EXISTS (
+            SELECT 1 FROM ? AS r 
+            WHERE r."shineId" = shine_data.id AND r.uid = ?
+        )) AS "hasRayed"`, pg.Ident(RayTable), uid).
+
+		// Join User Profile
+		Join("LEFT JOIN ? AS UserProfileData ON UserProfileData.uid = shine_data.uid", pg.Ident(SupabaseUsers.UserProfileTableName)).
+		OrderExpr(`shine_data."createdAt" DESC`)
 
 	if startAfterShineId != "" {
-
 		var startAfterShine ShineData
+		// Fetch reference shine
 		err := s.db.Model(&startAfterShine).Where("id = ?", startAfterShineId).Select()
 		if err != nil {
-			log.Printf("Backend: start after shine id %s not found. Fetching from the beginning", startAfterShineId)
+			log.Printf("Backend: start after shine id %s not found.", startAfterShineId)
 		} else {
-			query.Where(`shineData."createdAt" < ? OR (shineData."createdAt" = ? AND shineData.id < ?)`, startAfterShine.CreatedAt, startAfterShine.CreatedAt, startAfterShine.ID)
-			log.Printf("Queried new shines.")
+			query.Where(`shine_data."createdAt" < ? OR (shine_data."createdAt" = ? AND shine_data.id < ?)`, startAfterShine.CreatedAt, startAfterShine.CreatedAt, startAfterShine.ID)
 		}
 	}
 

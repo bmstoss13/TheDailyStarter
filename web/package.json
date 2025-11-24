@@ -24,6 +24,8 @@
     "next": "15.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-hot-toast": "^2.6.0",
+    "react-intersection-observer": "^10.0.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

@@ -7,7 +7,7 @@ interface TaskContainerProps{
     tasks: DailyTask[] | null;
     taskType: TaskType;
     onSwitchTaskType: (taskType: TaskType) => void;
-
+    onDeleteDailyTask: (taskId: string) => void;
     onToggleAddDailyTask: () => void;
 }
 /**
@@ -18,7 +18,8 @@ const TaskContainer = ({
     tasks,
     taskType, 
     onSwitchTaskType,
-    onToggleAddDailyTask
+    onToggleAddDailyTask,
+    onDeleteDailyTask,
 }: TaskContainerProps) => {
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [changes, setChanges] = useState<DailyTask[] | null>(null);
@@ -53,6 +54,7 @@ const TaskContainer = ({
                 taskType={taskType}
                 onAddTask={handleAddTask} 
                 onToggleDailyTaskModal={onToggleAddDailyTask}
+                onDeleteDailyTask={onDeleteDailyTask}
             />
             {/* <TaskBarFooter
                 hasChanges={hasChanges} 

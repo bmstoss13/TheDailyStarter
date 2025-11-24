@@ -15,6 +15,7 @@ interface CheckListLayoutProps{
     taskType: TaskType;
     onSwitchTaskType: (switchType: TaskType) => void;
     onToggleDailyTaskModal: () => void;
+    onDeleteDailyTask: (taskId: string) => void;
 }
 /**
  * Layout for the Task page
@@ -28,7 +29,8 @@ export default function CheckListLayout({
     recommendations,
     onSwitchTaskType,
     taskType,
-    onToggleDailyTaskModal
+    onToggleDailyTaskModal,
+    onDeleteDailyTask
 }:CheckListLayoutProps){
 
     return(
@@ -42,6 +44,7 @@ export default function CheckListLayout({
                     taskType={taskType} 
                     onSwitchTaskType={onSwitchTaskType}
                     onToggleAddDailyTask={onToggleDailyTaskModal}
+                    onDeleteDailyTask={onDeleteDailyTask}
                 />                            
             </div>
             <div className={styles.recommendationColumn}>

@@ -98,8 +98,7 @@ func main() {
 		r.Handle("/quote", SupabaseQuoteEndpoint.QuoteHandler(supabaseQuoteSvc))
 		r.Get("/quote/today", SupabaseQuoteEndpoint.SupabaseQuoteHandler(supabaseQuoteSvc))
 		r.Get("/quote/all", SupabaseQuoteEndpoint.AllDailyQuotesHandler(supabaseQuoteSvc))
-		r.Get("/banner/message", BannerEndpoint.BannerHandler(bannerSvc))
-		r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
+
 		r.Handle("/tasks/recommendations", RecommendationsEndpoint.RecommendationsHandler(recommendationsService))
 
 		r.With(helpers.TokenAuthorizer(clients.Auth)).Group(func(r chi.Router) {
@@ -122,6 +121,8 @@ func main() {
 			r.Handle("/comments/{commentId}/replies", CommentEndpoint.ReplyHandler(commentSvc))
 			r.Handle("/tasks", DailyTaskEndpoint.DailyTaskHandler(dailyTaskService))
 			r.Delete("/tasks/{taskId}", DailyTaskEndpoint.DailyTaskHandler(dailyTaskService))
+			r.Get("/banner", BannerEndpoint.BannerHandler(bannerSvc))
+			r.Handle("/news", NewsEndpoint.NewsHandler(newsService))
 		})
 	})
 
